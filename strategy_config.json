@@ -1,0 +1,935 @@
+{
+  "_comment": "mx-moni auto strategy config v6.8 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)",
+  "version": "6.8",
+  "account": {
+    "mx_api_url": "https://mkapi2.dfcfs.com/finskillshub",
+    "_note_apikey": "read from env MX_APIKEY, do NOT hardcode here"
+  },
+  "risk": {
+    "_comment": "v6 position: 54% def (3 x 18%) + 30% off (2 x 15%) + 16% cash reserve",
+    "max_position_per_stock_pct": 18,
+    "base_position_pct": 54,
+    "flex_position_pct": 16,
+    "_offensive_pct": 30,
+    "defensive_base_position_pct": 54,
+    "defensive_flex_position_pct": 16,
+    "cash_reserve_pct": 16,
+    "stop_loss_pct": -5,
+    "stop_loss_hard_pct": -8,
+    "offensive_stop_loss_pct": -10,
+    "min_cash_reserve_pct": 10,
+    "regime_band_pct": 3.0,
+    "_regime_note": "市况三档平衡带: 沪深300偏离20日MA ±3% 内为平衡市, 外为弱势/强势. selector.market_regime() 使用.",
+    "_legacy_pos_note": "defensive_base_position_pct/_offensive_pct 已被 v6.7 REGIME_ALLOC 取代(动态三档), 此处保留仅供回溯."
+  },
+  "scoring": {
+    "_comment": "3D scoring: low PE + high turnover + low historical percentile",
+    "pe_weight": 0.4,
+    "popularity_weight": 0.35,
+    "low_position_weight": 0.25,
+    "history_window_days": 250,
+    "low_position_threshold_pct": 30,
+    "buy_score_min": 0.55,
+    "pe_low_cap": 10,
+    "pe_high_cap": 60
+  },
+  "auto_select": {
+    "_comment": "Auto select: def pool Top3 + off pool Top2. v6 dual-pool: 3 def + 2 off",
+    "enable": true,
+    "top_n": 3,
+    "_offensive_top_n": 2,
+    "max_codes_per_batch": 50,
+    "min_industries": 3,
+    "require_tech": false,
+    "prefer_tech": false,
+    "defensive_benchmark": "sh000300",
+    "defensive_ma_days": 20,
+    "_backtest_note_v6": "5-period history(12-16): Top7 threshold 25-30%(bull 12/13) -> 15-25%(bear 14-16). Pure def(+0~3%) ranks 51-200(0.8-8.8 yuan). v6 UPDATE: next-week theme = POWER(600900 +4.99% 20d, vol_ratio 1.41) + MEDICAL(002821 +30.83% 20d, 300760 +5.55% 5d). Offensive pool switched from crashed tech(BOE -20%, SMIC -14%) to medical/power. Target top50(18.8 yuan)",
+    "candidate_pool": [
+      {
+        "code": "600519",
+        "name": "贵州茅台",
+        "industry": "白酒",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "000858",
+        "name": "五粮液",
+        "industry": "白酒",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601318",
+        "name": "中国平安",
+        "industry": "保险",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600036",
+        "name": "招商银行",
+        "industry": "银行",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601398",
+        "name": "工商银行",
+        "industry": "银行",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601166",
+        "name": "兴业银行",
+        "industry": "银行",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600016",
+        "name": "民生银行",
+        "industry": "银行",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600276",
+        "name": "恒瑞医药",
+        "industry": "医药",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "603259",
+        "name": "药明康德",
+        "industry": "医药",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "300760",
+        "name": "迈瑞医疗",
+        "industry": "医药",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "002821",
+        "name": "凯莱英",
+        "industry": "医药",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601899",
+        "name": "紫金矿业",
+        "industry": "有色",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600900",
+        "name": "长江电力",
+        "industry": "电力",
+        "tech": false,
+        "_theme": "电力主题-避险防御",
+        "market": "A"
+      },
+      {
+        "code": "600995",
+        "name": "南网储能",
+        "industry": "电力",
+        "tech": false,
+        "_theme": "电力主题",
+        "market": "A"
+      },
+      {
+        "code": "601857",
+        "name": "中国石油",
+        "industry": "石油",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600028",
+        "name": "中国石化",
+        "industry": "石油",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601668",
+        "name": "中国建筑",
+        "industry": "建筑",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601669",
+        "name": "中国电建",
+        "industry": "建筑",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600030",
+        "name": "中信证券",
+        "industry": "券商",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "300059",
+        "name": "东方财富",
+        "industry": "券商",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "002594",
+        "name": "比亚迪",
+        "industry": "汽车",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "601012",
+        "name": "隆基绿能",
+        "industry": "光伏",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600309",
+        "name": "万华化学",
+        "industry": "化工",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "000333",
+        "name": "美的集团",
+        "industry": "家电",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "000651",
+        "name": "格力电器",
+        "industry": "家电",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600887",
+        "name": "伊利股份",
+        "industry": "食品",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "603288",
+        "name": "海天味业",
+        "industry": "食品",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601888",
+        "name": "中国中免",
+        "industry": "免税",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "300308",
+        "name": "中际旭创",
+        "industry": "通信",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "002415",
+        "name": "海康威视",
+        "industry": "安防",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "688981",
+        "name": "中芯国际",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "600585",
+        "name": "海螺水泥",
+        "industry": "建材",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "000001",
+        "name": "平安银行",
+        "industry": "银行",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600104",
+        "name": "上汽集团",
+        "industry": "汽车",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601233",
+        "name": "桐昆股份",
+        "industry": "化工",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600048",
+        "name": "保利发展",
+        "industry": "地产",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600406",
+        "name": "国电南瑞",
+        "industry": "电网",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "000725",
+        "name": "京东方A",
+        "industry": "面板",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "002230",
+        "name": "科大讯飞",
+        "industry": "AI",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "600570",
+        "name": "恒生电子",
+        "industry": "金融IT",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "600760",
+        "name": "中航沈飞",
+        "industry": "军工",
+        "tech": false,
+        "_theme": "事件驱动:地缘局势/装备周期",
+        "market": "A"
+      },
+      {
+        "code": "600893",
+        "name": "航发动力",
+        "industry": "军工",
+        "tech": false,
+        "_theme": "事件驱动:军工装备",
+        "market": "A"
+      },
+      {
+        "code": "000733",
+        "name": "振华科技",
+        "industry": "军工电子",
+        "tech": true,
+        "_theme": "事件驱动:军工电子国产化",
+        "market": "A"
+      },
+      {
+        "code": "600111",
+        "name": "北方稀土",
+        "industry": "稀土",
+        "tech": false,
+        "_theme": "事件驱动:稀土管制/出口政策",
+        "market": "A"
+      },
+      {
+        "code": "600392",
+        "name": "盛和资源",
+        "industry": "稀土",
+        "tech": false,
+        "_theme": "事件驱动:稀土价格",
+        "market": "A"
+      },
+      {
+        "code": "002371",
+        "name": "北方华创",
+        "industry": "半导体设备",
+        "tech": true,
+        "_theme": "事件驱动:半导体国产化",
+        "market": "A"
+      },
+      {
+        "code": "688012",
+        "name": "中微公司",
+        "industry": "半导体设备",
+        "tech": true,
+        "_theme": "事件驱动:刻蚀设备",
+        "market": "A"
+      },
+      {
+        "code": "002475",
+        "name": "立讯精密",
+        "industry": "消费电子",
+        "tech": true,
+        "_theme": "事件驱动:果链/AI终端",
+        "market": "A"
+      },
+      {
+        "code": "002241",
+        "name": "歌尔股份",
+        "industry": "消费电子",
+        "tech": true,
+        "_theme": "事件驱动:VR/AI硬件",
+        "market": "A"
+      },
+      {
+        "code": "002271",
+        "name": "东方雨虹",
+        "industry": "地产链",
+        "tech": false,
+        "_theme": "事件驱动:地产政策宽松",
+        "market": "A"
+      },
+      {
+        "code": "000002",
+        "name": "万科A",
+        "industry": "地产",
+        "tech": false,
+        "_theme": "事件驱动:地产政策宽松",
+        "market": "A"
+      },
+      {
+        "code": "300033",
+        "name": "同花顺",
+        "industry": "金融IT",
+        "tech": true,
+        "_theme": "事件驱动:行情活跃度/交易量",
+        "market": "A"
+      },
+      {
+        "code": "002466",
+        "name": "天齐锂业",
+        "industry": "锂矿",
+        "tech": false,
+        "_theme": "事件驱动:锂价反弹/新能源",
+        "market": "A"
+      },
+      {
+        "code": "300750",
+        "name": "宁德时代",
+        "industry": "新能源",
+        "tech": true,
+        "_theme": "事件驱动:储能/电池技术",
+        "market": "A"
+      },
+      {
+        "code": "600150",
+        "name": "中国船舶",
+        "industry": "军工",
+        "tech": false,
+        "_theme": "事件驱动:造船周期/军工装备双属性",
+        "market": "A"
+      },
+      {
+        "code": "002179",
+        "name": "中航光电",
+        "industry": "军工电子",
+        "tech": true,
+        "_theme": "事件驱动:军工连接器龙头/国产化",
+        "market": "A"
+      },
+      {
+        "code": "601138",
+        "name": "工业富联",
+        "industry": "消费电子",
+        "tech": true,
+        "_theme": "事件驱动:AI服务器龙头/算力基建",
+        "market": "A"
+      },
+      {
+        "code": "600941",
+        "name": "中国移动",
+        "industry": "通信",
+        "tech": true,
+        "_theme": "防御+AI算力, 高股息龙头",
+        "market": "A"
+      },
+      {
+        "code": "601088",
+        "name": "中国神华",
+        "industry": "煤炭",
+        "tech": false,
+        "_theme": "防御高股息龙头",
+        "market": "A"
+      },
+      {
+        "code": "603986",
+        "name": "兆易创新",
+        "industry": "半导体",
+        "tech": true,
+        "_theme": "国产存储龙头(海外存储政策反向刺激替代, 高波动须控仓)",
+        "market": "A"
+      },
+      {
+        "code": "512010",
+        "name": "医药ETF",
+        "industry": "医药",
+        "market": "ETF",
+        "tech": false,
+        "_theme": "实验猴+CXO主线, 买ETF分散单票风险吃板块贝塔"
+      },
+      {
+        "code": "512660",
+        "name": "军工ETF",
+        "industry": "军工",
+        "market": "ETF",
+        "tech": false,
+        "_theme": "事件驱动:地缘+装备周期, ETF分散"
+      },
+      {
+        "code": "515790",
+        "name": "光伏ETF",
+        "industry": "光伏",
+        "market": "ETF",
+        "tech": true,
+        "_theme": "新能源赛道ETF(本周事件规避新能源个股, ETF仅作观察)"
+      },
+      {
+        "code": "518880",
+        "name": "黄金ETF",
+        "industry": "有色",
+        "market": "ETF",
+        "tech": false,
+        "_theme": "避险对冲, 地缘不确定性"
+      },
+      {
+        "code": "00700",
+        "name": "腾讯控股",
+        "industry": "港股科技",
+        "market": "HK",
+        "tech": true,
+        "_theme": "港股通龙头, 平台经济修复"
+      },
+      {
+        "code": "03690",
+        "name": "美团-W",
+        "industry": "港股消费",
+        "market": "HK",
+        "tech": true,
+        "_theme": "港股消费龙头, 本地生活修复"
+      },
+      {
+        "code": "01810",
+        "name": "小米集团",
+        "industry": "港股科技",
+        "market": "HK",
+        "tech": true,
+        "_theme": "港股科技, 汽车+AIoT双线"
+      },
+      {
+        "code": "113050",
+        "name": "南银转债",
+        "industry": "可转债",
+        "market": "KZZ",
+        "tech": false,
+        "_theme": "银行转债, 债底保护强+跟随银行Beta, 弱势市类进攻仓位"
+      },
+      {
+        "code": "113052",
+        "name": "兴业转债",
+        "industry": "可转债",
+        "market": "KZZ",
+        "tech": false,
+        "_theme": "股份制银行转债, 高流动性, 债底厚"
+      },
+      {
+        "code": "123158",
+        "name": "宙邦转债",
+        "industry": "可转债",
+        "market": "KZZ",
+        "tech": true,
+        "_theme": "新能源材料转债, 股性强, 事件驱动弹性"
+      },
+      {
+        "code": "113066",
+        "name": "平煤转债",
+        "industry": "可转债",
+        "market": "KZZ",
+        "tech": false,
+        "_theme": "煤炭转债, 高YTM防御, 但本周事件规避煤炭故不主选"
+      },
+      {
+        "code": "510300",
+        "name": "沪深300ETF",
+        "industry": "ETF宽基",
+        "market": "ETF",
+        "tech": false,
+        "_note": "宽基指数, 平衡/强势市底仓替代"
+      },
+      {
+        "code": "512000",
+        "name": "券商ETF",
+        "industry": "券商",
+        "market": "ETF",
+        "tech": false,
+        "_note": "券商行业ETF, 牛市弹性"
+      },
+      {
+        "code": "00941",
+        "name": "中国移动",
+        "industry": "港股高股息",
+        "market": "HK",
+        "tech": false,
+        "_note": "港股防御高股息"
+      },
+      {
+        "code": "00388",
+        "name": "香港交易所",
+        "industry": "港股金融",
+        "market": "HK",
+        "tech": false,
+        "_note": "港股稀缺金融标的"
+      },
+      {
+        "code": "601628",
+        "name": "中国人寿",
+        "industry": "保险",
+        "market": "A",
+        "tech": false,
+        "_note": "保险补强"
+      },
+      {
+        "code": "601985",
+        "name": "中国核电",
+        "industry": "电力",
+        "market": "A",
+        "tech": false,
+        "_note": "核电, 电力补强"
+      },
+      {
+        "code": "688599",
+        "name": "天合光能",
+        "industry": "光伏",
+        "market": "A",
+        "tech": true,
+        "_note": "光伏弹性"
+      },
+      {
+        "code": "300124",
+        "name": "汇川技术",
+        "industry": "工控",
+        "market": "A",
+        "tech": true,
+        "_note": "工业自动化龙头, 缺口补强"
+      },
+      {
+        "code": "000625",
+        "name": "长安汽车",
+        "industry": "汽车",
+        "market": "A",
+        "tech": false,
+        "_note": "汽车补强"
+      },
+      {
+        "code": "512890",
+        "name": "红利低波ETF",
+        "industry": "红利",
+        "market": "ETF",
+        "tech": false,
+        "_note": "弱势市防御替代(替代可转债角色), 3年+22.8%优于银行转债"
+      },
+      {
+        "code": "515080",
+        "name": "中证红利ETF",
+        "industry": "红利",
+        "market": "ETF",
+        "tech": false,
+        "_note": "红利宽基, 弱势防御"
+      },
+      {
+        "code": "512690",
+        "name": "白酒ETF",
+        "industry": "白酒",
+        "market": "ETF",
+        "tech": false,
+        "_sub_for": "贵州茅台/五粮液(高单价/高PE个股替代)",
+        "_rule": "个股PE过高或单价超5万账户承受 -> 换指数"
+      },
+      {
+        "code": "159819",
+        "name": "AI智能ETF",
+        "industry": "AI",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "工业富联/科大讯飞(高PE替代)",
+        "_rule": "同左"
+      },
+      {
+        "code": "159813",
+        "name": "半导体ETF",
+        "industry": "半导体",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "中芯国际/兆易创新/北方华创(高PE替代)",
+        "_rule": "同左"
+      },
+      {
+        "code": "512480",
+        "name": "半导体ETF",
+        "industry": "半导体设备",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "北方华创/中微公司(高PE替代)",
+        "_rule": "同左"
+      },
+      {
+        "code": "159995",
+        "name": "芯片ETF",
+        "industry": "半导体",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "半导体板块宽基替代",
+        "_rule": "同左"
+      },
+      {
+        "code": "588000",
+        "name": "科创50ETF",
+        "industry": "科技宽基",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "科创板高PE成长股宽基替代",
+        "_rule": "同左"
+      },
+      {
+        "code": "561980",
+        "name": "中证机器人",
+        "industry": "机器人",
+        "market": "ETF",
+        "tech": true,
+        "_sub_for": "自动化/工控高PE替代(汇川技术)",
+        "_rule": "同左"
+      }
+    ],
+    "_note": "industry=sector name for dedup; tech=true = tech sector (elec/comm/semi/CS/AI)",
+    "offensive_pool": [
+      {
+        "code": "002821",
+        "name": "凯莱英",
+        "industry": "医疗",
+        "tech": false,
+        "_role": "core",
+        "_reason": "CXO最强, 近20日+28.76%, 中期趋势明确, 医疗主攻"
+      },
+      {
+        "code": "600900",
+        "name": "长江电力",
+        "industry": "电力",
+        "tech": false,
+        "_role": "core",
+        "_reason": "电力防御避险, 近20日+4.99%逆势放量, 弱市避风港"
+      },
+      {
+        "code": "300760",
+        "name": "迈瑞医疗",
+        "industry": "医疗",
+        "tech": false,
+        "_role": "backup",
+        "_reason": "医疗器械备选, 近5日+5.55%加速"
+      },
+      {
+        "code": "600995",
+        "name": "南网储能",
+        "industry": "电力",
+        "tech": false,
+        "_role": "backup",
+        "_reason": "电力主题备选"
+      }
+    ],
+    "_offensive_note": "Offensive pool v6.2: each sector ONE core ticker. MEDICAL=凯莱英(002821), POWER=长江电力(600900). +1 backup each. 30% capital split into 2 positions of 15% each. Independent -10% stop-loss"
+  },
+  "buy_rules": {
+    "_comment": "Conditional buy triggers",
+    "trigger_mode": "score_and_price",
+    "require_low_pe": true,
+    "require_popular": true,
+    "require_low_history": true,
+    "retry_on_fail": 3,
+    "add_position": {
+      "_comment": "Flex capital add-position rules",
+      "on_pullback_pct": -3,
+      "on_breakout_pct": 3,
+      "max_add_times_per_stock": 2
+    }
+  },
+  "sell_rules": {
+    "_comment": "Non-linear tiered take-profit: protect ranking(early sell less) + chase top10(reserve for big gains) + chase #1(tail position). sell_portion=cumulative % of total position sold at this tier",
+    "mode": "tiered",
+    "tiers": [
+      {
+        "gain_pct": 8,
+        "sell_portion": 0.2,
+        "_note": "+8% cum sell 20%, lock small profit prevent drop-off"
+      },
+      {
+        "gain_pct": 15,
+        "sell_portion": 0.45,
+        "_note": "+15% cum sell 45%, mid profit taken(hold 55% for +15%~+25%)"
+      },
+      {
+        "gain_pct": 25,
+        "sell_portion": 0.75,
+        "_note": "+25% cum sell 75%, hold 25% for top10/top3"
+      },
+      {
+        "gain_pct": 40,
+        "sell_portion": 0.875,
+        "_note": "+40% cum sell 87.5%, keep 12.5% tail for extreme(#1=500yuan)"
+      }
+    ],
+    "trailing_stop_pct": 0,
+    "stop_loss_pct": -8,
+    "_legacy": "old step_pct/portion_per_step deprecated, use tiers table(cumulative absolute ratio)"
+  },
+  "cycle": {
+    "_comment": "Weekly settlement: 5 trading days per week, weekend review/rebalance",
+    "trading_days_per_week": 5,
+    "weekly_review": true
+  },
+  "polling": {
+    "_comment": "Intraday polling(trading hours only)",
+    "quote_interval_sec": 300,
+    "trade_session": [
+      "09:30-11:30",
+      "13:00-15:00"
+    ],
+    "trade_days": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "market_data": {
+    "provider": "tencent",
+    "realtime_api": "https://qt.gtimg.cn/q=",
+    "kline_api": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+  },
+  "grid": {
+    "_comment": "v6.3 网格交易: 用16%现金储备做隔日网格, 对高波动进攻票(凯莱英/长江电力)低买高卖吃差价. 不碰防御底仓. 每天触发一次(用户要求每日交易). T+1假设=隔日反向网格.",
+    "enable": true,
+    "layers": 5,
+    "step_pct": 3.0,
+    "dynamic_step": true,
+    "targets_from_offensive_pool": true,
+    "_note": "16%现金(16万)分为5层, 每层约3.2万. 凯莱英σ6.89%->动态步距~5.5%, 长江电力σ1.02%->下限2%. T+1下今天买明天卖."
+  },
+  "rebalance": {
+    "_comment": "v6.4 多尺度再平衡: 突破'网格只做日内高波动票'局限. 防御内部再平衡(偏离组合均值>thr卖超额落袋)+攻防轮动(进攻涨多减仓补现金). 尺度跨日/周, 不止日内.",
+    "enable": true,
+    "defense_deviation_pct": 3.0,
+    "max_rebalance_sell_ratio": 0.5,
+    "offensive_trim_gain_pct": 10.0,
+    "offensive_trim_ratio": 0.2,
+    "_note": "用户洞察: 防御涨几天(如+6%)而另一防御低几个点, 应卖一部分落袋, 不止'建仓不动'. 再平衡卖出不改变底仓成本, 利润回补弹药池."
+  },
+  "market": {
+    "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
+    "provider": "tencent",
+    "adapter_class": "TencentMarketAdapter",
+    "tradable_hours": "09:30-11:30,13:00-15:00",
+    "settle_cycle": "weekly",
+    "t_plus": 1,
+    "leverage": false,
+    "contract": false,
+    "_constraint": "用户铁律: 不玩合约/杠杆, 只选能长久存在的标的(蓝筹/防御/主流币). 风控未来实盘再说.",
+    "future_markets": [
+      "eastmoney_sim (当前)",
+      "hyprofit_sim (同花顺若办赛)",
+      "crypto_7x24 (币圈, 未来可能天天有, T+0)",
+      "real_broker (用户本人实盘, 直接上现金)"
+    ]
+  },
+  "weekly_theme": {
+    "_comment": "v6.6 每周自适应进攻主线: 每周一扫描候选池上周5日涨幅, 按行业聚合选最强2行业为本月进攻主线, 从中挑高弹性2票. 无主线(fallback)退回医疗/电力稳健组合. 用户授权: 每周自动选题材, 不提示则自跑.",
+    "enable": true,
+    "lookback_days": 5,
+    "top_industries": 2,
+    "min_avg_chg_for_mainline": 0.0,
+    "fallback_offensive": [
+      "002821",
+      "600900"
+    ],
+    "cache_file": "weekly_theme.json"
+  },
+  "universe_split": {
+    "_comment": "v6.6 防御/进攻行业分离: 防御选股只在 defensive_industries 白名单里挑(低beta价值/避险), 进攻端用 weekly_theme 从 offensive_industries 题材里挑. 避免消费电子/军工等弹性票误入防御端.",
+    "defensive_industries": [
+      "银行",
+      "保险",
+      "白酒",
+      "家电",
+      "食品",
+      "医药",
+      "电力",
+      "建筑",
+      "建材",
+      "化工",
+      "石油",
+      "地产",
+      "有色",
+      "公用事业",
+      "通信",
+      "面板",
+      "安防",
+      "煤炭"
+    ],
+    "offensive_industries": [
+      "半导体",
+      "半导体设备",
+      "军工",
+      "军工电子",
+      "稀土",
+      "AI",
+      "金融IT",
+      "消费电子",
+      "汽车",
+      "新能源",
+      "锂矿",
+      "地产链",
+      "电网",
+      "光伏",
+      "港股科技",
+      "港股消费"
+    ]
+  },
+  "convertible_bond": {
+    "_comment": "v6.8 可转债模型: 弱势市作为'类进攻'替代个股(债底保护, 下行有底). 交易单位10张/手(股票为100股). 代码 sh11xxxx/sz12xxxx. 不在 weekly_theme 行业动量扫描内(债性+股性双重, 用独立筛选).",
+    "weak_regime_pick": [
+      "113050",
+      "113052"
+    ],
+    "avoid_in_event": [
+      "113066"
+    ],
+    "min_premium_note": "实盘需校验溢价率/YTM, 当前仅按流动性+债底初筛"
+  }
+}

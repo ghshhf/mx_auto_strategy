@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 本地状态/缓存
+.grid_state.json
+.rebalance_state.json
+*.state.json
+
+# 本地运行产物（可选，按需保留）
+backtest_*.py
+backtest_*_report.md
+
+# 环境变量/密钥（绝不提交）
+.env
+*.env
+.env.*
+*credentials*
+*secret*
+
+# 系统文件
+.DS_Store
+Thumbs.db
