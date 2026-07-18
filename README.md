@@ -59,6 +59,23 @@ python3 auto_trader.py
 
 ---
 
+## 自己的实盘资金曲线（手动记账，独立于比赛）
+
+龙虾比赛**每周清零**，但你**自己的真实账户**需要一条长期曲线。目前手动买/卖/挂单，用 `manual_log.py` 记账：
+
+```bash
+python3 manual_log.py deposit 50000                 # 入金
+python3 manual_log.py buy 600900 长江电力 100 28.5  # 买
+python3 manual_log.py sell 512010 医药ETF 5000 0.65 # 卖
+python3 manual_log.py summary                       # 看现金/持仓/收益
+python3 manual_log.py export                        # 导出 CSV
+```
+
+- 数据落在 `records/*.jsonl`（**已在 `.gitignore` 排除，不推 GitHub、不随比赛清零**）。
+- 与 `auto_trader.py` 的模拟盘状态完全隔离，是追加写的独立账本。
+
+---
+
 ## 市况三档（系统自动判定，剧本可覆盖）
 
 | 市况 | 判定 | 防御% | 进攻% | 现金% |
@@ -81,6 +98,7 @@ mx_auto_strategy/
 ├── selector.py          # 三维评分选股引擎
 ├── auto_trader.py       # 主引擎(市况判定→选股→买入→止盈止损)
 ├── market_data.py       # 腾讯财经行情获取
+├── manual_log.py        # 📒 用户自己实盘手动记账(资金曲线, 独立于比赛清零)
 ├── backtest_*.py        # 回测脚本(3年/5年/剧本关仓验证)
 └── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
 ```
