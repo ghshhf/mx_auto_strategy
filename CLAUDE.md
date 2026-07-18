@@ -153,10 +153,11 @@ python3 manual_log.py delete --account real2 --confirm
 | `manual_log.py drawdown` | **回撤闸**：算最大/周回撤，超阈（默认-5%）输出降级全防御建议 | `python3 manual_log.py drawdown --threshold 5` |
 | `script_tracker.py` | **剧本命中追踪**：剧本落 JSON（含预期+到期日）→ check 自动比对行情判定命中→积累胜率 | `python3 script_tracker.py add/list/check/stats` |
 | `sync_contest.py` | **大赛只读同步**：调 mx-moni 查远程龙虾账户→追加快照进 `records/sim_*/`，远程清零不影响本地 | `python3 sync_contest.py --account sim_261984600000041416` |
+| `news_feed.py` | **实时新闻参考源**：拉公开快讯→与剧本方向匹配打「共振」标签→落本地。**仅参考·绝不交易** | `python3 news_feed.py fetch` / `news_feed.py latest --resonance` |
 
 > 设计闭环：行情(`market_data`) → 选股(`selector`+`weekly_theme`) → 下单/记录(`auto_trader`+`local_records`) →
 > 多账号账本(`manual_log`, 本地永久) → 实时估值/曲线/回撤(`mark`/`curve`/`drawdown`) →
-> 剧本护城河(`script_tracker`) → 远程比对(`sync_contest`)。读一切金融数据、记录、宏观剧本、自动筛选全打通。
+> 剧本护城河(`script_tracker`) → 远程比对(`sync_contest`) → 新闻共振参考(`news_feed`)。读一切金融数据、记录、宏观剧本、自动筛选、资讯参考全打通。
 
 ---
 
