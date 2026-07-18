@@ -108,8 +108,31 @@ mx_auto_strategy/
 ├── auto_trader.py       # 主引擎(市况判定→选股→买入→止盈止损)
 ├── market_data.py       # 腾讯财经行情获取
 ├── manual_log.py        # 📒 账号体系手动记账(本地无清零, 永久留存, 仅手动delete)
+├── script_tracker.py    # 📜 剧本书写者命中追踪(剧本JSON→自动判定→胜率)
+├── sync_contest.py      # 🔄 龙虾大赛远程只读同步(本地永久留存)
 ├── backtest_*.py        # 回测脚本(3年/5年/剧本关仓验证)
+├── scripts/             # 剧本存档(用户护城河资产, 进版本库)
 └── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
+```
+
+### 扩展工具（v7.2 能力补全）
+
+| 工具 | 能力 |
+|---|---|
+| `manual_log.py mark` | 实时市值估值（持仓×最新价→浮动盈亏+总净值） |
+| `manual_log.py curve` | 资金曲线导出 CSV（日期→净值，供回测/画图） |
+| `manual_log.py drawdown` | 回撤闸（超阈输出降级全防御建议） |
+| `script_tracker.py` | 剧本命中追踪（add/list/check/stats，积累胜率） |
+| `sync_contest.py` | 大赛只读同步（远程快照追加本地，远程清零不影响） |
+
+```bash
+python3 manual_log.py mark                              # 实时估值
+python3 manual_log.py curve                             # 导出曲线CSV
+python3 manual_log.py drawdown --threshold 5            # 回撤>5%告警
+python3 script_tracker.py add --title "科技离场" --direction bearish --expiry 2026-08-01 --code sh000300 --expect down
+python3 script_tracker.py check                         # 自动判定到期剧本
+python3 script_tracker.py stats                         # 剧本胜率
+python3 sync_contest.py --account sim_261984600000041416   # 同步大赛(需MX_APIKEY)
 ```
 
 ---

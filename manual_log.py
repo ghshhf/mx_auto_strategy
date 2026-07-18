@@ -1,5 +1,5 @@
 """
-manual_log.py - 手动交易记账系统 (v7.1, 账号体系·本地永久留存)
+manual_log.py - 手动交易记账系统 (v7.2, 账号体系·本地永久留存·实时估值+曲线+回撤)
 
 核心: 支持「多账号」, 每个账号独立资金曲线, 互不串账.
 
@@ -266,6 +266,112 @@ def cmd_export(args):
     print(f"  📄 导出: {out} ({len(trades)}笔)")
 
 
+# ---------------------------------------------------------------- 实时估值 / 曲线 / 回撤
+
+def _current_equity_snapshot(acc):
+    """基于最新市价, 计算: 现金 + 各持仓市值 + 浮动盈亏. 返回 dict."""
+    cash = _cash_balance(acc)
+    holdings = _holdings_value(acc)   # {code: {qty, cost, name}}
+    codes = list(holdings.keys())
+    # 拉实时价 (非交易时段可能为空, 则用成本回填)
+    rt = {}
+    if codes:
+        try:
+            import market_data
+            rt = market_data.get_realtime(codes)
+        except Exception:
+            rt = {}
+    market_val = 0.0
+    float_pnl = 0.0
+    detail = []
+    for c, v in holdings.items():
+        price = (rt.get(c, {}) or {}).get("price") or (v["cost"] / v["qty"] if v["qty"] else 0)
+        mv = price * v["qty"]
+        pnl = (price - (v["cost"] / v["qty"] if v["qty"] else 0)) * v["qty"]
+        market_val += mv
+        float_pnl += pnl
+        detail.append({"code": c, "name": v["name"], "qty": v["qty"],
+                       "cost": round(v["cost"], 2), "price": round(price, 3),
+                       "market_value": round(mv, 2), "float_pnl": round(pnl, 2)})
+    total = cash + market_val
+    return {"cash": cash, "market_val": market_val, "float_pnl": float_pnl,
+            "total": total, "detail": detail}
+
+
+def cmd_mark(args):
+    """实时市值估值 (成本口径 -> 市价口径)."""
+    acc = _resolve_account(args)
+    trades = _read_jsonl(_trade_log(acc))
+    if not trades:
+        print(f"  （账号 [{acc}] 暂无记录）")
+        return
+    snap = _current_equity_snapshot(acc)
+    tag = "模拟大赛(远程清零·本地留存)" if is_sim(acc) else "实盘(本地记录)"
+    print(f"  💹 账号 [{acc}] 实时估值 ({tag})")
+    print(f"     当前现金:   {snap['cash']:.2f}元")
+    print(f"     持仓市值:   {snap['market_val']:.2f}元")
+    print(f"     浮动盈亏:   {snap['float_pnl']:+.2f}元")
+    print(f"     ─────────────────────")
+    print(f"     总净值:     {snap['total']:.2f}元")
+    if snap["detail"]:
+        print(f"     持仓明细:")
+        for d in snap["detail"]:
+            print(f"       - {d['name']}({d['code']}): {d['qty']}股 @现价{d['price']} = {d['market_value']:.2f}元  浮盈{d['float_pnl']:+.2f}")
+
+
+def cmd_curve(args):
+    """导出日期->净值 序列 (基于 equity.jsonl 快照, 用成本口径; 若想市价口径用 mark 频率拉)."""
+    acc = _resolve_account(args)
+    eqs = _read_jsonl(_equity_log(acc))
+    if not eqs:
+        print(f"  （账号 [{acc}] 暂无权益快照, 先记几笔交易）")
+        return
+    out_dir = _acc_dir(acc)
+    os.makedirs(out_dir, exist_ok=True)
+    out = os.path.join(out_dir, "equity_curve_export.csv")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write("时间,账号,现金,持仓成本,成本净资产\n")
+        for e in eqs:
+            pos_val = sum(v.get("cost", 0) for v in e.get("positions", {}).values())
+            net = e.get("cash", 0) + pos_val
+            f.write(f"{e['ts']},{e['account']},{e.get('cash',0):.2f},{pos_val:.2f},{net:.2f}\n")
+    # 控制台也打印首尾收益
+    first, last = eqs[0], eqs[-1]
+    fp = first.get("cash", 0) + sum(v.get("cost", 0) for v in first.get("positions", {}).values())
+    lp = last.get("cash", 0) + sum(v.get("cost", 0) for v in last.get("positions", {}).values())
+    ret = (lp / fp - 1) * 100 if fp else 0
+    print(f"  📈 曲线导出: {out} ({len(eqs)}个快照)")
+    print(f"     首快照净值≈{fp:.2f} -> 末快照净值≈{lp:.2f}  累计{ret:+.2f}%")
+
+
+def cmd_drawdown(args):
+    """回撤闸: 读权益曲线, 算最大回撤/周回撤, 超阈输出降级建议."""
+    acc = _resolve_account(args)
+    eqs = _read_jsonl(_equity_log(acc))
+    if len(eqs) < 2:
+        print(f"  （账号 [{acc}] 快照不足, 无法计算回撤）")
+        return
+    # 用成本净资产序列
+    vals = []
+    for e in eqs:
+        pos_val = sum(v.get("cost", 0) for v in e.get("positions", {}).values())
+        vals.append((e["ts"], e.get("cash", 0) + pos_val))
+    peak = vals[0][1]; max_dd = 0.0; max_dd_at = ""
+    for ts, v in vals:
+        if v > peak:
+            peak = v
+        dd = (v - peak) / peak if peak else 0
+        if dd < max_dd:
+            max_dd = dd; max_dd_at = ts
+    thr = args.threshold / 100 if hasattr(args, "threshold") else 0.05
+    print(f"  🔻 账号 [{acc}] 回撤分析")
+    print(f"     峰值净值: {peak:.2f} | 最大回撤: {max_dd*100:.2f}% (发生于 {max_dd_at[:10]})")
+    if max_dd <= -thr:
+        print(f"  ⚠️ 最大回撤已突破阈值 -{thr*100:.0f}% -> 建议: 切换全防御 / 降低进攻暴露 / 提升现金比")
+    else:
+        print(f"  ✅ 回撤在阈值 -{thr*100:.0f}% 以内, 维持当前市况仓位")
+
+
 # ---------------------------------------------------------------- 入口
 
 def _attach_account(p):
@@ -299,6 +405,11 @@ def build_parser():
     dl.add_argument("--confirm", action="store_true", help="二次确认(必须显式加)")
     dl.set_defaults(func=cmd_delete)
     ex = _attach_account(sub.add_parser("export")); ex.set_defaults(func=cmd_export)
+    mk = _attach_account(sub.add_parser("mark")); mk.set_defaults(func=cmd_mark)
+    cv = _attach_account(sub.add_parser("curve")); cv.set_defaults(func=cmd_curve)
+    dd = _attach_account(sub.add_parser("drawdown"))
+    dd.add_argument("--threshold", type=float, default=5.0, help="回撤告警阈值(%, 默认5)")
+    dd.set_defaults(func=cmd_drawdown)
     return ap
 
 

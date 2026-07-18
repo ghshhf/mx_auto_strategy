@@ -144,6 +144,22 @@ python3 manual_log.py delete --account real2 --confirm
 
 ---
 
+## 扩展工具（能力补全，已在 v7.2 加入）
+
+| 工具 | 能力 | 命令示例 |
+|---|---|---|
+| `manual_log.py mark` | **实时市值估值**：读持仓→拉最新价→算浮动盈亏+总净值（闭市降级成本口径） | `python3 manual_log.py mark` |
+| `manual_log.py curve` | **资金曲线导出**：读 equity 快照→导出"日期→净值"CSV，供回测/画图 | `python3 manual_log.py curve` |
+| `manual_log.py drawdown` | **回撤闸**：算最大/周回撤，超阈（默认-5%）输出降级全防御建议 | `python3 manual_log.py drawdown --threshold 5` |
+| `script_tracker.py` | **剧本命中追踪**：剧本落 JSON（含预期+到期日）→ check 自动比对行情判定命中→积累胜率 | `python3 script_tracker.py add/list/check/stats` |
+| `sync_contest.py` | **大赛只读同步**：调 mx-moni 查远程龙虾账户→追加快照进 `records/sim_*/`，远程清零不影响本地 | `python3 sync_contest.py --account sim_261984600000041416` |
+
+> 设计闭环：行情(`market_data`) → 选股(`selector`+`weekly_theme`) → 下单/记录(`auto_trader`+`local_records`) →
+> 多账号账本(`manual_log`, 本地永久) → 实时估值/曲线/回撤(`mark`/`curve`/`drawdown`) →
+> 剧本护城河(`script_tracker`) → 远程比对(`sync_contest`)。读一切金融数据、记录、宏观剧本、自动筛选全打通。
+
+---
+
 ## 论证报告（供智能体理解「为什么这么设计」）
 
 - `strategy_script_proof.md` —— 十层证据链：用户「剧本书写者」能力论证（3年5000%/50倍为何很正常）
