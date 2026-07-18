@@ -59,26 +59,28 @@ python3 auto_trader.py
 
 ---
 
-## 账号体系 + 自己的实盘资金曲线（手动记账，独立于比赛）
+## 账号体系 + 自己的实盘资金曲线（手动记账，本地永久留存）
 
-`manual_log.py` 支持**多账号**，每个账号独立资金曲线、互不串账：
+`manual_log.py` 支持**多账号**，每个账号独立资金曲线、互不串账。**本地无自动清零**——所有账号永久留存，攒回测依据：
 
-| 账号类型 | account_id | 清零策略 |
+| 账号来源 | account_id | 本地行为 |
 |---|---|---|
-| 自己实盘（默认） | `real`（可加 `real2`…） | **永不清零** |
-| 模拟大赛 | `sim_261984600000041416` | **每周 reset 回 100万** |
+| 自己实盘（默认） | `real`（可加 `real2`…） | 你手动买卖，永久记录 |
+| 模拟大赛 | `sim_261984600000041416` | 远程比赛平台自己清零，本地只看远程每笔如实记，远程清零不影响本地 |
+
+> 龙虾大赛的清零是【远程比赛平台】干的，与本地无关。本地只负责忠实记录，未来回测才有完整依据。
 
 ```bash
 python3 manual_log.py accounts                                 # 所有账号+余额
 python3 manual_log.py deposit --amount 50000                  # 实盘入金(默认real)
 python3 manual_log.py buy --code 600900 --name 长江电力 --price 28.5 --qty 100
 python3 manual_log.py buy --account real2 --code 601398 --name 工商银行 --price 6.8 --qty 10000
-python3 manual_log.py summary --account sim_261984600000041416   # 读龙虾大赛
-python3 manual_log.py reset  --account sim_261984600000041416   # 仅sim_*允许
+python3 manual_log.py summary --account sim_261984600000041416   # 读龙虾大赛(本地留存)
+python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口要求删账号
 ```
 
-- 数据落在 `records/<账号ID>/*.jsonl`（**已 `.gitignore` 排除，不推 GitHub、不随比赛清零**）。
-- 实盘账号**禁止 reset**（安全红线）；只有 `sim_*` 可每周清零。
+- 数据落在 `records/<账号ID>/*.jsonl`（**已 `.gitignore` 排除，不推 GitHub、永不自动清零**）。
+- 本地无清零机制；只有你明确说"删账号"才用 `delete`（带 `--confirm`，`real` 受保护禁止删）。
 - 与 `auto_trader.py` 的模拟盘状态完全隔离，是追加写的独立账本。
 
 ---
@@ -105,7 +107,7 @@ mx_auto_strategy/
 ├── selector.py          # 三维评分选股引擎
 ├── auto_trader.py       # 主引擎(市况判定→选股→买入→止盈止损)
 ├── market_data.py       # 腾讯财经行情获取
-├── manual_log.py        # 📒 账号体系手动记账(real实盘永久 / sim_*大赛每周清零)
+├── manual_log.py        # 📒 账号体系手动记账(本地无清零, 永久留存, 仅手动delete)
 ├── backtest_*.py        # 回测脚本(3年/5年/剧本关仓验证)
 └── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
 ```

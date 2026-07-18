@@ -68,27 +68,32 @@ git remote set-url origin https://github.com/ghshhf/mx_auto_strategy.git   # 推
 
 ---
 
-## 账号体系 + 自己的实盘资金曲线（手动记账）
+## 账号体系 + 自己的实盘资金曲线（手动记账，本地永久留存）
 
 > 核心是**多账号**：每个账号独立资金曲线、互不串账、各自从零起算。
+> **本地无自动清零机制** —— 所有账号都永久留存，攒未来回测依据。
 
-| 账号类型 | account_id | 清零策略 | 用途 |
-|---|---|---|---|
-| 自己实盘（默认） | `real`（可加 `real2`…） | **永不清零** | 你手动买卖的真实账户，永久沉淀战绩 |
-| 模拟大赛 | `sim_261984600000041416` | **每周 reset 回 100万** | 龙虾比赛盘，单独追踪但按比赛清零 |
+| 账号来源 | account_id | 本地行为 |
+|---|---|---|
+| 自己实盘（默认） | `real`（可加 `real2`…） | 你手动买卖，永久记录 |
+| 模拟大赛 | `sim_261984600000041416` | 远程比赛平台自己清零，本地只看远程每笔如实记，远程清零不影响本地 |
+
+> ⚠️ **关键认知**：龙虾大赛的清零是【远程比赛平台】干的，与本地无关。
+> 咱们本地只负责忠实记录 —— 远程怎么归零是它的事，本地账本永远留着，未来回测才有完整依据。
 
 ```bash
 python3 manual_log.py accounts                                  # 列出所有账号+余额
 python3 manual_log.py deposit --amount 50000                     # 实盘real入金(默认账号)
 python3 manual_log.py buy --code 600900 --name 长江电力 --price 28.5 --qty 100
 python3 manual_log.py buy --account real2 --code 601398 --name 工商银行 --price 6.8 --qty 10000
-python3 manual_log.py summary --account sim_261984600000041416  # 读龙虾大赛账号
-python3 manual_log.py reset  --account sim_261984600000041416   # 仅sim_*允许, 回100万本金
+python3 manual_log.py summary --account sim_261984600000041416  # 读龙虾大赛账号(本地留存)
 python3 manual_log.py export                                     # 导出CSV
+# 仅当用户亲口要求删账号时才用 (二次确认; real 禁止删):
+python3 manual_log.py delete --account real2 --confirm
 ```
 
 - 数据落在 `records/<账号ID>/trades.jsonl` + `equity.jsonl`（**已加入 `.gitignore` 排除 `*.jsonl`，不推 GitHub**）。
-- **实盘账号禁止 `reset`**（安全红线）；只有 `sim_*` 账号可每周清零。
+- **本地无清零**：系统不会自动清空任何账号。只有用户明确说"删账号"才用 `delete`（带 `--confirm`，且 `real` 受保护禁止删）。
 - 与模拟盘 `auto_trader.py` 的状态完全隔离，是追加写的独立账本。
 - `--account` 参数挂在每个子命令上，写 `buy --account xxx` 即可。
 
@@ -104,7 +109,7 @@ python3 manual_log.py export                                     # 导出CSV
 | `auto_trader.py` | 少改 | 主引擎（市况判定→选股→买入→止盈止损） |
 | `selector.py` | 少改 | 三维评分选股引擎 |
 | `market_data.py` | 不改 | 腾讯财经行情获取 |
-| `manual_log.py` | 不改 | **账号体系**手动记账（real 实盘永久 / sim_* 大赛每周清零，独立曲线） |
+| `manual_log.py` | 不改 | **账号体系**手动记账（本地无清零，永久留存，仅手动 delete） |
 
 ---
 

@@ -1,23 +1,21 @@
 """
-manual_log.py - 手动交易记账系统 (v7.0, 账号体系)
+manual_log.py - 手动交易记账系统 (v7.1, 账号体系·本地永久留存)
 
 核心: 支持「多账号」, 每个账号独立资金曲线, 互不串账.
 
-两大账号类型:
-  1) 自己实盘 (默认账号 real): 手动挂单买卖, 资金曲线永久沉淀, 永不清零.
-  2) 模拟大赛 (sim_<龙虾账户号>): 龙虾炒股大赛盘, 每周按比赛规则重置到 100万,
-     轨迹可独立追踪, 但清零逻辑与实盘完全隔离.
+两类账号来源 (仅做标签区分, 行为完全一致 —— 都永久留存, 本地无清零):
+  1) 自己实盘 (默认账号 real / real2 ...): 你手动挂单买卖的真实账户.
+  2) 模拟大赛 (sim_<龙虾账户号>): 龙虾炒股大赛盘.
+     ⚠️ 大赛的清零是【远程比赛平台】自己干的, 与本地无关.
+        本地只负责【忠实记录】: 远程怎么清零是它的事, 咱们本地账本永远留着,
+        这样未来回测才有完整依据 (知道某周远程归零前咱们在哪、归零后咱们又怎么走).
 
-为什么需要账号体系:
-  - 你自己的实战战绩要连续留存 (剧本书写者实力的量化沉淀)
-  - 龙虾比赛每周清零, 但也要能读它的账号曲线 (对比实盘 vs 比赛)
-  - 未来可能开多实盘子账户 (real / real2 ...) 各自从零起算
-
-设计原则:
-  - append-only, 每个账号一份 trades.jsonl + equity.jsonl, 本地永久留存
+设计铁律 (用户明确):
+  - 本地【无自动清零机制】. 任何账号都不会被系统自动清空.
+  - 只有一种例外: 你亲口让 AI 「删掉某个账号」(delete 命令, 带二次确认),
+    且即使如此, 主实盘账号 real 也禁止删除 (最后防线).
+  - append-only: 每个账号一份 trades.jsonl + equity.jsonl, 本地永久留存.
   - 账号ID即目录: records/<account_id>/trades.jsonl
-  - 实盘账号禁止 reset; 仅 sim_* 账号可每周 reset (回到预设本金)
-  - 极简: --account <id> 指定账号, 不写则用 real
 
 用法:
   # 列出所有账号 + 余额快照
@@ -30,27 +28,31 @@ manual_log.py - 手动交易记账系统 (v7.0, 账号体系)
   # 指定某个实盘子账号
   python3 manual_log.py buy --account real2 --code 512010 --name 医药ETF --price 0.62 --qty 5000
 
-  # 龙虾大赛账号 (每周清零, 100万本金起)
+  # 龙虾大赛账号 (本地永久记录远程的每一笔, 远程清零不影响本地)
   python3 manual_log.py buy --account sim_261984600000041416 --code 601398 --name 工商银行 --price 6.8 --qty 10000
   python3 manual_log.py summary --account sim_261984600000041416
-  python3 manual_log.py reset  --account sim_261984600000041416   # 仅 sim_* 允许
 
   # 查看摘要 / 导出CSV
   python3 manual_log.py summary
   python3 manual_log.py export
+
+  # 仅当你亲口要求删账号时才用 (二次确认; real 禁止删):
+  python3 manual_log.py delete --account real2 --confirm
 """
 
 import os
 import json
 import argparse
+import shutil
 from datetime import datetime
 
 RECORD_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "records")
 
-# 模拟大赛预设: 账号ID -> 初始本金(比赛规则)
-SIM_ACCOUNTS = {
-    "sim_261984600000041416": 1_000_000.0,   # 龙虾炒股大赛第17期账户
-}
+# 仅作「来源标签」: 名字带 sim_ 即视为模拟大赛账号 (来源标记, 不含本金/不清零语义)
+SIM_PREFIX = "sim_"
+
+# 主实盘账号 (最后防线: 禁止 delete)
+PROTECTED_ACCOUNTS = {"real"}
 
 DEFAULT_ACCOUNT = "real"
 
@@ -58,7 +60,8 @@ DEFAULT_ACCOUNT = "real"
 # ---------------------------------------------------------------- 账号判定
 
 def is_sim(account_id: str) -> bool:
-    return account_id.startswith("sim_") or account_id in SIM_ACCOUNTS
+    """仅用于显示标签: 是否来源=模拟大赛. 不影响任何记账/留存行为."""
+    return account_id.startswith(SIM_PREFIX)
 
 
 def _acc_dir(account_id: str) -> str:
@@ -78,7 +81,7 @@ def _ensure(account_id: str):
 
 
 def list_accounts() -> list:
-    """列出所有已存在账号 (扫描 records/ 子目录)."""
+    """列出所有已存在账号 (扫描 records/ 子目录, 按名称排序)."""
     if not os.path.isdir(RECORD_ROOT):
         return []
     out = []
@@ -86,10 +89,6 @@ def list_accounts() -> list:
         d = os.path.join(RECORD_ROOT, name)
         if os.path.isdir(d) and os.path.exists(os.path.join(d, "trades.jsonl")):
             out.append(name)
-    # 把预设的 sim 账号也列出来(即使还没交易)
-    for sim in SIM_ACCOUNTS:
-        if sim not in out:
-            out.append(sim)
     return out
 
 
@@ -165,33 +164,6 @@ def log_trade(account_id, action, code="", name="", price=0.0, qty=0, amount=0.0
     return rec, cash, holdings
 
 
-def reset_sim(account_id):
-    """仅 sim_* 账号可 reset: 清掉交易流水, 写入一条期初本金 deposit (比赛规则)."""
-    if not is_sim(account_id):
-        raise PermissionError(f"账号 {account_id} 不是模拟大赛账号, 禁止清零 (实盘战绩永久保留)")
-    principal = SIM_ACCOUNTS.get(account_id, 1_000_000.0)
-    _ensure(account_id)
-    # 截断两个文件
-    open(_trade_log(account_id), "w", encoding="utf-8").close()
-    open(_equity_log(account_id), "w", encoding="utf-8").close()
-    # 写入重置后的期初本金
-    rec = {
-        "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "account": account_id,
-        "action": "deposit",
-        "code": "", "name": "【比赛重置·期初本金】",
-        "price": 0, "qty": 0, "amount": principal,
-        "note": "每周重置: 回到比赛初始本金",
-    }
-    with open(_trade_log(account_id), "a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    eq = {"ts": rec["ts"], "account": account_id, "cash": principal,
-          "positions": {}, "note": rec["note"]}
-    with open(_equity_log(account_id), "a", encoding="utf-8") as f:
-        f.write(json.dumps(eq, ensure_ascii=False) + "\n")
-    return principal
-
-
 # ---------------------------------------------------------------- 命令实现
 
 def _resolve_account(args):
@@ -231,7 +203,7 @@ def cmd_summary(args):
     holdings = _holdings_value(acc)
     deposits = sum(t["amount"] for t in trades if t["action"] == "deposit")
     invested = sum(t["price"]*t["qty"] for t in trades if t["action"] == "buy")
-    tag = "模拟大赛(每周清零)" if is_sim(acc) else "实盘(永久沉淀)"
+    tag = "模拟大赛(远程清零·本地留存)" if is_sim(acc) else "实盘(本地记录)"
     net_asset = cash + sum(v["cost"] for v in holdings.values())  # 成本口径净资产(未含浮动盈亏)
     print(f"  📊 账号 [{acc}] 摘要  ({tag})")
     print(f"     总存入:   {deposits:.2f}元")
@@ -258,17 +230,26 @@ def cmd_accounts(args):
             n = len(trades)
         else:
             cash, n = 0.0, 0
-        tag = "模拟大赛(每周清零)" if is_sim(acc) else "实盘(永久沉淀)"
+        tag = "模拟大赛(远程清零·本地留存)" if is_sim(acc) else "实盘(本地记录)"
         print(f"    - [{acc}]  {tag}  现金:{cash:.2f}元  笔数:{n}")
 
 
-def cmd_reset(args):
+def cmd_delete(args):
+    """仅当用户亲口要求删账号时调用. 二次确认 + 保护主实盘账号."""
     acc = _resolve_account(args)
-    try:
-        principal = reset_sim(acc)
-        print(f"  🔄[{acc}] 已重置回比赛本金 {principal:.2f}元 (仅模拟大赛账号允许)")
-    except PermissionError as e:
-        print(f"  ⛔ {e}")
+    if not args.confirm:
+        print(f"  ⚠️ 删除账号 [{acc}] 是破坏性操作, 需在命令后加 --confirm 二次确认.")
+        print(f"     例如: python3 manual_log.py delete --account {acc} --confirm")
+        return
+    if acc in PROTECTED_ACCOUNTS:
+        print(f"  ⛔ 账号 [{acc}] 是受保护的主实盘账号, 禁止删除 (本地永久留存的最后防线).")
+        return
+    d = _acc_dir(acc)
+    if not os.path.isdir(d):
+        print(f"  （账号 [{acc}] 不存在, 无需删除）")
+        return
+    shutil.rmtree(d)
+    print(f"  🗑️ 已删除账号 [{acc}] 全部本地记录. (此操作不可恢复, 仅在你要求时执行)")
 
 
 def cmd_export(args):
@@ -314,7 +295,9 @@ def build_parser():
 
     sm = _attach_account(sub.add_parser("summary")); sm.set_defaults(func=cmd_summary)
     ac = _attach_account(sub.add_parser("accounts")); ac.set_defaults(func=cmd_accounts)
-    rs = _attach_account(sub.add_parser("reset")); rs.set_defaults(func=cmd_reset)
+    dl = _attach_account(sub.add_parser("delete"))
+    dl.add_argument("--confirm", action="store_true", help="二次确认(必须显式加)")
+    dl.set_defaults(func=cmd_delete)
     ex = _attach_account(sub.add_parser("export")); ex.set_defaults(func=cmd_export)
     return ap
 
