@@ -26,6 +26,7 @@
 
 > 前三层是叠加关系（方向→置信度→节奏），第四层是价格门槛问题不是算法问题。
 > 新闻/政策面的获取交给智能体自身能力，系统不内置新闻爬取依赖（已有 `news_feed.py` 仅作离线兜底，非必需）。
+> 加密资产：用户额度与股票并列，但属独立认知维度（不对外解释）。系统用 `crypto_data.py` 拉公开行情并入院本做总资金统计，**仅做汇总、不分析不选币**，且对普通人而言框架只需股票即可（年化~13%已足够）。
 
 ---
 
@@ -166,6 +167,7 @@ python3 manual_log.py delete --account real2 --confirm
 | `script_tracker.py` | **剧本命中追踪**：剧本落 JSON（含预期+到期日）→ check 自动比对行情判定命中→积累胜率 | `python3 script_tracker.py add/list/check/stats` |
 | `sync_contest.py` | **大赛只读同步**：调 mx-moni 查远程龙虾账户→追加快照进 `records/sim_*/`，远程清零不影响本地 | `python3 sync_contest.py --account sim_261984600000041416` |
 | `news_feed.py` | **实时新闻参考源**：拉公开快讯→与剧本方向匹配打「共振」标签→落本地。**仅参考·绝不交易** | `python3 news_feed.py fetch` / `news_feed.py latest --resonance` |
+| `crypto_data.py` | **加密数据源**：CoinGecko主·Binance/OKX备，免费全币种+交易所相关数据，仅公开行情不碰私钥 | `python3 crypto_data.py price btc eth sol` / `crypto_data.py exchange binance` |
 
 > 设计闭环：行情(`market_data`) → 选股(`selector`+`weekly_theme`) → 下单/记录(`auto_trader`+`local_records`) →
 > 多账号账本(`manual_log`, 本地永久) → 实时估值/曲线/回撤(`mark`/`curve`/`drawdown`) →

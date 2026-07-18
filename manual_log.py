@@ -268,6 +268,16 @@ def cmd_export(args):
 
 # ---------------------------------------------------------------- 实时估值 / 曲线 / 回撤
 
+def _is_crypto_account(acc, holdings):
+    """判断该账号/持仓是否属加密资产 (账号名含crypto, 或持仓code为加密符号)."""
+    if "crypto" in acc.lower():
+        return True
+    crypto_syms = {"btc", "eth", "sol", "bnb", "xrp", "ada", "doge", "dot", "matic",
+                   "avax", "link", "ton", "shib", "ltc", "trx", "uni", "atom", "near",
+                   "apt", "arb", "op", "fil", "usdt", "usdc"}
+    return any(c.lower() in crypto_syms for c in holdings.keys())
+
+
 def _current_equity_snapshot(acc):
     """基于最新市价, 计算: 现金 + 各持仓市值 + 浮动盈亏. 返回 dict."""
     cash = _cash_balance(acc)
@@ -277,15 +287,21 @@ def _current_equity_snapshot(acc):
     rt = {}
     if codes:
         try:
-            import market_data
-            rt = market_data.get_realtime(codes)
+            if _is_crypto_account(acc, holdings):
+                import crypto_data
+                # 加密: 用 crypto_data 全币种行情 (CoinGecko主/Binance/OKX备)
+                rt = {k.upper(): {"price": v} for k, v in crypto_data.get_prices(codes).items()}
+            else:
+                import market_data
+                rt = market_data.get_realtime(codes)
         except Exception:
             rt = {}
     market_val = 0.0
     float_pnl = 0.0
     detail = []
     for c, v in holdings.items():
-        price = (rt.get(c, {}) or {}).get("price") or (v["cost"] / v["qty"] if v["qty"] else 0)
+        price = (rt.get(c, {}) or {}).get("price") or (rt.get(c.upper(), {}).get("price")
+                   if c.upper() in rt else None) or (v["cost"] / v["qty"] if v["qty"] else 0)
         mv = price * v["qty"]
         pnl = (price - (v["cost"] / v["qty"] if v["qty"] else 0)) * v["qty"]
         market_val += mv
@@ -316,7 +332,8 @@ def cmd_mark(args):
     if snap["detail"]:
         print(f"     持仓明细:")
         for d in snap["detail"]:
-            print(f"       - {d['name']}({d['code']}): {d['qty']}股 @现价{d['price']} = {d['market_value']:.2f}元  浮盈{d['float_pnl']:+.2f}")
+            unit = "份" if "crypto" in acc.lower() or d["code"].lower() in ("btc","eth","sol","bnb","xrp","usdt","usdc") else "股"
+            print(f"       - {d['name']}({d['code']}): {d['qty']}{unit} @现价{d['price']} = {d['market_value']:.2f}元  浮盈{d['float_pnl']:+.2f}")
 
 
 def cmd_curve(args):

@@ -111,6 +111,7 @@ mx_auto_strategy/
 ├── script_tracker.py    # 📜 剧本书写者命中追踪(剧本JSON→自动判定→胜率)
 ├── sync_contest.py      # 🔄 龙虾大赛远程只读同步(本地永久留存)
 ├── news_feed.py         # 📰 实时新闻参考源(拉快讯→剧本共振标记, 仅参考不交易)
+├── crypto_data.py       # 🪙 加密数据源(全币种+交易所数据, 公开行情, 并入总资金统计)
 ├── backtest_*.py        # 回测脚本(3年/5年/剧本关仓验证)
 ├── scripts/             # 剧本存档(用户护城河资产, 进版本库)
 └── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
@@ -126,6 +127,7 @@ mx_auto_strategy/
 | `script_tracker.py` | 剧本命中追踪（add/list/check/stats，积累胜率） |
 | `sync_contest.py` | 大赛只读同步（远程快照追加本地，远程清零不影响） |
 | `news_feed.py` | 实时新闻参考源（拉快讯→与剧本方向匹配打共振标签，仅参考不交易） |
+| `crypto_data.py` | 加密数据源（CoinGecko主·Binance/OKX备，免费全币种+交易所数据，仅公开行情） |
 
 ```bash
 python3 manual_log.py mark                              # 实时估值
