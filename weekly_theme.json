@@ -1,18 +1,18 @@
 {
-  "week_label": "2026-W28",
-  "generated_at": "2026-07-18 17:08:30",
+  "week_label": "2026-W29",
+  "generated_at": "2026-07-20 11:13:47",
   "mode": "user_direction_overlay",
   "strategy": "用户预判叠加模式 (用户给方向, AI叠加动量挑票)",
   "user_direction": "下一周(7/20-7/24)主方向: 电力 或 医疗(池内标签=医药) (防御端3个照常: 银行+电力+红利低波)",
   "main_lines": [
     {
       "industry": "电力",
-      "avg_chg": -0.91,
+      "avg_chg": 2.58,
       "top_ticker": "南网储能"
     },
     {
       "industry": "医药",
-      "avg_chg": -1.04,
+      "avg_chg": 3.02,
       "top_ticker": "迈瑞医疗"
     }
   ],
@@ -27,36 +27,36 @@
   ],
   "all_industry_rank": [
     {
-      "industry": "石油",
-      "avg_chg": 8.34
+      "industry": "港股消费",
+      "avg_chg": 11.8
     },
     {
-      "industry": "港股消费",
-      "avg_chg": 6.29
+      "industry": "石油",
+      "avg_chg": 8.46
+    },
+    {
+      "industry": "化工",
+      "avg_chg": 7.82
+    },
+    {
+      "industry": "白酒",
+      "avg_chg": 7.22
+    },
+    {
+      "industry": "电网",
+      "avg_chg": 6.91
+    },
+    {
+      "industry": "免税",
+      "avg_chg": 6.87
     },
     {
       "industry": "食品",
-      "avg_chg": 5.85
+      "avg_chg": 6.36
     },
     {
-      "industry": "家电",
-      "avg_chg": 4.58
-    },
-    {
-      "industry": "煤炭",
-      "avg_chg": 4.54
-    },
-    {
-      "industry": "保险",
-      "avg_chg": 3.41
-    },
-    {
-      "industry": "建材",
-      "avg_chg": 3.27
-    },
-    {
-      "industry": "新能源",
-      "avg_chg": 3.22
+      "industry": "汽车",
+      "avg_chg": 5.65
     }
   ]
 }

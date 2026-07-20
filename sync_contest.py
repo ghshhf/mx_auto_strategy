@@ -18,6 +18,7 @@ sync_contest.py - 龙虾大赛远程账户 只读同步 (v1.0)
 """
 import os
 import json
+import glob
 import subprocess
 import argparse
 from datetime import datetime
@@ -25,6 +26,8 @@ from datetime import datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 RECORD_ROOT = os.path.join(HERE, "records")
+# mx-moni 把每次查询的原始 JSON 落盘到此目录(文件名含查询文本与时间戳)
+OUTPUT_DIR = "/root/.openclaw/workspace/mx_data/output"
 
 # 默认龙虾账户
 DEFAULT_SIM = "sim_261984600000041416"
@@ -42,61 +45,62 @@ def _call_mx(text):
         return f"mx_moni调用失败: {e}"
 
 
-def parse_positions(text):
-    """从 mx-moni 返回的持仓文本里尽力解析出 posList 关键字段."""
-    # mx_moni 可能直接返回 JSON 或 文本表格, 这里做宽松解析
-    positions = []
-    # 尝试找 JSON 中的 posList
+def _latest_json(query):
+    """读取 mx-moni 最近一次保存的该查询原始 JSON(避免依赖其表格 stdout)。"""
     try:
-        # 截取可能的 JSON 段
-        start = text.find("{")
-        end = text.rfind("}") + 1
-        if start >= 0 and end > start:
-            j = json.loads(text[start:end])
-            data = j.get("data", j)
-            pl = data.get("posList", [])
-            for p in pl:
-                positions.append({
-                    "code": p.get("secCode", ""),
-                    "name": p.get("secName", ""),
-                    "qty": p.get("count", 0),
-                    "price": p.get("price", 0),
-                    "value": p.get("value", 0),
-                    "profit": p.get("profit", 0),
-                })
-            return positions
+        safe = query.replace('/', '_')[:30]
+        files = sorted(glob.glob(os.path.join(OUTPUT_DIR, f"mx_moni_{safe}_*.json")), reverse=True)
+        if files:
+            with open(files[0], encoding="utf-8") as f:
+                return json.load(f)
     except Exception:
         pass
-    return positions
+    return None
 
 
-def parse_balance(text):
-    """解析资金/净值文本 -> totalAssets/availBalance."""
-    try:
-        start = text.find("{")
-        end = text.rfind("}") + 1
-        if start >= 0 and end > start:
-            j = json.loads(text[start:end])
-            data = j.get("data", j)
-            return {
-                "total_assets": data.get("totalAssets", 0) / 1000.0,  # 厘->元
-                "avail_balance": data.get("availBalance", 0) / 1000.0,
-                "pos_value": data.get("totalPosValue", 0) / 1000.0,
-                "nav": data.get("nav", 0),
-                "init_money": data.get("initMoney", 0) / 1000.0,
-                "acc_name": data.get("accName", ""),
-            }
-    except Exception:
-        pass
-    return {}
+def extract_positions(j):
+    """从 mx-moni 原始 JSON 的 data.posList 提取持仓(数值为原始单位, 元)。"""
+    if not j:
+        return []
+    data = j.get("data", {})
+    if not isinstance(data, dict):
+        return []
+    out = []
+    for p in data.get("posList", []):
+        out.append({
+            "code": p.get("secCode", ""),
+            "name": p.get("secName", ""),
+            "qty": p.get("count", 0),
+            "price": p.get("price", 0),
+            "value": p.get("value", 0),
+            "profit": p.get("profit", 0),
+        })
+    return out
+
+
+def extract_balance(j):
+    """从 mx-moni 原始 JSON 的 data 提取资金(原始单位, 元; initMoney=1000000=100万)。"""
+    if not j:
+        return {}
+    data = j.get("data", {})
+    if not isinstance(data, dict):
+        return {}
+    return {
+        "total_assets": data.get("totalAssets", 0),
+        "avail_balance": data.get("availBalance", 0),
+        "pos_value": data.get("totalPosValue", 0),
+        "nav": data.get("nav", 0),
+        "init_money": data.get("initMoney", 0),
+        "acc_name": data.get("accName", ""),
+    }
 
 
 def sync_once(account, dry=False):
     print(f"  🔄 同步远程账户 [{account}] ...")
-    pos_text = _call_mx("我的持仓")
-    bal_text = _call_mx("查询资金")
-    positions = parse_positions(pos_text)
-    balance = parse_balance(bal_text)
+    _call_mx("我的持仓")   # 触发 mx-moni 写 JSON
+    _call_mx("查询资金")
+    positions = extract_positions(_latest_json("我的持仓"))
+    balance = extract_balance(_latest_json("查询资金"))
 
     snapshot = {
         "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -106,10 +110,13 @@ def sync_once(account, dry=False):
         "avail_balance": balance.get("avail_balance"),
         "pos_value": balance.get("pos_value"),
         "nav": balance.get("nav"),
+        "init_money": balance.get("init_money"),
         "positions": positions,
         "raw_pos_len": len(positions),
     }
-    print(f"     持仓数: {len(positions)} | 总资产: {balance.get('total_assets')} | 可用: {balance.get('avail_balance')}")
+    ta = balance.get("total_assets")
+    ta_str = f"{ta/10000:.2f}万" if ta else "N/A"
+    print(f"     持仓数: {len(positions)} | 总资产: {ta_str} | 可用: {balance.get('avail_balance')}")
 
     if dry:
         print("     [dry] 仅预览, 未写入本地")
