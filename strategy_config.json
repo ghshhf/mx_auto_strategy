@@ -887,6 +887,16 @@
     "offensive_trim_ratio": 0.2,
     "_note": "用户洞察: 防御涨几天(如+6%)而另一防御低几个点, 应卖一部分落袋, 不止'建仓不动'. 再平衡卖出不改变底仓成本, 利润回补弹药池."
   },
+  "temperature_probe": {
+    "_comment": "v6.9 市场冷热温度计(方案C, 纯国内A股, 海外VIX仅参考). 接成'进攻时机刻度': 仅削进攻仓、防御底仓不动、释放部分转现金. 任一维度抓取失败自动降权/退回原逻辑(倍率=1.0). shadow_mode=true 时只打印建议不执行, 供先观察.",
+    "enabled": true,
+    "shadow_mode": false,
+    "cache_seconds": 300,
+    "weights": { "breadth": 0.30, "volume": 0.30, "trend": 0.25, "funding": 0.15 },
+    "thresholds": { "hot": 70, "cold": 30, "reduce_below": 55 },
+    "offense_multiplier": { "cold": 0.4, "fragile_extra": 0.6, "floor": 0.25 },
+    "vix_reference": { "warn_above": 25 }
+  },
   "market": {
     "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
     "provider": "tencent",
