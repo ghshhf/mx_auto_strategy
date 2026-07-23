@@ -726,6 +726,42 @@
         "tech": true,
         "_sub_for": "自动化/工控高PE替代(汇川技术)",
         "_rule": "同左"
+      },
+      {
+        "code": "600019",
+        "name": "宝钢股份",
+        "industry": "钢铁",
+        "market": "A",
+        "tech": false,
+        "_theme": "防御高股息, 钢铁分红王, 跟银行/电力零相关",
+        "_note": "v6.9扩容: 红利低波补强, 股息率6%+, PE~8"
+      },
+      {
+        "code": "600377",
+        "name": "宁沪高速",
+        "industry": "高速",
+        "market": "A",
+        "tech": false,
+        "_theme": "防御高股息, 高速公路现金奶牛, 弱市几乎不跌",
+        "_note": "v6.9扩容: 红利低波补强, 股息率5~6%, 业绩极度稳定"
+      },
+      {
+        "code": "688235",
+        "name": "百济神州",
+        "industry": "医药",
+        "market": "A",
+        "tech": true,
+        "_theme": "创新药出海龙头, AI药物研发+FDA审批驱动, 打破CXO同质化",
+        "_note": "v6.9扩容: 医药进攻端弹性补强"
+      },
+      {
+        "code": "600886",
+        "name": "国投电力",
+        "industry": "电力",
+        "market": "A",
+        "tech": false,
+        "_theme": "水电+新能源双驱, 成长性优于长江电力, 股息4%+, 攻守兼备",
+        "_note": "v6.9扩容: 电力进攻端弹性补强"
       }
     ],
     "_note": "industry=sector name for dedup; tech=true = tech sector (elec/comm/semi/CS/AI)",
@@ -900,7 +936,9 @@
       "通信",
       "面板",
       "安防",
-      "煤炭"
+      "煤炭",
+      "钢铁",
+      "高速"
     ],
     "offensive_industries": [
       "半导体",
