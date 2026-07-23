@@ -22,6 +22,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
 import selector
 
+
+def _read_temperature(cfg):
+    """读取市场温度计(方案C)。任何异常均返回 None -> 不干预原仓位逻辑。"""
+    try:
+        import temperature_probe as tp
+        return tp.get_market_temperature(cfg)
+    except Exception as e:
+        print(f"  [温度计] 读取失败({e}), 退回原仓位逻辑")
+        return None
+
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_config.json")
 MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 # 成本基准缓存落盘路径(跨进程/重启保留, 真实比赛多日交易必需)
@@ -284,6 +294,13 @@ def run_once(cfg, do_trade=True):
     defensive = (regime == "weak")
     print(f"  {trend_msg}")
 
+    # v6.9 市场冷热温度计(方案C): 仅作"进攻时机刻度", 不硬砍防御底仓
+    _temp = _read_temperature(cfg)
+    if _temp:
+        print(f"  [温度计] 市场温度: {_temp['label']}({_temp['score']:.0f}/100) "
+              f"脆弱={_temp['fragile']} VIX参考={_temp['vix_tag']} "
+              f"进攻刻度x{_temp['offense_multiplier']:.2f}  [{'影子' if _temp['shadow'] else '生效'}]")
+
     # 1) 防御选股: 从防御行业白名单选 Top N (低beta跨行业, 排除进攻题材票)
     chosen_def = selector.select(cfg, verbose=True, defensive_only=True)
     if not chosen_def:
@@ -346,7 +363,13 @@ def run_once(cfg, do_trade=True):
     base_pct = alloc["def"]
     off_pct = alloc["off"]
     cash_pct = alloc["cash"]
-    print(f"  📊 市况仓位: {regime} -> 防御{base_pct}% / 进攻{off_pct}% / 现金{cash_pct}%")
+    # v6.9 温度计调制: 仅削进攻仓, 释放部分转入现金(防御底仓不动)
+    if _temp and _temp.get("apply") and _temp["offense_multiplier"] < 1.0:
+        freed = off_pct * (1.0 - _temp["offense_multiplier"])
+        off_pct = round(off_pct * _temp["offense_multiplier"], 1)
+        cash_pct = round(cash_pct + freed, 1)
+    print(f"  [仓位] 市况: {regime} -> 防御{base_pct}% / 进攻{off_pct}% / 现金{cash_pct}%"
+          + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else ""))
 
     per_def = base_pct / len(chosen_def) if chosen_def else 0   # 每只防御仓金额占比
     per_off = off_pct / len(chosen_off) if chosen_off else 0   # 每只进攻仓金额占比(v6: 2只均分30%)
@@ -525,3 +548,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
