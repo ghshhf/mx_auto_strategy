@@ -1,0 +1,13 @@
+{
+  "第20260724期": {
+    "start_date": "2026-07-24",
+    "end_date": "2026-07-24",
+    "ts": "2026-07-24 02:20:23",
+    "start_assets": 994707.21,
+    "end_assets": 993939.21,
+    "return_pct": -0.0772,
+    "snapshots": 2,
+    "positions": 8,
+    "note": "从mx-moni持仓快照导入"
+  }
+}
