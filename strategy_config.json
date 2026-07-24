@@ -489,6 +489,14 @@
         "market": "A"
       },
       {
+        "code": "688825",
+        "name": "长鑫科技",
+        "industry": "半导体",
+        "tech": true,
+        "_theme": "国产DRAM IDM龙头(原长鑫存储/CXMT), 2026-07科创板上市(688825). AI存储超级周期盈利爆发, 进攻端存储主线候选; 上市初期波动大须控仓",
+        "market": "A"
+      },
+      {
         "code": "512010",
         "name": "医药ETF",
         "industry": "医药",
@@ -877,6 +885,19 @@
       }
     ],
     "_note": "industry=sector name for dedup; tech=true = tech sector (elec/comm/semi/CS/AI)",
+    "future_listings": [
+      {
+        "_comment": "预上市观察池: 尚未正式上市的公司占位, 不进 candidate_pool(无代码/无历史会拉数据失败). 上市后补真实代码入 candidate_pool 并移除此条.",
+        "name": "长江存储",
+        "full_name": "长江存储控股股份有限公司 (Yangtze Memory Technologies / YMTC)",
+        "sector": "半导体/存储(3D NAND)",
+        "status": "pre_ipo_filing",
+        "expected_board": "科创板(预计2026下半年申报)",
+        "note": "国产NAND Flash IDM龙头, 2026-05-19启动IPO辅导, 尚未上市. 上市后应标 industry=半导体, tech=true, 与长鑫科技(688825,DRAM)同属国产存储双子星但技术路线不同(NAND vs DRAM).",
+        "added": "2026-07-25",
+        "related_listed": ["688825(长鑫科技/DRAM)", "603986(兆易创新/存储)"]
+      }
+    ],
     "offensive_pool": [
       {
         "code": "002821",
