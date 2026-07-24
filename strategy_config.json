@@ -1,6 +1,7 @@
 {
-  "_comment": "mx-moni auto strategy config v6.11b | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜, v6.11b 升级时变渗透率表按年代标相位)",
-  "version": "6.11b",
+  "_comment": "mx-moni auto strategy config v6.12 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜, v6.11b 升级时变渗透率表按年代标相位) | v6.12: REGIME_ALLOC 对齐18倍基线(weak60/24/16, balance45/45/10, strong35/60/5), 让'18倍记忆系统'成为实盘(live=18倍参考配置, 死叉+时变木头姐已live)",
+
+  "version": "6.12",
   "account": {
     "mx_api_url": "https://mkapi2.dfcfs.com/finskillshub",
     "_note_apikey": "read from env MX_APIKEY, do NOT hardcode here"

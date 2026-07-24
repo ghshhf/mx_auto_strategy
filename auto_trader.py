@@ -382,8 +382,8 @@ def run_once(cfg, do_trade=True):
     # 三档仓位模板 (防御% / 进攻% / 现金%): 和为100
     REGIME_ALLOC = {
         "weak":    {"def": 60, "off": 24, "cash": 16},  # 弱势: 守, 不赌
-        "balance": {"def": 54, "off": 30, "cash": 16},  # 平衡: 标准框架
-        "bull":    {"def": 44, "off": 40, "cash": 16},  # 强势: 攻, 博名次
+        "balance": {"def": 45, "off": 45, "cash": 10},  # 平衡: 进攻加码(45%)贴近18倍基线
+        "bull":    {"def": 35, "off": 60, "cash": 5},   # 强势: 进攻顶满60%(18倍基线, 博名次)
     }
     alloc = REGIME_ALLOC.get(regime, REGIME_ALLOC["balance"])
     base_pct = alloc["def"]
