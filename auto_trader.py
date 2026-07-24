@@ -32,6 +32,16 @@ def _read_temperature(cfg):
         print(f"  [温度计] 读取失败({e}), 退回原仓位逻辑")
         return None
 
+
+def _read_concentration(cfg):
+    """读取公募基金行业集中度探针(防御端)。任何异常均返回 None -> 不干预原仓位逻辑。"""
+    try:
+        import concentration_probe as cp
+        return cp.get_fund_concentration(cfg)
+    except Exception as e:
+        print(f"  [集中度] 读取失败({e}), 退回原仓位逻辑")
+        return None
+
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_config.json")
 MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 # 成本基准缓存落盘路径(跨进程/重启保留, 真实比赛多日交易必需)
@@ -301,6 +311,13 @@ def run_once(cfg, do_trade=True):
               f"脆弱={_temp['fragile']} VIX参考={_temp['vix_tag']} "
               f"进攻刻度x{_temp['offense_multiplier']:.2f}  [{'影子' if _temp['shadow'] else '生效'}]")
 
+    # v6.9+ 公募基金行业集中度探针(防御端): 监测全市场/公募对少数行业的抱团集中度
+    _conc = _read_concentration(cfg)
+    if _conc:
+        print(f"  [集中度] 行业集中度: {_conc['label']}({_conc['score']:.0f}/100) "
+              f"科技簇成交占比={_conc['hot_cluster_share_pct']:.1f}% "
+              f"防御收紧x{_conc['defensive_tighten']:.2f}  [{'影子' if _conc['shadow'] else '生效'}]")
+
     # 1) 防御选股: 从防御行业白名单选 Top N (低beta跨行业, 排除进攻题材票)
     chosen_def = selector.select(cfg, verbose=True, defensive_only=True)
     if not chosen_def:
@@ -368,8 +385,20 @@ def run_once(cfg, do_trade=True):
         freed = off_pct * (1.0 - _temp["offense_multiplier"])
         off_pct = round(off_pct * _temp["offense_multiplier"], 1)
         cash_pct = round(cash_pct + freed, 1)
+
+    # v6.9+ 公募基金行业集中度探针(防御端): 市场整体拥挤 -> 收紧总风险敞口(防御+进攻按比例减, 释放转现金)
+    conc_note = ""
+    if _conc and _conc.get("apply") and _conc["defensive_tighten"] < 1.0:
+        tighten = _conc["defensive_tighten"]
+        gross = base_pct + off_pct
+        freed_g = round(gross * (1.0 - tighten), 1)
+        base_pct = round(base_pct * tighten, 1)
+        off_pct = round(off_pct * tighten, 1)
+        cash_pct = round(cash_pct + freed_g, 1)
+        conc_note = f"  (集中度x{tighten:.2f} 总敞口{gross:.0f}->{round(gross*tighten,1):.0f}%)"
     print(f"  [仓位] 市况: {regime} -> 防御{base_pct}% / 进攻{off_pct}% / 现金{cash_pct}%"
-          + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else ""))
+          + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else "")
+          + conc_note)
 
     per_def = base_pct / len(chosen_def) if chosen_def else 0   # 每只防御仓金额占比
     per_off = off_pct / len(chosen_off) if chosen_off else 0   # 每只进攻仓金额占比(v6: 2只均分30%)

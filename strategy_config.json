@@ -897,6 +897,17 @@
     "offense_multiplier": { "cold": 0.4, "fragile_extra": 0.6, "floor": 0.25 },
     "vix_reference": { "warn_above": 25 }
   },
+  "concentration_probe": {
+    "_comment": "v6.9+ 公募基金行业集中度探针(防御端, 与温度计对称). 监测全市场/公募对少数行业的抱团集中度, 作为防御端尾部风险预警: 市场整体拥挤 -> 收紧总风险敞口(防御+进攻按比例减, 释放转现金). 默认 shadow_mode=true 先只观察不真砍仓位, 验证后翻 false 再生效. 任一维度抓取失败自动降权/全失败退回原逻辑(tighten=1.0).",
+    "enabled": true,
+    "shadow_mode": true,
+    "cache_seconds": 300,
+    "hot_cluster": ["半导体", "半导体设备", "AI", "人工智能", "计算机", "软件", "通信", "电子", "元器件", "消费电子", "军工", "军工电子"],
+    "weights": { "turnover_hhi": 0.30, "hot_cluster_share": 0.35, "return_dispersion": 0.20, "netflow_hhi": 0.15 },
+    "thresholds": { "elevated": 40, "crowded": 65, "extreme": 82 },
+    "tighten": { "elevated": 0.90, "crowded": 0.75, "extreme": 0.60, "floor": 0.50 },
+    "_note": "score = 成交额HHI(30%) + 科技簇成交占比(35%) + 涨幅集中度(20%) + 主力净流入HHI(15%) 加权0~100. 占比/HHI 越高 = 抱团越狗 = 防御越收紧. 真实基金季报持仓滞后一季, 故用实时市场拥挤度作代理(尾部风险来源)."
+  },
   "market": {
     "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
     "provider": "tencent",
