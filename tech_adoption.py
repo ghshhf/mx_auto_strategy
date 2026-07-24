@@ -76,6 +76,42 @@ THEMES = {
                    "note": "战略资源, 中性"},
 }
 
+# ---------------------------------------------------------------------------
+# 时变渗透率相位表 (PHASE_HISTORY) — 木头姐框架的"每个时代当红成长赛道"本质
+# ---------------------------------------------------------------------------
+# 用户洞察(2026-07-25): 渗透率框架本职 = 识别"当期热门成长赛道"
+#   (白酒时代 / 新能源时代 / AI 时代), 不该拿一张 2025 静态快照把早年加速期错配成饱和.
+#   例如宁德 2019-2021 是 10 倍主升浪(加速期), 但 2025 视角看"新能源饱和×0.65"会压低其权重.
+#   故每个行业给出 [起始年, 结束年, 相位] 区间列表; 回测/历史场景按年份查当年真实相位.
+# 非回测(live)场景不传 year -> 用上方 THEMES 当前评估(2025 视角), 行为不变.
+# 年份落在所有区间外 -> 回落到 THEMES 当前相位(兜底).
+PHASE_HISTORY = {
+    # 白酒/消费: 2016-2020 高端白酒量价齐升加速; 2021+ 见顶成熟
+    "白酒":   [(2016, 2020, "accelerating"), (2021, 2026, "mature")],
+    "消费":   [(2016, 2020, "accelerating"), (2021, 2026, "mature")],
+    # 新能源/电池: 2016-2018 早期; 2019-2021 主升浪加速; 2022+ 饱和
+    "新能源": [(2016, 2018, "early"), (2019, 2021, "accelerating"), (2022, 2026, "saturating")],
+    "汽车":   [(2019, 2021, "accelerating"), (2022, 2026, "saturating")],
+    "锂矿":   [(2019, 2021, "accelerating"), (2022, 2026, "mature")],
+    # 半导体设备: 2019-2021 加速; 2022 周期下行mature; 2023-2026 自主可控加速
+    "半导体设备": [(2019, 2021, "accelerating"), (2022, 2022, "mature"), (2023, 2026, "accelerating")],
+    "半导体":     [(2019, 2021, "accelerating"), (2023, 2026, "accelerating")],
+    # AI/光模块: 2018-2022 早期; 2023-2026 算力爆发加速
+    "AI":       [(2018, 2022, "early"), (2023, 2026, "accelerating")],
+    "计算机":   [(2018, 2022, "early"), (2023, 2026, "accelerating")],
+    "通信":     [(2023, 2026, "accelerating")],  # 光模块/算力链
+    # 医药/CXO: 2017-2021 创新药+CXO高景气加速; 2022+ 成熟(寒冬/制裁)
+    "医药":     [(2017, 2021, "accelerating"), (2022, 2026, "mature")],
+    # 光伏: 2020-2022 加速; 2023+ 成熟(产能过剩)
+    "光伏":     [(2020, 2022, "accelerating"), (2023, 2026, "mature")],
+    # 机器人: 2023+ 早期/加速(人形机器人爆发前夜)
+    "机器人":   [(2023, 2026, "early")],
+    # 电网: 2021+ 加速(特高压/配网/储能)
+    "电网":     [(2021, 2026, "accelerating")],
+    "港股科技": [(2023, 2026, "accelerating")],
+    "科技宽基": [(2023, 2026, "accelerating")],
+}
+
 # phase -> 配置键 (乘子从 strategy_config.tech_adoption 读取, 缺省用硬兜底)
 _PHASE_KEY = {
     "accelerating": "boost_accelerating",
@@ -113,26 +149,42 @@ def phase_multiplier(phase, cfg):
     return float(b.get("unknown_neutral", _NEUTRAL))
 
 
-def get_adoption(industry, cfg=None):
+def _phase_for(industry, year):
+    """时变相位查询: 给定年份返回该行业当年相位; 无匹配区间/无历史 -> 回落 THEMES 当前相位。"""
+    hist = PHASE_HISTORY.get(industry)
+    if hist:
+        for (s, e, ph) in hist:
+            if s <= year <= e:
+                return ph
+    return THEMES.get(industry, {}).get("phase", "unknown")
+
+
+def get_adoption(industry, cfg=None, year=None):
     """查某行业的采用相位与权重乘子。安全: 任何异常 -> 中性。
 
+    year: 指定年份则查时变相位表(PHASE_HISTORY), 用于回测/历史场景;
+          不传(None)则使用 THEMES 当前评估(2025 视角), 实时/近况场景行为不变。
     返回 dict: {industry, penetration, phase, multiplier, note, as_of}
     """
     try:
+        ph = _phase_for(industry, year) if year is not None else THEMES.get(industry, {}).get("phase", "unknown")
         info = THEMES.get(industry)
+        pen = info.get("penetration") if info else None
+        note = (info.get("note", "") if info else "")
+        if year is not None:
+            note = (note + f" [历史{year}年相位:{ph}]").strip()
         if not info:
             return {
-                "industry": industry, "penetration": None, "phase": "unknown",
-                "multiplier": phase_multiplier("unknown", cfg),
-                "note": "未收录, 中性不干预", "as_of": None,
+                "industry": industry, "penetration": None, "phase": ph,
+                "multiplier": phase_multiplier(ph, cfg),
+                "note": (note or "未收录, 中性不干预"), "as_of": None,
             }
-        ph = info.get("phase", "unknown")
         return {
             "industry": industry,
-            "penetration": info.get("penetration"),
+            "penetration": pen,
             "phase": ph,
             "multiplier": phase_multiplier(ph, cfg),
-            "note": info.get("note", ""),
+            "note": note,
             "as_of": info.get("as_of"),
         }
     except Exception:
@@ -201,7 +253,15 @@ def _selftest():
     sim2 = {"半导体": {"avg_chg": 5.0}}
     apply_tilt(sim2, cfg_shadow)
     assert sim2["半导体"]["adj_chg"] == 5.0, "影子模式应不改变 adj_chg"
-    print("\n✅ 自检通过: 加速期加成 > 中性 > 饱和; 影子模式不干预。")
+    # 时变相位: 同行业不同年份相位不同(新能源 2019加速 vs 2025饱和; 宁德早年权重应被抬高)
+    n_ev = get_adoption("新能源", cfg, year=2019)["multiplier"]
+    n_25 = get_adoption("新能源", cfg, year=2025)["multiplier"]
+    ai_ev = get_adoption("AI", cfg, year=2019)["multiplier"]
+    ai_25 = get_adoption("AI", cfg, year=2025)["multiplier"]
+    assert n_ev > n_25, "新能源应早年(加速)权重高于近年(饱和)"
+    assert ai_25 > ai_ev, "AI应近年(加速)权重高于早年(早期)"
+    print(f"\n时变相位校验: 新能源 2019×{n_ev} vs 2025×{n_25}; AI 2019×{ai_ev} vs 2025×{ai_25}")
+    print("✅ 自检通过: 加速期加成 > 中性 > 饱和; 影子模式不干预; 时变相位年代正确。")
 
 
 if __name__ == "__main__":
