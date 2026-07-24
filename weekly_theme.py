@@ -121,6 +121,16 @@ def scan_industry_momentum(cfg):
             "count": d["count"],
             "tickers": sorted(d["tickers"], key=lambda t: t["chg"], reverse=True)
         }
+    # v6.11 科技渗透率倾斜 (木头姐框架): 给行业动量叠加采用相位权重
+    # 仅影响进攻侧排序; 任何异常 -> 中性不干预
+    try:
+        import tech_adoption as ta
+        ta.apply_tilt(result, cfg)
+    except Exception:
+        for d in result.values():
+            d.setdefault("adoption_phase", "unknown")
+            d.setdefault("adoption_mult", 1.0)
+            d.setdefault("adj_chg", d.get("avg_chg", 0.0))
     return result
 
 
@@ -263,33 +273,35 @@ def pick_theme(cfg, verbose=True):
     if not ind_mom:
         return _fallback_theme(cfg, verbose)
 
-    # 行业按平均涨幅排序
-    sorted_inds = sorted(ind_mom.items(), key=lambda kv: kv[1]["avg_chg"], reverse=True)
+    # 行业按"调整后涨幅"(真实动量 × 渗透率相位权重)排序 — v6.11
+    def _sort_key(kv):
+        return kv[1].get("adj_chg", kv[1].get("avg_chg", 0.0))
+    sorted_inds = sorted(ind_mom.items(), key=_sort_key, reverse=True)
 
     # 事件注入层 (非主要, 仅当用户提供 event_override.json 且本周生效)
-    # 受益行业动量加权前置, 利空行业实质排除。无事件文件则完全不干扰自适应。
+    # 事件叠加在 adj_chg 之上(受益加权前置 / 利空实质排除); 真实 avg_chg 不动, 仅作主线资格判定
     ev = load_event_override()
     if ev:
         boost = set(ev.get("boost_industries", []))
         avoid = set(ev.get("avoid_industries", []))
         if verbose:
             print(f"  📌 事件注入生效: 受益={boost or '无'} 规避={avoid or '无'} | {ev.get('note','')}")
-        for ind, d in sorted_inds:
+        for ind, d in ind_mom.items():
             if ind in boost:
-                d["avg_chg"] = d["avg_chg"] * EVENT_BOOST_WEIGHT + 5.0  # 加权前置
+                d["adj_chg"] = d.get("adj_chg", d["avg_chg"]) * EVENT_BOOST_WEIGHT + 5.0
             elif ind in avoid:
-                d["avg_chg"] = EVENT_AVOID_DROP  # 实质排除
-        sorted_inds = sorted(ind_mom.items(), key=lambda kv: kv[1]["avg_chg"], reverse=True)
+                d["adj_chg"] = EVENT_AVOID_DROP
+        sorted_inds = sorted(ind_mom.items(), key=_sort_key, reverse=True)
 
-    # 强势主线: 平均涨幅 Top2 行业 (且平均涨幅>0 才算真主线)
+    # 强势主线: 调整后涨幅 Top2 行业 (且真实平均涨幅>0 才算真主线, 避免纯靠相位抬升的伪主线)
     # 过滤掉防御/避险/价值行业(黑名单) — 石油等避险板块不进进攻主线
     main_lines = []
     for ind, d in sorted_inds:
         if ind in DEFENSIVE_INDUSTRY_BLACKLIST:
             continue  # 跳过避险板块, 不当进攻主线
-        if d["avg_chg"] <= 0:
-            continue  # 排除事件利空置负的行业
-        if d["avg_chg"] > 0 and len(main_lines) < 2:
+        if d.get("avg_chg", 0.0) <= 0:
+            continue  # 真实动量必须为正, 排除事件利空置负的行业
+        if len(main_lines) < 2:
             main_lines.append((ind, d))
 
     if not main_lines:
@@ -335,12 +347,16 @@ def pick_theme(cfg, verbose=True):
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "main_lines": [
             {"industry": ind, "avg_chg": d["avg_chg"],
+             "adj_chg": d.get("adj_chg", d["avg_chg"]),
+             "adoption_phase": d.get("adoption_phase", "unknown"),
              "top_ticker": d["tickers"][0]["name"] if d["tickers"] else ""}
             for ind, d in main_lines
         ],
         "offensive": offensive,
         "all_industry_rank": [
-            {"industry": ind, "avg_chg": d["avg_chg"]}
+            {"industry": ind, "avg_chg": d["avg_chg"],
+             "adj_chg": d.get("adj_chg", d["avg_chg"]),
+             "adoption_phase": d.get("adoption_phase", "unknown")}
             for ind, d in sorted_inds[:8]
         ],
         "mode": "auto_theme"  # 自适应主线
@@ -349,11 +365,11 @@ def pick_theme(cfg, verbose=True):
     _save(theme)
     if verbose:
         print(f"  🎯 本周进攻主线: " + " / ".join(
-            f"{m['industry']}(+{m['avg_chg']}%)" for m in theme["main_lines"]))
+            f"{m['industry']}(+{m['avg_chg']}%, 渗透{m['adoption_phase']})" for m in theme["main_lines"]))
         print(f"  🔥 进攻 2 票: {offensive}")
-        print(f"  📊 行业涨幅排名 Top8:")
+        print(f"  📊 行业涨幅排名 Top8 (真实 / 渗透率倾斜后 / 相位):")
         for r in theme["all_industry_rank"]:
-            print(f"     {r['industry']}: {r['avg_chg']:+}%")
+            print(f"     {r['industry']}: 真实{r['avg_chg']:+}%  倾斜后{r['adj_chg']:+}%  [{r['adoption_phase']}]")
     return theme
 
 

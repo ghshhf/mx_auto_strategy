@@ -1,6 +1,6 @@
 {
-  "_comment": "mx-moni auto strategy config v6.10 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)",
-  "version": "6.10",
+  "_comment": "mx-moni auto strategy config v6.11 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜)",
+  "version": "6.11",
   "account": {
     "mx_api_url": "https://mkapi2.dfcfs.com/finskillshub",
     "_note_apikey": "read from env MX_APIKEY, do NOT hardcode here"
@@ -1042,6 +1042,16 @@
       {"code": "000016", "name": "上证50"},
       {"code": "000852", "name": "中证1000"}
     ]
+  },
+  "tech_adoption": {
+    "_comment": "v6.11 科技渗透率倾斜(木头姐 Cathie Wood/ARK 框架). 内置精选渗透率表, 给进攻题材标采用相位(early/accelerating/saturating/mature), 映射成动量权重乘子: 加速期加成(boost_accelerating)、早期甜区(early_boost)、饱和降权(cut_saturating)、成熟(mature_mult)、未收录/政策(policy/unknown)中性. 仅影响 weekly_theme 进攻主线排序, 防御底仓不动. shadow_mode=true只打印不执行供先观察.",
+    "enabled": true,
+    "shadow_mode": false,
+    "boost_accelerating": 1.35,
+    "early_boost": 1.15,
+    "mature_mult": 0.8,
+    "cut_saturating": 0.65,
+    "unknown_neutral": 1.0
   },
   "market": {
     "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
