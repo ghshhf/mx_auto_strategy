@@ -50,13 +50,38 @@ def test_parse_fund_holdings():
     print("  [ok] _parse_fund_holdings")
 
 
+def _fake_industry_multidto():
+    """模拟妙想真实返回: 第一个 dto 是时间序列(行业指数序列, 易串味),
+    第二个 dto 才是单值分类(申万一级行业)。"""
+    return {
+        "data": {"data": {"searchDataResultDTO": {"dataTableDTOList": [
+            {  # 时间序列 dto: headName=日期, 列值=某行业指数序列(非行业名)
+                "table": {
+                    "100000000043779": ["商贸零售-一般零售-百货", "商贸零售-一般零售-百货"],
+                    "headName": ["2026-07-24", "2026-07-23"],
+                }
+            },
+            {  # 单值分类 dto: headName 空白, 值='通信(申万)'
+                "table": {
+                    "100000000035009": ["通信(申万)"],
+                    "headName": [" "],
+                }
+            },
+        ]}}}
+    }
+
+
 def test_parse_industry_and_norm():
     assert fhp._parse_industry(_fake_industry("食品饮料")) == "食品饮料"
-    # 层级串归一为申万一级
+    # 多 dto 串味: 必须取单值分类 dto 的'通信', 而非时间序列的'商贸零售'
+    assert fhp._parse_industry(_fake_industry_multidto()) == "通信"
+    # 层级串 / 括号 归一为申万一级
     assert fhp._norm_industry("社会服务-酒店餐饮-餐饮") == "社会服务"
     assert fhp._norm_industry("商贸零售-互联网电商-综合电商") == "商贸零售"
+    assert fhp._norm_industry("通信(申万)") == "通信"
+    assert fhp._norm_industry("电气设备") == "电力设备"  # 旧版别名
     assert fhp._norm_industry("食品饮料") == "食品饮料"
-    print("  [ok] _parse_industry / _norm_industry")
+    print("  [ok] _parse_industry / _norm_industry (含多dto串味修复)")
 
 
 def test_oil_correction():

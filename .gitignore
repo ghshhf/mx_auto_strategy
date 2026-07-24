@@ -30,3 +30,4 @@ Thumbs.db
 # 公募基金真实持仓层缓存(妙想刷新, 运行时生成, 不提交)
 fund_holdings_cache.json
 stock_industry_cache.json
+_full_refresh.log
