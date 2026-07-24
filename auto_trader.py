@@ -32,6 +32,16 @@ def _read_temperature(cfg):
         print(f"  [温度计] 读取失败({e}), 退回原仓位逻辑")
         return None
 
+
+def _read_death_cross(cfg):
+    """读取多指数周线死叉去风险信号(v6.10)。任何异常均返回 None -> 不干预原仓位逻辑。"""
+    try:
+        import death_cross as dc
+        return dc.get_death_cross(cfg)
+    except Exception as e:
+        print(f"  [死叉] 读取失败({e}), 退回原仓位逻辑")
+        return None
+
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_config.json")
 MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 # 成本基准缓存落盘路径(跨进程/重启保留, 真实比赛多日交易必需)
@@ -301,6 +311,18 @@ def run_once(cfg, do_trade=True):
               f"脆弱={_temp['fragile']} VIX参考={_temp['vix_tag']} "
               f"进攻刻度x{_temp['offense_multiplier']:.2f}  [{'影子' if _temp['shadow'] else '生效'}]")
 
+    # v6.10 多指数周线死叉去风险信号: 触发时进攻转全防御(本回合升级主线)
+    _dc = _read_death_cross(cfg)
+    defense_only = False
+    if _dc:
+        if _dc.get("triggered"):
+            print(f"  [死叉] 大盘结构性去风险: {_dc['count']}/{_dc['available']} 指数周线死叉 "
+                  f"(阈值{_dc['threshold']})"
+                  + (f" -> 进攻转全防御" if _dc.get("apply") else "  [影子, 不执行]"))
+        else:
+            print(f"  [死叉] {_dc['label']}: {_dc['detail']}")
+        defense_only = bool(_dc.get("apply") and _dc.get("triggered"))
+
     # 1) 防御选股: 从防御行业白名单选 Top N (低beta跨行业, 排除进攻题材票)
     chosen_def = selector.select(cfg, verbose=True, defensive_only=True)
     if not chosen_def:
@@ -310,41 +332,45 @@ def run_once(cfg, do_trade=True):
     #    weak   -> 优先可转债(债底保护, 弱势类进攻)
     #    balance-> 本周自适应主线(个股/港股/ETF)
     #    bull   -> 本周主线 + 高弹性(可转债/港股/ETF弹性标的), 博名次
-    import weekly_theme
-    theme = weekly_theme.pick_theme(cfg, verbose=True)
+    #    v6.10: 死叉去风险(defense_only)时跳过进攻选股, 全防御(不强行卖出已持仓进攻票)
     chosen_off = []
-    if theme.get("offensive"):
-        pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("candidate_pool", [])}
-        off_pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("offensive_pool", [])}
-        theme_codes = theme["offensive"][:2]
+    if not defense_only:
+        import weekly_theme
+        theme = weekly_theme.pick_theme(cfg, verbose=True)
+        if theme.get("offensive"):
+            pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("candidate_pool", [])}
+            off_pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("offensive_pool", [])}
+            theme_codes = theme["offensive"][:2]
 
-        # 弱势市: 若主线票含个股(高波动), 用可转债替代1只作为类进攻底仓
-        if regime == "weak":
-            kzz = [p["code"] for p in cfg.get("auto_select", {}).get("candidate_pool", [])
-                   if p.get("market") == "KZZ" and p.get("industry") != "可转债" or
-                   (p.get("market") == "KZZ")]
-            # 取流动性最好的银行转债(南银/兴业)其一
-            kzz_pick = next((c for c in ["113050", "113052"] if c in kzz), None)
-            if kzz_pick and theme_codes:
-                theme_codes = [kzz_pick] + theme_codes[:1]  # 可转债 + 1只主线, 降低纯股暴露
-                print(f"  🛡️ 弱势市进攻: 可转债替代部分个股暴露 (债底保护)")
+            # 弱势市: 若主线票含个股(高波动), 用可转债替代1只作为类进攻底仓
+            if regime == "weak":
+                kzz = [p["code"] for p in cfg.get("auto_select", {}).get("candidate_pool", [])
+                       if p.get("market") == "KZZ" and p.get("industry") != "可转债" or
+                       (p.get("market") == "KZZ")]
+                # 取流动性最好的银行转债(南银/兴业)其一
+                kzz_pick = next((c for c in ["113050", "113052"] if c in kzz), None)
+                if kzz_pick and theme_codes:
+                    theme_codes = [kzz_pick] + theme_codes[:1]  # 可转债 + 1只主线, 降低纯股暴露
+                    print(f"  🛡️ 弱势市进攻: 可转债替代部分个股暴露 (债底保护)")
 
-        for code in theme_codes[:2]:
-            meta = pool_map.get(code) or off_pool_map.get(code) or {"name": code, "industry": "进攻", "tech": True}
-            rt = md.get_realtime([code]).get(code, {})
-            cur, pct = md.price_percentile(code, 250)
-            chosen_off.append({
-                "code": code, "name": meta.get("name", code),
-                "industry": meta.get("industry", "进攻"), "tech": meta.get("tech", True),
-                "market": meta.get("market", "A"),
-                "turnover_pct": rt.get("turnover_pct"), "hist_pct": pct,
-                "final_score": 1.0, "_offensive": True, "_theme": theme.get("mode", "auto"),
-                "_regime": regime
-            })
-        tag = {"weak": "弱势-可转债替代", "balance": "平衡-主线", "bull": "强势-主线+弹性"}[regime]
-        print(f"  🔥 进攻采用[{tag}]: {[c['name'] for c in chosen_off]}")
+            for code in theme_codes[:2]:
+                meta = pool_map.get(code) or off_pool_map.get(code) or {"name": code, "industry": "进攻", "tech": True}
+                rt = md.get_realtime([code]).get(code, {})
+                cur, pct = md.price_percentile(code, 250)
+                chosen_off.append({
+                    "code": code, "name": meta.get("name", code),
+                    "industry": meta.get("industry", "进攻"), "tech": meta.get("tech", True),
+                    "market": meta.get("market", "A"),
+                    "turnover_pct": rt.get("turnover_pct"), "hist_pct": pct,
+                    "final_score": 1.0, "_offensive": True, "_theme": theme.get("mode", "auto"),
+                    "_regime": regime
+                })
+            tag = {"weak": "弱势-可转债替代", "balance": "平衡-主线", "bull": "强势-主线+弹性"}[regime]
+            print(f"  🔥 进攻采用[{tag}]: {[c['name'] for c in chosen_off]}")
+        else:
+            chosen_off = selector.select_offensive(cfg, top_n=2, verbose=True)
     else:
-        chosen_off = selector.select_offensive(cfg, top_n=2, verbose=True)
+        print(f"  🛡️ 死叉去风险: 跳过进攻选股, 本周全防御(进攻仓=0)")
 
     all_chosen = (chosen_def or []) + (chosen_off or [])
     if not all_chosen:
@@ -368,8 +394,14 @@ def run_once(cfg, do_trade=True):
         freed = off_pct * (1.0 - _temp["offense_multiplier"])
         off_pct = round(off_pct * _temp["offense_multiplier"], 1)
         cash_pct = round(cash_pct + freed, 1)
+    # v6.10 死叉全防御: 触发则进攻仓清零, 释放额度转入防御底仓
+    if defense_only:
+        freed_off = off_pct
+        off_pct = 0.0
+        base_pct = round(base_pct + freed_off, 1)
     print(f"  [仓位] 市况: {regime} -> 防御{base_pct}% / 进攻{off_pct}% / 现金{cash_pct}%"
-          + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else ""))
+          + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else "")
+          + ("  🛡️死叉全防御" if defense_only else ""))
 
     per_def = base_pct / len(chosen_def) if chosen_def else 0   # 每只防御仓金额占比
     per_off = off_pct / len(chosen_off) if chosen_off else 0   # 每只进攻仓金额占比(v6: 2只均分30%)
@@ -406,8 +438,8 @@ def run_once(cfg, do_trade=True):
                 _cost_basis[d["code"]]["_offensive"] = True
                 save_cost_cache()
 
-    # 5) 机动加仓(仅进攻模式且非防御): 防御模式不加仓
-    if not defensive:
+    # 5) 机动加仓(仅进攻模式且非防御/非死叉去风险): 防御模式不加仓
+    if not defensive and not defense_only:
         add_rule = cfg.get("buy_rules", {}).get("add_position", {})
         max_add = add_rule.get("max_add_times_per_stock", 2)
         flex_total = cfg["risk"].get("flex_position_pct", 20) / 100 * total
