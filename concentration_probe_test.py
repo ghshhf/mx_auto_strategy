@@ -86,6 +86,50 @@ def test_integration_math():
     print(f"  [OK] integration: 极端->{b}/{o}/{c} 正常->{b2}/{o2}/{c2} (sum=100)")
 
 
+def test_dual_source_combine():
+    """双源合成: 实时层 + 真实持仓层按权重合成最终指数; 任一层缺失则退回单层。"""
+    import fund_holdings_probe as fhp
+    rt_board = make_board(0.11, 0.50, 0.80, 0.10)  # 实时层 ~高分
+    rt_only = cp.get_fund_concentration(CFG, _board=rt_board)
+    rt_score = rt_only["score"]
+
+    # 真实层可用 -> 合成 = w_rt*rt + w_h*hl
+    hl_res = {"available": True, "score": 80.0, "hhi": 0.15, "max_weight": 0.35,
+              "top3_share": 0.70, "top_industries": [("电子", 30.0)], "fund_count": 35}
+    orig = fhp.compute_holdings_concentration
+    fhp.compute_holdings_concentration = lambda cfg, force_refresh=False: hl_res
+    try:
+        comb = cp.get_fund_concentration(CFG, _board=rt_board)
+        expect = 0.55 * rt_score + 0.45 * 80.0
+        assert abs(comb["score"] - expect) < 0.5, f"合成分应≈{expect}, 实 {comb['score']}"
+        assert comb["holdings_available"] is True
+        assert comb["holdings_score"] == 80.0
+        assert comb["holdings_hhi"] == 0.15
+        print(f"  [OK] 双源合成: 实时{rt_score:.0f} + 真实80 -> {comb['score']:.0f} (权重0.55/0.45)")
+    finally:
+        fhp.compute_holdings_concentration = orig
+
+    # 真实层不可用 -> 退回仅实时层(分数不变)
+    fhp.compute_holdings_concentration = lambda cfg, force_refresh=False: None
+    try:
+        fallback = cp.get_fund_concentration(CFG, _board=rt_board)
+        assert abs(fallback["score"] - rt_score) < 0.5, "真实层缺应退回实时层"
+        assert fallback["holdings_available"] is False
+        print(f"  [OK] 真实层缺 -> 退回实时层({fallback['score']:.0f})")
+    finally:
+        fhp.compute_holdings_concentration = orig
+
+    # 实时层缺失(board=None)但真实层可用 -> 仅用真实层分数
+    fhp.compute_holdings_concentration = lambda cfg, force_refresh=False: hl_res
+    try:
+        rt_missing = cp.get_fund_concentration(CFG, _board=None)
+        assert rt_missing["score"] == 80.0, "实时层缺应仅用真实层"
+        assert rt_missing["holdings_available"] is True
+        print(f"  [OK] 实时层缺 -> 仅真实层(80)")
+    finally:
+        fhp.compute_holdings_concentration = orig
+
+
 def main():
     print("=== concentration_probe 离线测试 ===")
     test_ordering()
@@ -93,6 +137,7 @@ def main():
     test_graceful_all_fail()
     test_graceful_partial_fail()
     test_integration_math()
+    test_dual_source_combine()
     print("=== 全部通过 ===")
 
 

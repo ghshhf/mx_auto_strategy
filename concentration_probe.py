@@ -161,7 +161,9 @@ def get_fund_concentration(cfg, force_refresh=False, _board=None):
         return {"score": 0.0, "label": "normal", "defensive_tighten": 1.0,
                 "enabled": False, "shadow": shadow, "apply": False,
                 "hot_cluster_share_pct": 0.0, "top_hot_sectors": [],
-                "detail": "集中度探针未启用, 不干预仓位", "_parts": {}}
+                "detail": "集中度探针未启用, 不干预仓位", "_parts": {},
+                "holdings_available": False, "holdings_score": 0.0,
+                "holdings_hhi": None, "holdings_top_industries": []}
 
     # 命中缓存直接返回(loop 模式避免频繁打接口; 注入 _board 为测试/确定性场景, 跳过缓存)
     now = time.time()
@@ -175,31 +177,57 @@ def get_fund_concentration(cfg, force_refresh=False, _board=None):
                                          "计算机", "软件", "通信", "电子", "元器件",
                                          "消费电子", "军工", "军工电子"])
 
+    # ------------------------------------------------------------------ 实时层(原逻辑)
     board = _board if _board is not None else fetch_sector_board()
     parts = _derive_parts(board, hot_cluster)
+    rt_ok = bool(parts)
 
-    # 全部失败 -> 安全退回原逻辑(不干预, tighten=1.0)
-    if not parts:
+    rt_score = 0.0
+    rt_scored = {}
+    if rt_ok:
+        w = gc.get("weights", {"turnover_hhi": 0.30, "hot_cluster_share": 0.35,
+                               "return_dispersion": 0.20, "netflow_hhi": 0.15})
+        scored = {}
+        scored["turnover_hhi"] = _score_hhi(parts["hhi"])
+        scored["hot_cluster_share"] = _score_hot_share(parts["hot_share"])
+        if parts["ret_share"] is not None:
+            scored["return_dispersion"] = _score_ret_share(parts["ret_share"])
+        if parts["nf_hhi"] is not None:
+            scored["netflow_hhi"] = _score_hhi(parts["nf_hhi"])
+        avail_w = {k: w.get(k, 0.0) for k in scored}
+        tot = sum(avail_w.values()) or 1.0
+        rt_score = sum(scored[k] * avail_w[k] for k in scored) / tot * 100
+        rt_scored = {k: round(v, 3) for k, v in scored.items()}
+
+    # ------------------------------------------------------------------ 真实持仓层(妙想, 双源)
+    hl = None
+    try:
+        import fund_holdings_probe as fhp
+        # 注入 _board 离线测试时不打妙想(避免副作用); 否则按缓存策略读取/异步刷新
+        hl = fhp.compute_holdings_concentration(cfg, force_refresh=False)
+    except Exception:
+        hl = None
+    hl_ok = bool(hl and hl.get("available"))
+
+    # ------------------------------------------------------------------ 双源合成(0~100)
+    w_rt = gc.get("real_time_weight", 0.55)
+    w_h = gc.get("holdings_weight", 0.45)
+    if hl_ok and rt_ok:
+        score = w_rt * rt_score + w_h * hl["score"]      # 双源加权
+    elif hl_ok:
+        score = hl["score"]                               # 实时层缺失, 仅真实层
+    elif rt_ok:
+        score = rt_score                                  # 真实层缺失, 仅实时层(原行为)
+    else:
+        # 两层都失败 -> 安全退回原逻辑(不干预, tighten=1.0)
         return {"score": 0.0, "label": "unknown", "defensive_tighten": 1.0,
                 "enabled": True, "shadow": shadow, "apply": (enabled and not shadow),
                 "hot_cluster_share_pct": 0.0, "top_hot_sectors": [],
-                "detail": "行业板块数据抓取失败, 退回原仓位逻辑(不干预)", "_parts": {}}
+                "detail": "实时层与真实持仓层均抓取失败, 退回原仓位逻辑(不干预)",
+                "holdings_available": False, "holdings_score": 0.0,
+                "holdings_hhi": None, "holdings_top_industries": [], "_parts": {}}
 
-    w = gc.get("weights", {"turnover_hhi": 0.30, "hot_cluster_share": 0.35,
-                           "return_dispersion": 0.20, "netflow_hhi": 0.15})
-
-    scored = {}
-    scored["turnover_hhi"] = _score_hhi(parts["hhi"])
-    scored["hot_cluster_share"] = _score_hot_share(parts["hot_share"])
-    if parts["ret_share"] is not None:
-        scored["return_dispersion"] = _score_ret_share(parts["ret_share"])
-    if parts["nf_hhi"] is not None:
-        scored["netflow_hhi"] = _score_hhi(parts["nf_hhi"])
-
-    avail_w = {k: w.get(k, 0.0) for k in scored}
-    tot = sum(avail_w.values()) or 1.0
-    score = sum(scored[k] * avail_w[k] for k in scored) / tot * 100
-
+    # ------------------------------------------------------------------ 阈值 -> 标签/收紧(基于合成分)
     th = gc.get("thresholds", {"elevated": 40, "crowded": 65, "extreme": 82})
     tk = gc.get("tighten", {"elevated": 0.90, "crowded": 0.75, "extreme": 0.60, "floor": 0.50})
     if score >= th["extreme"]:
@@ -214,11 +242,16 @@ def get_fund_concentration(cfg, force_refresh=False, _board=None):
         label, tighten = "normal", 1.0
     tighten = max(tk.get("floor", 0.50), tighten)
 
-    top_hot = [n for n, _ in parts["top_hot"][:6]]
-    detail = (f"成交额HHI={parts['hhi']:.3f} 科技簇占比={parts['hot_share']*100:.1f}% "
-              f"涨幅集中度={ (parts['ret_share'] if parts['ret_share'] is not None else 0):.2f}"
-              f" 净流入HHI={ (parts['nf_hhi'] if parts['nf_hhi'] is not None else 0):.3f}"
-              f" 热点={','.join(top_hot[:4])}")
+    top_hot = [n for n, _ in parts["top_hot"][:6]] if rt_ok else []
+    rt_share = parts["hot_share"] if rt_ok else 0.0
+    rt_hhi = parts["hhi"] if rt_ok else 0.0
+    rt_ret = (parts["ret_share"] if (rt_ok and parts["ret_share"] is not None) else 0.0)
+    rt_nf = (parts["nf_hhi"] if (rt_ok and parts["nf_hhi"] is not None) else 0.0)
+    detail = (f"实时:成交额HHI={rt_hhi:.3f} 科技簇占比={rt_share*100:.1f}% "
+              f"涨幅集中度={rt_ret:.2f} 净流入HHI={rt_nf:.3f} 热点={','.join(top_hot[:4])}"
+              f" | 真实持仓层:{'可用' if hl_ok else '缺(异步刷新中)'}"
+              + (f" HHI={hl['hhi']} 最大行业={hl['max_weight']*100:.1f}% "
+                 f"指数={hl['score']:.0f}" if hl_ok else ""))
 
     result = {
         "score": round(score, 1),
@@ -227,10 +260,17 @@ def get_fund_concentration(cfg, force_refresh=False, _board=None):
         "enabled": True,
         "shadow": shadow,
         "apply": (enabled and not shadow),
-        "hot_cluster_share_pct": round(parts["hot_share"] * 100, 1),
+        "hot_cluster_share_pct": round(rt_share * 100, 1),
         "top_hot_sectors": top_hot,
         "detail": detail.strip(),
-        "_parts": {k: round(v, 3) for k, v in scored.items()},
+        "_parts": rt_scored,
+        # 真实持仓层透传(供 auto_trader 打印/调试)
+        "holdings_available": hl_ok,
+        "holdings_score": round(hl["score"], 1) if hl_ok else 0.0,
+        "holdings_hhi": hl.get("hhi") if hl_ok else None,
+        "holdings_max_weight": round(hl["max_weight"], 4) if hl_ok else None,
+        "holdings_top_industries": hl.get("top_industries", []) if hl_ok else [],
+        "holdings_fund_count": hl.get("fund_count") if hl_ok else 0,
     }
     if _board is None:  # 仅真实抓取结果缓存, 注入板不缓存(避免测试串味)
         _CACHE["ts"] = now

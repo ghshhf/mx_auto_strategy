@@ -314,9 +314,15 @@ def run_once(cfg, do_trade=True):
     # v6.9+ 公募基金行业集中度探针(防御端): 监测全市场/公募对少数行业的抱团集中度
     _conc = _read_concentration(cfg)
     if _conc:
+        hinfo = ""
+        if _conc.get("holdings_available"):
+            top = _conc.get("holdings_top_industries", [])[:3]
+            hinfo = "\n          [真实持仓层 {}只基金] ".format(_conc.get("holdings_fund_count", 0)) \
+                    + ", ".join(f"{k}({v}%)" for k, v in top)
         print(f"  [集中度] 行业集中度: {_conc['label']}({_conc['score']:.0f}/100) "
-              f"科技簇成交占比={_conc['hot_cluster_share_pct']:.1f}% "
-              f"防御收紧x{_conc['defensive_tighten']:.2f}  [{'影子' if _conc['shadow'] else '生效'}]")
+              f"科技簇={_conc['hot_cluster_share_pct']:.1f}% "
+              f"防御收紧x{_conc['defensive_tighten']:.2f}  [{'影子' if _conc['shadow'] else '生效'}]"
+              + (f"{hinfo}" if hinfo else ""))
 
     # 1) 防御选股: 从防御行业白名单选 Top N (低beta跨行业, 排除进攻题材票)
     chosen_def = selector.select(cfg, verbose=True, defensive_only=True)
