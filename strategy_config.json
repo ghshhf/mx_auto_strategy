@@ -762,6 +762,118 @@
         "tech": false,
         "_theme": "水电+新能源双驱, 成长性优于长江电力, 股息4%+, 攻守兼备",
         "_note": "v6.9扩容: 电力进攻端弹性补强"
+      },
+      {
+        "code": "688256",
+        "name": "寒武纪",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "688041",
+        "name": "海光信息",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "688008",
+        "name": "澜起科技",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "300502",
+        "name": "新易盛",
+        "industry": "通信",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "300394",
+        "name": "天孚通信",
+        "industry": "通信",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "002463",
+        "name": "沪电股份",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "000977",
+        "name": "浪潮信息",
+        "industry": "计算机",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "603501",
+        "name": "韦尔股份",
+        "industry": "半导体",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "300274",
+        "name": "阳光电源",
+        "industry": "光伏",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "300014",
+        "name": "亿纬锂能",
+        "industry": "新能源",
+        "tech": true,
+        "market": "A"
+      },
+      {
+        "code": "601111",
+        "name": "中国国航",
+        "industry": "航空",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600029",
+        "name": "南方航空",
+        "industry": "航空",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601021",
+        "name": "春秋航空",
+        "industry": "航空",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601919",
+        "name": "中远海控",
+        "industry": "航运",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "601872",
+        "name": "招商轮船",
+        "industry": "航运",
+        "tech": false,
+        "market": "A"
+      },
+      {
+        "code": "600026",
+        "name": "中远海能",
+        "industry": "航运",
+        "tech": false,
+        "market": "A"
       }
     ],
     "_note": "industry=sector name for dedup; tech=true = tech sector (elec/comm/semi/CS/AI)",
@@ -892,10 +1004,25 @@
     "enabled": true,
     "shadow_mode": false,
     "cache_seconds": 300,
-    "weights": { "breadth": 0.30, "volume": 0.30, "trend": 0.25, "funding": 0.15 },
-    "thresholds": { "hot": 70, "cold": 30, "reduce_below": 55 },
-    "offense_multiplier": { "cold": 0.4, "fragile_extra": 0.6, "floor": 0.25 },
-    "vix_reference": { "warn_above": 25 }
+    "weights": {
+      "breadth": 0.3,
+      "volume": 0.3,
+      "trend": 0.25,
+      "funding": 0.15
+    },
+    "thresholds": {
+      "hot": 70,
+      "cold": 30,
+      "reduce_below": 55
+    },
+    "offense_multiplier": {
+      "cold": 0.4,
+      "fragile_extra": 0.6,
+      "floor": 0.25
+    },
+    "vix_reference": {
+      "warn_above": 25
+    }
   },
   "market": {
     "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
