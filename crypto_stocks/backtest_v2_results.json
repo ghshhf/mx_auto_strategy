@@ -1,0 +1,56 @@
+{
+  "BTC Buy&Hold": {
+    "multiple": 630.9,
+    "cagr": 90.7,
+    "mdd": -84.8,
+    "sharpe": 0
+  },
+  "Defense-3 BuyHold": {
+    "multiple": 538.67,
+    "cagr": 87.7,
+    "mdd": -87.2,
+    "sharpe": 0
+  },
+  "Def3+STAKING+ETHstake": {
+    "multiple": 40.8,
+    "cagr": 45.0,
+    "mdd": -67.2,
+    "sharpe": 0
+  },
+  "V3.1 Baseline (old)": {
+    "multiple": 19774.63,
+    "cagr": 169.3,
+    "mdd": -57.1,
+    "sharpe": 3.57
+  },
+  "V5 No-CrashGuard": {
+    "multiple": 44323.93,
+    "cagr": 192.0,
+    "mdd": -53.7,
+    "sharpe": 3.48
+  },
+  "V5 Monthly": {
+    "multiple": 1119.32,
+    "cagr": 102.0,
+    "mdd": -53.4,
+    "sharpe": 2.74
+  },
+  "V5 No-cost": {
+    "multiple": 48940.62,
+    "cagr": 194.9,
+    "mdd": -32.8,
+    "sharpe": 3.68
+  },
+  "V5 Final": {
+    "multiple": 46237.56,
+    "cagr": 193.2,
+    "mdd": -32.9,
+    "sharpe": 3.68
+  },
+  "V5 TightGuard": {
+    "multiple": 39974.77,
+    "cagr": 189.0,
+    "mdd": -30.1,
+    "sharpe": 3.69
+  }
+}

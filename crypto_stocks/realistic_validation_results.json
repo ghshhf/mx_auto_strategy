@@ -1,0 +1,37 @@
+{
+  "slippage_model": {
+    "tier1_bps": 1.0,
+    "tier2_bps": 2.9999999999999996,
+    "tier3_bps": 8.0,
+    "v5_default_cost_bps": 10,
+    "with_slippage_cost_bps": 12,
+    "note": "defense no turnover=0 slip; offense ~2bps avg; weekly limit order"
+  },
+  "ideal": {
+    "multiple": 45178.7,
+    "mdd": -33.0,
+    "sharpe": 3.67
+  },
+  "realistic": {
+    "multiple": 34502.8,
+    "mdd": -34.1,
+    "sharpe": 2.94
+  },
+  "slippage": {
+    "multiple": 33807.4,
+    "mdd": -34.1,
+    "sharpe": 2.95
+  },
+  "walkforward": {
+    "train": {
+      "multiple": 1028.6,
+      "mdd": -34.1,
+      "sharpe": 3.28
+    },
+    "test": {
+      "multiple": 22.1,
+      "mdd": -27.0,
+      "sharpe": 2.75
+    }
+  }
+}

@@ -11,14 +11,17 @@
 
 ## 分类索引（多市场导航）｜ AI 自动分类
 
-本仓库按**市场**分两大类，AI 拉取后请按此归类：
+本仓库按**市场**分三大类，AI 拉取后请按此归类：
 
 | 类别 | 路径 | 说明 | 分类标记 |
 |---|---|---|---|
 | **A 股（主系统）** | 仓库根目录 | 龙虾炒股大赛自动交易（剧本书写者 + 防御自治 + 网格），依赖 mx-moni API / T+1 / 限价 | 无（默认根） |
 | **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + Walk-forward OOS + 崩盘保护 + 网格叠加，10 年 ≈ 50x | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
+| **加密（对标迁移）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + 暴跌过滤，10 年 ≈ 42,000x | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
 
-> 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。未来 `git pull` 后如需 AI 自动分类，以该标记为准，将 `us_stocks/` 整体识别为「美股分类」，勿与 A 股逻辑混淆。
+> 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。
+> 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
+> 未来 `git pull` 后如需 AI 自动分类，以各分类标记为准，将 `us_stocks/` 识别为「美股分类」、`crypto_stocks/` 识别为「加密分类」，勿与 A 股逻辑混淆。
 
 ---
 

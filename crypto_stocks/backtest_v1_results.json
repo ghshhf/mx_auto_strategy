@@ -1,0 +1,58 @@
+{
+  "BTC Buy&Hold": {
+    "multiple": 15.6073,
+    "cagr": 45.83,
+    "mdd": -77.65,
+    "sharpe": 0,
+    "worst_week": 0
+  },
+  "Equal-Weight 3Coin": {
+    "multiple": 43.4967,
+    "cagr": 67.87,
+    "mdd": -73.25,
+    "sharpe": 0,
+    "worst_week": 0
+  },
+  "60/40 BTC/ETH": {
+    "multiple": 18.9758,
+    "cagr": 49.8,
+    "mdd": -76.25,
+    "sharpe": 0,
+    "worst_week": 0
+  },
+  "V1 No-cost": {
+    "multiple": 140.611,
+    "cagr": 97.22,
+    "mdd": -59.69,
+    "sharpe": 1.92,
+    "worst_week": -11.88
+  },
+  "V1 Weekly (0.1% fee)": {
+    "multiple": 136.9031,
+    "cagr": 96.5,
+    "mdd": -59.73,
+    "sharpe": 1.91,
+    "worst_week": -11.88
+  },
+  "V1 Monthly (0.1% fee)": {
+    "multiple": 51.7811,
+    "cagr": 71.94,
+    "mdd": -59.96,
+    "sharpe": 1.6,
+    "worst_week": -11.88
+  },
+  "V1 + CrashGuard(MA30)": {
+    "multiple": 63.2461,
+    "cagr": 76.73,
+    "mdd": -58.18,
+    "sharpe": 1.7,
+    "worst_week": -11.88
+  },
+  "V1 + VolTarget(60%)": {
+    "multiple": 141.1926,
+    "cagr": 97.33,
+    "mdd": -59.73,
+    "sharpe": 1.93,
+    "worst_week": -11.88
+  }
+}
