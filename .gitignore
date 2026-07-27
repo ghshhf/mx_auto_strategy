@@ -20,8 +20,9 @@ backtest_*_report.md
 *secret*
 
 # 手动实盘记录（用户自己的真实资金曲线，按用户要求独立保留、不随比赛清零）
-# 仅排除数据文件，保留 records/ 目录结构（.gitkeep 占位），供 clone 的 AI 知道往哪写
-records/*.jsonl
+# 用户明确要求: 交易记录一并推送到远程, 故不再排除 records/ 下数据文件
+# records/*.jsonl
+# records/**/*.jsonl
 
 # 系统文件
 .DS_Store
