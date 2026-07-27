@@ -1,0 +1,6 @@
+{"ts": "2026-07-27 15:54:01", "account": "sim_us_2026", "action": "deposit", "code": "", "name": "", "price": 0.0, "qty": 0, "amount": 1000000.0, "note": "2026美股模拟大赛期初本金100万美元"}
+{"ts": "2026-07-27 15:54:01", "account": "sim_us_2026", "action": "buy", "code": "NVDA", "name": "英伟达", "price": 196.694, "qty": 909.0, "amount": 0.0, "note": "美股进攻1:AI算力accelerating,今日Vera CPU消息涨后回调买入"}
+{"ts": "2026-07-27 15:54:02", "account": "sim_us_2026", "action": "buy", "code": "MU", "name": "美光", "price": 870.584, "qty": 200.0, "amount": 0.0, "note": "美股进攻2:半导体accelerating,存储芯片反弹主线,大摩预测内存价涨25%"}
+{"ts": "2026-07-27 15:54:02", "account": "sim_us_2026", "action": "buy", "code": "LLY", "name": "礼来", "price": 1198.237, "qty": 150.0, "amount": 0.0, "note": "美股进攻3:GLP1减肥药accelerating,渗透率1-2%爆发前夜,成长+防御双修"}
+{"ts": "2026-07-27 15:54:03", "account": "sim_us_2026", "action": "buy", "code": "KO", "name": "可口可乐", "price": 83.904, "qty": 1951.0, "amount": 0.0, "note": "美股防御:低beta蓝筹,股息3%,US50永久防御标的"}
+{"ts": "2026-07-27 15:54:03", "account": "sim_us_2026", "action": "buy", "code": "GLD", "name": "金价ETF", "price": 373.954, "qty": 322.0, "amount": 0.0, "note": "美股对冲:金价今日飙升,地缘+美联储不确定性避险"}
