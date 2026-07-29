@@ -26,10 +26,11 @@ CLI:
 import os
 import sys
 import json
-import urllib.request
+import math
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import llm_client  # 统一 LLM 调用: env(LLM_BASE_URL/LLM_API_KEY/LLM_MODEL) 优先, 优雅降级
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(HERE, "strategy_config.json")
@@ -88,9 +89,9 @@ def _build_prompt(candidates, tag):
         "2. 乘数 1.0 = 中性(与规则评分一致), >1 = 质评优秀(加分), <1 = 质评存疑(减分)\n"
         "3. 评估维度: 行业前景/估值合理性/动量质量/换手健康度\n"
         "4. 不要因为PE高就一律减分(科技股PE高是常态), 要结合行业和动量综合判断\n"
-        "5. 输出必须是合法 JSON 数组, 格式如下, 不要多余文字:\n"
-        '[{"code":"600036","multiplier":1.1,"reason":"低PE银行龙头+稳健"},...]\n'
-        "6. 每只股票必须出现在输出中, code 与输入一致"
+        "5. 输出必须是合法 JSON 数组, 每条含 code/multiplier/reason/risk/catalyst, 不要多余文字:\n"
+        '[{"code":"600036","multiplier":1.1,"reason":"低PE银行龙头+稳健","risk":"息差承压","catalyst":"高股息防御偏好"},...]\n'
+        "6. 每只股票必须出现在输出中, code 与输入一致; reason/risk/catalyst 用中文简短短语"
     )
 
     user = (
@@ -102,48 +103,12 @@ def _build_prompt(candidates, tag):
 
 
 def _call_llm(cfg, system_prompt, user_prompt):
-    """调用 OpenAI 兼容 API, 返回 (content_str, error_str)。"""
-    ai_cfg = get_ai_cfg(cfg)
-    llm = ai_cfg.get("llm", {})
-    base_url = llm.get("base_url", "").rstrip("/")
-    api_key = llm.get("api_key", "")
-    model = llm.get("model", "")
-    timeout = llm.get("timeout_sec", 30)
-    max_tokens = llm.get("max_tokens", 2000)
-
-    if not base_url or not api_key or not model:
-        return None, "LLM 未配置 (base_url/api_key/model 为空)"
-
-    url = f"{base_url}/chat/completions"
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "max_tokens": max_tokens,
-        "temperature": 0.3,  # 低温度, 质评需要稳定性
-    }
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        method="POST",
-    )
-    try:
-        resp = urllib.request.urlopen(req, timeout=timeout)
-        body = json.loads(resp.read().decode("utf-8"))
-        content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
-        return content.strip(), None
-    except Exception as e:
-        return None, f"LLM API 调用失败: {e}"
+    """调用 OpenAI 兼容 API, 返回 (content_str, error_str)。统一走 llm_client (env 优先, 优雅降级)。"""
+    return llm_client.call_llm(cfg, system_prompt, user_prompt, temperature=0.3)
 
 
 def _parse_multipliers(content, candidates):
-    """解析 LLM 输出的 JSON 乘数, 返回 {code: multiplier}。失败返回空 dict。"""
+    """解析 LLM 输出的 JSON 乘数, 返回 {code: {multiplier, reason, risk, catalyst}}。失败返回空 dict。"""
     if not content:
         return {}
 
@@ -182,9 +147,16 @@ def _parse_multipliers(content, candidates):
         if isinstance(item, dict) and "code" in item and "multiplier" in item:
             try:
                 m = float(item["multiplier"])
-                result[str(item["code"])] = m
             except (ValueError, TypeError):
-                pass
+                continue
+            if math.isnan(m) or math.isinf(m):  # 拒绝 NaN/Inf, 避免污染打分
+                continue
+            result[str(item["code"])] = {
+                "multiplier": m,
+                "reason": str(item.get("reason", "")),
+                "risk": str(item.get("risk", "")),
+                "catalyst": str(item.get("catalyst", "")),
+            }
     return result
 
 
@@ -263,12 +235,13 @@ def augment(candidates, cfg, tag="defensive"):
         })
         return candidates
 
-    # 应用乘数
+    # 应用乘数 + 决策摘要字段
     print(f"  [ai_score] {'SHADOW(仅打印)' if shadow else 'LIVE'} {tag}端 AI 加权打分:")
     augmented = []
     for d in candidates:
         code = d["code"]
-        m = mult_map.get(code, 1.0)
+        entry = mult_map.get(code)
+        m = entry["multiplier"] if entry else 1.0
         # 硬钳
         m = max(m_min, min(m_max, m))
         orig_score = d.get("final_score", 0)
@@ -276,12 +249,15 @@ def augment(candidates, cfg, tag="defensive"):
         d_copy = dict(d)
         d_copy["ai_multiplier"] = round(m, 3)
         d_copy["ai_adjusted_score"] = aug_score
-        d_copy["ai_reason"] = ""  # 从 mult_map 无法拿到 reason, 审计日志里有
+        d_copy["ai_reason"] = entry.get("reason", "") if entry else ""
+        d_copy["ai_risk"] = entry.get("risk", "") if entry else ""
+        d_copy["ai_catalyst"] = entry.get("catalyst", "") if entry else ""
         augmented.append(d_copy)
 
-        if code in mult_map or m != 1.0:
+        if entry or m != 1.0:
             arrow = "\u2192" if m != 1.0 else "="
-            print(f"    {code} {d.get('name', '')}: {orig_score:.3f} x{m:.2f} {arrow} {aug_score:.3f}")
+            tail = f" | {d_copy['ai_reason']}" if d_copy["ai_reason"] else ""
+            print(f"    {code} {d.get('name', '')}: {orig_score:.3f} x{m:.2f} {arrow} {aug_score:.3f}{tail}")
 
     # 审计快照
     _save_audit({
@@ -292,7 +268,10 @@ def augment(candidates, cfg, tag="defensive"):
             {"code": d["code"], "name": d.get("name", ""),
              "orig": d.get("final_score", 0),
              "multiplier": d.get("ai_multiplier", 1.0),
-             "adjusted": d.get("ai_adjusted_score", d.get("final_score", 0))}
+             "adjusted": d.get("ai_adjusted_score", d.get("final_score", 0)),
+             "reason": d.get("ai_reason", ""),
+             "risk": d.get("ai_risk", ""),
+             "catalyst": d.get("ai_catalyst", "")}
             for d in augmented
         ],
         "raw_llm_output": content[:1000],

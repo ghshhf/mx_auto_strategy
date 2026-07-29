@@ -11,6 +11,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
 
 
+def apply_trend_filter(scored, top_n, enabled=True):
+    """
+    趋势持续性过滤(安全阀, 纯函数, 可单测)。
+    仅保留 _trend_ok=True 的上升通道标的(MA25>MA100); 过滤后不足 top_n 则退回原列表(不强求)。
+    返回过滤后的列表(可能等于原列表)。
+    """
+    if not enabled or len(scored) <= top_n:
+        return scored
+    passed = [d for d in scored if d.get("_trend_ok", True)]
+    return passed if len(passed) >= top_n else scored
+
+
 def is_defensive_market(cfg):
     """
     趋势过滤(兼容旧调用): 用防御基准(默认沪深300)的 N日MA 判断当前是否下跌趋势。
@@ -334,15 +346,14 @@ def select_offensive(cfg, top_n=1, verbose=True):
 
     scored.sort(key=lambda d: d["final_score"], reverse=True)
 
-    # v6.13: 趋势持续性过滤 — 仅保留 MA25>MA100 的上升通道标的
-    # 安全阀: 过滤后不足 top_n 则退回原列表(不强求)
+    # v6.13: 趋势持续性过滤 — 仅保留 MA25>MA100 的上升通道标的 (安全阀见 apply_trend_filter)
     trend_filter = cfg.get("ai_overlay", {}).get("trend_filter_offensive", True)
     if trend_filter and len(scored) > top_n:
-        passed = [d for d in scored if d.get("_trend_ok", True)]
-        if len(passed) >= top_n:
-            scored = passed
-            if verbose:
-                print(f"  📈 趋势过滤: {len(scored)}/{len(scored)} 只通过 MA25>MA100")
+        n_total = len(scored)
+        scored = apply_trend_filter(scored, top_n, enabled=True)
+        n_passed = len(scored)
+        if n_passed < n_total and verbose:
+            print(f"  📈 趋势过滤: {n_passed}/{n_total} 只通过 MA25>MA100")
 
     chosen = scored[:top_n]
 

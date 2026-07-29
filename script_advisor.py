@@ -20,11 +20,11 @@ script_advisor.py - 剧本智能生成 (v6.14 AI增强 阶段1)
 import os
 import sys
 import json
-import urllib.request
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
+import llm_client  # 统一 LLM 调用: env(LLM_BASE_URL/LLM_API_KEY/LLM_MODEL) 优先, 优雅降级
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(HERE, "strategy_config.json")
@@ -237,45 +237,9 @@ def build_prompt(ctx):
 
 def call_llm(cfg, system_prompt, user_prompt):
     """
-    调用 OpenAI 兼容 API。失败返回 None。
+    调用 OpenAI 兼容 API。失败返回 (None, error)。统一走 llm_client (env 优先, 优雅降级)。
     """
-    ai_cfg = get_ai_cfg(cfg)
-    llm = ai_cfg.get("llm", {})
-    base_url = llm.get("base_url", "").rstrip("/")
-    api_key = llm.get("api_key", "")
-    model = llm.get("model", "")
-    timeout = llm.get("timeout_sec", 30)
-    max_tokens = llm.get("max_tokens", 2000)
-
-    if not base_url or not api_key or not model:
-        return None, "LLM 未配置 (base_url/api_key/model 为空)"
-
-    url = f"{base_url}/chat/completions"
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "max_tokens": max_tokens,
-        "temperature": 0.7,
-    }
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        method="POST",
-    )
-    try:
-        resp = urllib.request.urlopen(req, timeout=timeout)
-        body = json.loads(resp.read().decode("utf-8"))
-        content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
-        return content.strip(), None
-    except Exception as e:
-        return None, f"LLM API 调用失败: {e}"
+    return llm_client.call_llm(cfg, system_prompt, user_prompt, temperature=0.7)
 
 
 # ---------------------------------------------------------------- 草稿落盘

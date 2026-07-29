@@ -2,7 +2,7 @@
  "generated_at": "2026-07-30",
  "source": "东方财富后复权(金标准)",
  "last_date": "2026-07-24",
- "version": "v6.13",
+ "version": "v6.14b",
  "configs": {
   "baseline": {
    "label": "基线(cf=0.6)",

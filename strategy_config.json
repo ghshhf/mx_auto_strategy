@@ -1218,10 +1218,11 @@
     "min_premium_note": "实盘需校验溢价率/YTM, 当前仅按流动性+债底初筛"
   },
   "ai_overlay": {
-    "_comment": "v6.14 AI增强层: 剧本智能生成(script_advisor) + AI选股加权打分(ai_score). 设计原则: AI仅作乘数/建议, 不替代规则; 失败退回纯规则; shadow_mode默认true(只打印不执行); enabled默认false. LLM走OpenAI兼容API(DeepSeek/Qwen等均支持).",
-    "enabled": false,
+    "_comment": "v6.14b AI增强层: 剧本智能生成(script_advisor) + AI选股加权打分(ai_score). 设计原则: AI仅作乘数/建议, 不替代规则; 失败退回纯规则; shadow_mode=true(只打印不执行). v6.14b: 接入统一 llm_client, LLM 配置优先读环境变量 LLM_BASE_URL/LLM_API_KEY/LLM_MODEL(LLM_TIMEOUT_SEC/LLM_MAX_TOKENS/LLM_TEMPERATURE 可选), config.json 的 llm 段作兜底. 剧本已封印(sealed=true), 方向主轴移交 AI; 故 enabled=true(armed) 但 shadow_mode=true(安全: 不覆盖 user_script.md/不改交易排序). 配置 LLM_* 环境变量即激活, 未配置则优雅退回纯规则.",
+    "enabled": true,
     "shadow_mode": true,
     "llm": {
+      "_env_note": "优先级: 环境变量 LLM_BASE_URL/LLM_API_KEY/LLM_MODEL > 下方文件值. 例: export LLM_BASE_URL='https://api.deepseek.com/v1' LLM_API_KEY='sk-...' LLM_MODEL='deepseek-chat'",
       "base_url": "",
       "api_key": "",
       "model": "",

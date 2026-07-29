@@ -169,7 +169,7 @@ out = dict(
     generated_at=dt.date.today().isoformat(),
     source="东方财富后复权(金标准)",
     last_date=last_date,
-    version="v6.13",
+    version="v6.14b",
     configs=configs_meta,
     windows=windows,
 )
