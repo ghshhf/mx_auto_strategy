@@ -304,6 +304,15 @@ def select_offensive(cfg, top_n=1, verbose=True):
         # v6.1 权重: 动量35% + 弹性25% + 反弹25% + 热度15%
         score = 0.35 * momentum_score + 0.25 * elastic_score + 0.25 * bounce_score + 0.15 * hot_score
 
+        # v6.13: 趋势持续性过滤标记 — MA25 > MA100 (中短期上升通道, 拒绝死猫跳)
+        # 回测验证: 全窗口微正(+0.03x), 无负面; 安全阀: 过滤后不足top_n则保留全部
+        trend_ok = True  # 默认通过(数据不足时不过滤)
+        if kl and len(kl) >= 100:
+            closes = [k["close"] for k in kl]
+            ma25 = sum(closes[-25:]) / 25
+            ma100 = sum(closes[-100:]) / 100
+            trend_ok = ma25 > ma100
+
         detail = {
             "code": code,
             "name": p["name"],
@@ -319,10 +328,22 @@ def select_offensive(cfg, top_n=1, verbose=True):
             "_elastic": round(elastic_score, 3),
             "_bounce": round(bounce_score, 3),
             "_hot": round(hot_score, 3),
+            "_trend_ok": trend_ok,
         }
         scored.append(detail)
 
     scored.sort(key=lambda d: d["final_score"], reverse=True)
+
+    # v6.13: 趋势持续性过滤 — 仅保留 MA25>MA100 的上升通道标的
+    # 安全阀: 过滤后不足 top_n 则退回原列表(不强求)
+    trend_filter = cfg.get("ai_overlay", {}).get("trend_filter_offensive", True)
+    if trend_filter and len(scored) > top_n:
+        passed = [d for d in scored if d.get("_trend_ok", True)]
+        if len(passed) >= top_n:
+            scored = passed
+            if verbose:
+                print(f"  📈 趋势过滤: {len(scored)}/{len(scored)} 只通过 MA25>MA100")
+
     chosen = scored[:top_n]
 
     # v6.1: 行业平衡 — 若TopN都来自同一行业(如全医疗), 强制将末位替换为其他强势行业(如电力)的第二高评分标的
@@ -339,7 +360,8 @@ def select_offensive(cfg, top_n=1, verbose=True):
     if verbose:
         print(f"  进攻评分完成: {len(scored)} 只候选")
         for d in chosen:
-            print(f"  🔥 {d['code']} {d['name']} [{d['industry']}] 评分={d['final_score']} "
+            trend_tag = "📈" if d.get("_trend_ok") else "📉"
+            print(f"  🔥 {d['code']} {d['name']} [{d['industry']}] {trend_tag} 评分={d['final_score']} "
                   f"20日涨幅={d['chg20']}% 分位={d['hist_pct']} "
                   f"动量={d['_momentum']} 弹性={d['_elastic']} 反弹={d['_bounce']}")
         if len(scored) > top_n:

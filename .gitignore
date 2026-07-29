@@ -27,5 +27,14 @@ backtest_*_report.md
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# 回测数据面板 (27MB, 本地保留不提交)
+ashare_backtest/data/
+ashare_backtest/WK/
+
+# 临时对比测试脚本
+ashare_backtest/_cmp_*.py
+
 # 美股分类 us_stocks：核心回测引擎需纳入版本管理，不被上面的 backtest_*.py 规则排除
 !us_stocks/backtest_*.py
+!ashare_backtest/backtest_engine.py
