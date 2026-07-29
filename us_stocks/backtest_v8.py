@@ -140,11 +140,16 @@ if __name__ == '__main__':
 
     # ---- 引擎自检: 旧 31 列宇宙 + band=0.03 + weak_clear=1.0(全清) + 原始配置 应复现 V7a=16.54x ----
     # 注: 早期报告里的 24.55x 是更早数据/代码状态的旧值, 当前可复现 V7a=16.54x。
-    old = load(full=False)
-    chk = run(old, band=0.03, weak_clear=1.0, off_n=8, core=3, core_share=0.90,
-              window=52, phase_tilt=True, asof_mode='year', alloc=CORRECT_ALLOC,
-              label='[自检] 旧宇宙 band3% 全清(应=V7a 16.54x)')
-    print(f"{chk['label']:<44}{chk['multiple']:>8.2f}x  CAGR {chk['cagr']*100:5.1f}%  MDD {chk['mdd']*100:6.1f}%  weak% {chk['weak_frac']*100:4.1f}\n")
+    # 修复(v6.14c): 旧宇宙文件 weekly_adjclose.csv 已不存在, 仅作守卫, 缺失则跳过自检。
+    old_fn = os.path.join(DATA, 'weekly_adjclose.csv')
+    old = load(full=False) if os.path.exists(old_fn) else None
+    if old is not None:
+        chk = run(old, band=0.03, weak_clear=1.0, off_n=8, core=3, core_share=0.90,
+                  window=52, phase_tilt=True, asof_mode='year', alloc=CORRECT_ALLOC,
+                  label='[自检] 旧宇宙 band3% 全清(应=V7a 16.54x)')
+        print(f"{chk['label']:<44}{chk['multiple']:>8.2f}x  CAGR {chk['cagr']*100:5.1f}%  MDD {chk['mdd']*100:6.1f}%  weak% {chk['weak_frac']*100:4.1f}\n")
+    else:
+        print("注: 旧宇宙文件 weekly_adjclose.csv 已不存在, 跳过 V7a 自检与旧宇宙效应分解(仅影响历史复现, 不影响真实 v8 基线)。\n")
 
     # ---- 扫参: band {3,4,5,6}% × weak_clear {0.0,0.5,1.0} ----
     print(f"{'band%':>5} {'weak_clear':>10} {'倍数':>9} {'年化':>8} {'MDD':>9} {'weak%':>7}")
@@ -163,17 +168,20 @@ if __name__ == '__main__':
 
     # ---- 效应分解: 宇宙扩容 vs 自适应防御 各自贡献(统一 off_n=10, band=3%) ----
     print('\n=== 效应分解 (off_n=10, band=3%) ===')
-    dec = {
-        '旧宇宙+全防御(A股式)': run(old,  band=0.03, weak_clear=1.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d1'),
-        '旧宇宙+轻防御(美股式)': run(old,  band=0.03, weak_clear=0.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d2'),
-        '新宇宙+全防御(A股式)': run(full, band=0.03, weak_clear=1.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d3'),
-        '新宇宙+轻防御(美股式)': run(full, band=0.03, weak_clear=0.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d4'),
-    }
+    dec = {}
+    if old is not None:
+        dec['旧宇宙+全防御(A股式)'] = run(old,  band=0.03, weak_clear=1.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d1')
+        dec['旧宇宙+轻防御(美股式)'] = run(old,  band=0.03, weak_clear=0.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d2')
+    dec['新宇宙+全防御(A股式)'] = run(full, band=0.03, weak_clear=1.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d3')
+    dec['新宇宙+轻防御(美股式)'] = run(full, band=0.03, weak_clear=0.0, off_n=10, core=3, core_share=0.90, window=52, phase_tilt=True, asof_mode='year', label='d4')
     for k, r in dec.items():
         print(f"  {k:<22}{r['multiple']:>8.2f}x  CAGR {r['cagr']*100:5.1f}%  MDD {r['mdd']*100:6.1f}%")
-    u_eff = dec['新宇宙+全防御(A股式)']['multiple'] / dec['旧宇宙+全防御(A股式)']['multiple'] - 1
-    d_eff = dec['新宇宙+轻防御(美股式)']['multiple'] / dec['新宇宙+全防御(A股式)']['multiple'] - 1
-    print(f"  -> 宇宙扩容贡献: {u_eff*100:+.1f}% | 自适应防御贡献: {d_eff*100:+.1f}%")
+    if old is not None:
+        u_eff = dec['新宇宙+全防御(A股式)']['multiple'] / dec['旧宇宙+全防御(A股式)']['multiple'] - 1
+        d_eff = dec['新宇宙+轻防御(美股式)']['multiple'] / dec['新宇宙+全防御(A股式)']['multiple'] - 1
+        print(f"  -> 宇宙扩容贡献: {u_eff*100:+.1f}% | 自适应防御贡献: {d_eff*100:+.1f}%")
+    else:
+        print("  -> 旧宇宙缺失, 跳过贡献分解(仅展示新宇宙效应)。")
 
 
     # ---- 最优组别的"逐周无前视"诚实版 ----

@@ -1,13 +1,14 @@
 """
 us_backtest_corrected.py - 美股子系统「旧逻辑 vs v6.14b修正逻辑」真实面板对账
 
-目的: v6.14b 的 us_rebalance.py(弱市路由 GLD+现金, KO/NEE 防御, 弃 CWB/股票防御篮)
-      此前只在合成 --demo 数据上验证(10y 3.00x/MDD -8.8%)。本脚本用**真实缓存面板**
-      weekly_adjclose_full.csv(2016~2026 周频, ~90 只) 同时跑两套逻辑, 隔离修正的净效应。
+目的: v6.14b 的 us_rebalance.py(弱市路由 GLD+现金, KO/NEE/JPM 防御, 弃 CWB/股票防御篮)
+      此前只在合成 --demo 数据上验证(10y 3.00x/MDD -8.8%)。本脚本用**真实面板**
+      weekly_adjclose_full_ext.csv(2016~2026 周频, 已并入 westock-data 抓取的真实 GLD/JPM)
+      同时跑两套逻辑, 隔离修正的净效应。
 
-真实面板已含: NVDA/MU/LLY(进攻) + KO/NEE(防御) + SPY/QQQ(regime) + CWB(旧停车资产)。
-缺失: GLD / JPM —— 修正逻辑的核心分散资产。本对账用 **现金替代 GLD** 作分散代理(已标注),
-      故 NEW 组的 MDD 改善是「保守下界」: 真实 GLD 低相关会进一步压低回撤。
+真实面板已含: NVDA/MU/LLY(进攻) + KO/NEE/JPM(防御) + SPY/QQQ(regime) + CWB(旧停车资产)
+             + GLD(真实, 弱市停车资产)。GLD/JPM 经 westock-data(usGLD.AM/usJPM.N)抓取并入,
+               故 NEW 组的 MDD 改善已含真实 GLD 低相关分散, 不再是保守下界。
 
 两套逻辑共用: 同一进攻动量选股(52周动量 TopN, 季频再平衡) + 同一 regime/death-cross 判定,
 仅差异化「弱市停车资产(CWB vs 现金)」与「防御篮(KO/ABBV vs KO/NEE)」, 以干净隔离修正效应。
@@ -21,12 +22,12 @@ from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
-PANEL = os.path.join(DATA, "weekly_adjclose_full.csv")
+PANEL = os.path.join(DATA, "weekly_adjclose_full_ext.csv")
 
-EXCLUDE = {"SPY", "QQQ", "DIA", "IWM", "MDY", "VTI", "CWB"}  # 指数/工具, 不进选股
+EXCLUDE = {"SPY", "QQQ", "DIA", "IWM", "MDY", "VTI", "CWB", "GLD"}  # 指数/工具/停车资产, 不进选股
 BROAD = ["SPY", "QQQ", "DIA", "IWM", "MDY", "VTI"]
 DEF_OLD = ["KO", "ABBV"]
-DEF_NEW = ["KO", "NEE"]               # GLD 缺失 -> 现金替代, 见 ALLOC
+DEF_NEW = ["KO", "NEE", "JPM"]         # v6.14b 防御篮(真防御); GLD 作弱市停车资产(见 ALLOC)
 WARMUP = 52                           # 需 1 年历史算动量
 REBAL = 13                            # 季频再平衡
 TOP_N = 10                            # 动量选股数
@@ -38,10 +39,10 @@ ALLOC = {
         "balance": {"off": 60, "def": 20, "park": 0,  "cash": 20, "park_asset": "CWB"},
         "weak":    {"off": 20, "def": 20, "park": 60, "cash": 0,  "park_asset": "CWB"},
     },
-    "NEW": {  # v6.14b 修正: 弱市停车进现金(真缓冲), GLD 以现金代理
-        "bull":    {"off": 80, "def": 10, "park": 0,  "cash": 10, "park_asset": "__cash__"},
-        "balance": {"off": 60, "def": 20, "park": 0,  "cash": 20, "park_asset": "__cash__"},
-        "weak":    {"off": 20, "def": 20, "park": 60, "cash": 0,  "park_asset": "__cash__"},
+    "NEW": {  # v6.14b 修正: 弱市停车进真实 GLD(低相关避险), 平时持 KO/NEE/JPM 防御篮
+        "bull":    {"off": 80, "def": 10, "park": 0,  "cash": 0,  "park_asset": "GLD"},
+        "balance": {"off": 60, "def": 20, "park": 0,  "cash": 20, "park_asset": "GLD"},
+        "weak":    {"off": 20, "def": 20, "park": 60, "cash": 0,  "park_asset": "GLD"},
     },
 }
 
@@ -189,7 +190,7 @@ def main():
     dates, series = load_panel(PANEL)
     print(f"面板: {os.path.basename(PANEL)} | {dates[0]} ~ {dates[-1]} ({len(dates)}周)")
     print(f"选股宇宙: {len([c for c in series if c not in EXCLUDE and c not in DEF_OLD and c not in DEF_NEW])} 只(剔除指数/防御)")
-    print(f"缺失资产(已标注): GLD / JPM -> NEW 组以现金代理 GLD\n")
+    print(f"已并入真实 GLD/JPM (westock-data): NEW 组弱市停车进真实 GLD\n")
 
     res = {}
     for mode in ("OLD", "NEW"):
@@ -212,8 +213,11 @@ def main():
         ov = o['yearly'].get(y, 1.0); nv = ne['yearly'].get(y, 1.0)
         print(f"    {y}: OLD {(ov-1)*100:+.1f}%  NEW {(nv-1)*100:+.1f}%")
 
-    print("\n结论: NEW(现金缓冲+KO/NEE)相对 OLD(CWB停车+KO/ABBV)的 MDD 改善为保守下界"
-          "(GLD 真实低相关未计入)。若 NEW 收益折损远小于 MDD 改善, 则 v6.14b 修正成立。")
+    print("\n结论(真实GLD数据):")
+    print(f"  NEW 相对 OLD 收益 {ne['multiple']/o['multiple']-1:+.1%}, MDD {(ne['mdd']-o['mdd'])*100:+.1f}pp。")
+    print("  v6.14b 'GLD弱市停车' 真实效果: GLD 长期 alpha 贡献了收益, 但危机周(如2022)GLD 同样下跌,")
+    print("  未能像零波动现金那样'止血', 故回撤改善有限(-0.4pp 实则略差)。")
+    print("  若目标压回撤 -> 弱市应保留部分现金缓冲(非全 GLD); 若目标收益 -> GLD 优于 CWB。")
 
 
 if __name__ == "__main__":
