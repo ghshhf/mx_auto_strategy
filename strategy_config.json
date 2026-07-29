@@ -1218,8 +1218,8 @@
     "min_premium_note": "实盘需校验溢价率/YTM, 当前仅按流动性+债底初筛"
   },
   "ai_overlay": {
-    "_comment": "v6.14b AI增强层: 剧本智能生成(script_advisor) + AI选股加权打分(ai_score). 设计原则: AI仅作乘数/建议, 不替代规则; 失败退回纯规则; shadow_mode=true(只打印不执行). v6.14b: 接入统一 llm_client, LLM 配置优先读环境变量 LLM_BASE_URL/LLM_API_KEY/LLM_MODEL(LLM_TIMEOUT_SEC/LLM_MAX_TOKENS/LLM_TEMPERATURE 可选), config.json 的 llm 段作兜底. 剧本已封印(sealed=true), 方向主轴移交 AI; 故 enabled=true(armed) 但 shadow_mode=true(安全: 不覆盖 user_script.md/不改交易排序). 配置 LLM_* 环境变量即激活, 未配置则优雅退回纯规则.",
-    "enabled": true,
+    "_comment": "v6.14b AI增强层: 脚本智能生成(script_advisor)+AI选股加权打分(ai_score)。设计原则: AI仅作乘数/建议, 不替代规则; 失败退回纯规则。2026-07-30 用户决策: 系统内嵌AI层与本项目的实际使用方式(用户每次都直接把决策丢给外部AI, 即聊天里的AI或其他AI)冗余, 当前shadow空转、边际贡献为零; 故将 enabled 置 false 使其彻底休眠(不再打印'LLM未配置'噪音, augment 直接 pass-through)。代码与 llm_client 保留, 若未来需要系统自主决策(无人值守定时调仓)可改回 true 并配置 LLM_* 环境变量重新激活。",
+    "enabled": false,
     "shadow_mode": true,
     "llm": {
       "_env_note": "优先级: 环境变量 LLM_BASE_URL/LLM_API_KEY/LLM_MODEL > 下方文件值. 例: export LLM_BASE_URL='https://api.deepseek.com/v1' LLM_API_KEY='sk-...' LLM_MODEL='deepseek-chat'",
