@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mx_auto_strategy 回测曲线 · 数据驱动</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+ body{font-family:-apple-system,'Microsoft YaHei',sans-serif;margin:0;background:#0f1115;color:#e6e6e6}
+ header{padding:20px 28px;background:#161a22;border-bottom:1px solid #2a2f3a}
+ header h1{margin:0;font-size:20px}
+ header p{margin:6px 0 0;color:#9aa4b2;font-size:13px;line-height:1.6}
+ .tabs{display:flex;gap:8px;padding:14px 22px 0}
+ .tab{padding:7px 16px;border:1px solid #2a2f3a;border-radius:8px 8px 0 0;background:#161a22;color:#9aa4b2;cursor:pointer;font-size:14px}
+ .tab.active{background:#1d2230;color:#e6e6e6;border-bottom-color:#1d2230}
+ .cards{display:flex;gap:14px;flex-wrap:wrap;padding:18px 22px 0}
+ .card{background:#161a22;border:1px solid #2a2f3a;border-radius:10px;padding:14px 18px;min-width:150px;flex:1}
+ .card .lbl{font-size:12px;color:#9aa4b2}
+ .card .val{font-size:22px;font-weight:700;margin-top:4px}
+ .card.b .val{color:#7aa2f7}
+ .card.o .val{color:#7ee787}
+ .card .sub{font-size:11px;color:#6b7280;margin-top:2px}
+ .chart-card{margin:18px 22px;background:#161a22;border:1px solid #2a2f3a;border-radius:10px;padding:8px 12px}
+ .chart-card h3{margin:10px 6px 0;font-size:15px;color:#cfd6e0}
+ .plot{width:100%;height:420px}
+ .plot.dd{height:260px}
+ table{width:94%;margin:14px auto 28px;border-collapse:collapse;font-size:13px}
+ th,td{border:1px solid #2a2f3a;padding:7px 10px;text-align:right}
+ th{background:#1d2230;color:#cfd6e0}
+ td:first-child,th:first-child{text-align:left}
+ .hl{color:#7ee787;font-weight:600}
+ .hb{color:#7aa2f7}
+ .neg{color:#f87171}
+ #status{padding:40px 28px;color:#9aa4b2}
+ .footer{padding:0 22px 24px;color:#6b7280;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>mx_auto_strategy · 回测曲线（数据驱动）</h1>
+  <p id="meta">加载中…</p>
+</header>
+
+<div class="tabs" id="tabs">
+  <div class="tab" data-w="3y">3 年</div>
+  <div class="tab active" data-w="5y">5 年</div>
+  <div class="tab" data-w="10y">10 年</div>
+  <div class="tab" data-w="full">全量</div>
+</div>
+
+<div id="status">正在加载 data/nav.json …</div>
+
+<div id="main" style="display:none">
+  <div class="cards" id="cards"></div>
+  <div class="chart-card"><h3 id="navTitle">净值曲线（归一化，起点=1.0）</h3><div id="navChart" class="plot"></div></div>
+  <div class="chart-card"><h3 id="ddTitle">回撤（水下图）</h3><div id="ddChart" class="plot dd"></div></div>
+  <div class="chart-card"><h3>逐年收益对比</h3><div id="yearlyWrap"></div></div>
+</div>
+
+<div class="footer" id="footer"></div>
+
+<script>
+const LAYOUT_BASE = {
+  paper_bgcolor:'#161a22', plot_bgcolor:'#161a22',
+  font:{color:'#cfd6e0', size:12},
+  margin:{l:60,r:20,t:10,b:40},
+  xaxis:{gridcolor:'#2a2f3a', zerolinecolor:'#2a2f3a'},
+  yaxis:{gridcolor:'#2a2f3a', zerolinecolor:'#2a2f3a'},
+  legend:{orientation:'h', y:1.08, x:0},
+  hovermode:'x unified'
+};
+const COL_B = '#7aa2f7', COL_O = '#7ee787';
+
+let DATA = null;
+let curWin = '5y';
+
+async function load(){
+  try{
+    const r = await fetch('data/nav.json', {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    DATA = await r.json();
+    document.getElementById('status').style.display='none';
+    document.getElementById('main').style.display='block';
+    const meta = `数据源：${DATA.source} ｜ 截至 ${DATA.last_date} ｜ 版本 ${DATA.version} ｜ 生成 ${DATA.generated_at}`;
+    document.getElementById('meta').textContent = meta;
+    document.getElementById('footer').textContent = `配置 — 基线：${DATA.configs.baseline.label}（core_frac=${DATA.configs.baseline.core_frac}${DATA.configs.baseline.trend_filter?'':'，无趋势过滤'}）；优化：${DATA.configs.optimized.label}（core_frac=${DATA.configs.optimized.core_frac}${DATA.configs.optimized.trend_filter?'，含趋势过滤':''}）`;
+    render(curWin);
+  }catch(e){
+    document.getElementById('status').innerHTML = '加载失败：'+e.message+'<br>请确认 data/nav.json 已随本页一起部署（运行 ashare_backtest/export_nav.py 生成）。';
+  }
+}
+
+function render(win){
+  curWin = win;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.w===win));
+  const w = DATA.windows[win];
+  const b = w.baseline, o = w.optimized;
+  const bs = b.stats, os = o.stats;
+
+  // cards
+  document.getElementById('cards').innerHTML = `
+    <div class="card b"><div class="lbl">基线 累计倍数</div><div class="val">${bs.final_mult.toFixed(2)}x</div><div class="sub">MDD ${bs.mdd.toFixed(1)}% ｜ CAGR ${bs.cagr.toFixed(1)}%</div></div>
+    <div class="card o"><div class="lbl">优化 累计倍数</div><div class="val">${os.final_mult.toFixed(2)}x</div><div class="sub">MDD ${os.mdd.toFixed(1)}% ｜ CAGR ${os.cagr.toFixed(1)}%</div></div>
+    <div class="card"><div class="lbl">超额收益（优化−基线）</div><div class="val hl">+${((os.final_mult/bs.final_mult-1)*100).toFixed(1)}%</div><div class="sub">相对沪深300 +${os.excess.toFixed(1)}x</div></div>
+    <div class="card"><div class="lbl">窗口区间</div><div class="val" style="font-size:16px">${bs.start_d} ~ ${bs.end_d}</div><div class="sub">${bs.n_weeks} 周</div></div>
+  `;
+  document.getElementById('navTitle').textContent = `净值曲线（归一化，起点=1.0）· ${win}`;
+  document.getElementById('ddTitle').textContent = `回撤（水下图）· ${win}`;
+
+  // NAV chart (log scale)
+  const navTraces = [
+    {x:b.dates, y:b.mult, name:'基线 '+bs.final_mult.toFixed(2)+'x', mode:'lines', line:{color:COL_B, width:2}},
+    {x:o.dates, y:o.mult, name:'优化 '+os.final_mult.toFixed(2)+'x', mode:'lines', line:{color:COL_O, width:2}}
+  ];
+  Plotly.react('navChart', navTraces, Object.assign({}, LAYOUT_BASE, {
+    yaxis:Object.assign({}, LAYOUT_BASE.yaxis, {type:'log', title:'倍数(log)'})
+  }), {responsive:true, displayModeBar:false});
+
+  // drawdown chart
+  const ddTraces = [
+    {x:b.dates, y:b.dd, name:'基线 MDD '+bs.mdd.toFixed(1)+'%', mode:'lines', line:{color:COL_B, width:1}, fill:'tozeroy', fillcolor:'rgba(122,162,247,0.12)'},
+    {x:o.dates, y:o.dd, name:'优化 MDD '+os.mdd.toFixed(1)+'%', mode:'lines', line:{color:COL_O, width:1}, fill:'tozeroy', fillcolor:'rgba(126,231,135,0.12)'}
+  ];
+  Plotly.react('ddChart', ddTraces, Object.assign({}, LAYOUT_BASE, {
+    yaxis:Object.assign({}, LAYOUT_BASE.yaxis, {title:'回撤', tickformat:'.0%'})
+  }), {responsive:true, displayModeBar:false});
+
+  // yearly table
+  const byYear = {};
+  [['b',b],['o',o]].forEach(([k,c])=>{
+    c.rows.forEach(r=>{ const y=r[0]; byYear[y]=byYear[y]||{}; byYear[y][k]={ret:r[1], mdd:r[2], mult:r[3]}; });
+  });
+  const years = Object.keys(byYear).sort();
+  let html = '<table><thead><tr><th>年份</th><th class="hb">基线收益</th><th class="hb">基线MDD</th><th class="hl">优化收益</th><th class="hl">优化MDD</th></tr></thead><tbody>';
+  years.forEach(y=>{
+    const bv=byYear[y].b, ov=byYear[y].o;
+    const f=(v)=> v==null?'—':(v>0?'+':'')+v.toFixed(1)+'%';
+    const cls=(v)=> v==null?'':(v<0?'neg':'');
+    html += `<tr><td>${y}</td>`
+      + `<td class="${cls(bv&&bv.ret)}">${bv?f(bv.ret):'—'}</td>`
+      + `<td class="${cls(bv&&bv.mdd)}">${bv?f(bv.mdd):'—'}</td>`
+      + `<td class="${cls(ov&&ov.ret)}">${ov?f(ov.ret):'—'}</td>`
+      + `<td class="${cls(ov&&ov.mdd)}">${ov?f(ov.mdd):'—'}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('yearlyWrap').innerHTML = html;
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>render(t.dataset.w));
+});
+
+load();
+</script>
+</body>
+</html>

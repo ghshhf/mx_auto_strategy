@@ -4,3 +4,6 @@
 {"ts": "2026-07-27 15:54:02", "account": "sim_us_2026", "action": "buy", "code": "LLY", "name": "礼来", "price": 1198.237, "qty": 150.0, "amount": 0.0, "note": "美股进攻3:GLP1减肥药accelerating,渗透率1-2%爆发前夜,成长+防御双修"}
 {"ts": "2026-07-27 15:54:03", "account": "sim_us_2026", "action": "buy", "code": "KO", "name": "可口可乐", "price": 83.904, "qty": 1951.0, "amount": 0.0, "note": "美股防御:低beta蓝筹,股息3%,US50永久防御标的"}
 {"ts": "2026-07-27 15:54:03", "account": "sim_us_2026", "action": "buy", "code": "GLD", "name": "金价ETF", "price": 373.954, "qty": 322.0, "amount": 0.0, "note": "美股对冲:金价今日飙升,地缘+美联储不确定性避险"}
+{"ts": "2026-07-29 06:42:56", "account": "sim_us_2026", "action": "sell", "code": "MU", "name": "美光科技", "price": 818.63, "qty": 200.0, "amount": 0.0, "note": "紧急止损:存储板块崩盘,费城半导体-5%进入技术熊市,MU盘前-7.5%+逼近-10%止损线"}
+{"ts": "2026-07-29 06:42:56", "account": "sim_us_2026", "action": "buy", "code": "UNH", "name": "联合健康", "price": 418.86, "qty": 240.0, "amount": 0.0, "note": "防御主力:Q2 EPS.38远超预期,上调全年指引至.5-20,医疗保健板块逆势走强"}
+{"ts": "2026-07-29 06:42:57", "account": "sim_us_2026", "action": "buy", "code": "ABT", "name": "雅培", "price": 108.98, "qty": 263.0, "amount": 0.0, "note": "防御补充:Q2营收亿+13% YoY,分析师100%买入评级,医疗器械龙头"}

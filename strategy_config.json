@@ -1,7 +1,14 @@
 {
-  "_comment": "mx-moni auto strategy config v6.12 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜, v6.11b 升级时变渗透率表按年代标相位) | v6.12: REGIME_ALLOC 对齐18倍基线(weak60/24/16, balance45/45/10, strong35/60/5), 让'18倍记忆系统'成为实盘(live=18倍参考配置, 死叉+时变木头姐已live)",
+  "_comment": "mx-moni auto strategy config v6.13 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜, v6.11b 升级时变渗透率表按年代标相位) | v6.12: REGIME_ALLOC 对齐18倍基线(weak60/24/16, balance45/45/10, strong35/60/5) | v6.13: 动态选股升级(core_frac=0.5+趋势过滤), 剧本封印(sealed=true, 方向移交AI)",
 
   "version": "6.13",
+  "playbook": {
+    "_comment": "剧本封印(2026-07-30/W31): 用户判断未来难有突发极端行情, 方向主轴全面移交AI. 此后不再手写作业, 方向由 script_advisor(剧本草稿生成)+ai_score(选股加权) 负责. 重新启用手写作业需置 sealed=false 并清除 user_script.md 顶部封印横幅.",
+    "sealed": true,
+    "sealed_at": "2026-07-30",
+    "last_human_script_week": "2026-W29",
+    "driver": "ai"
+  },
   "account": {
     "mx_api_url": "https://mkapi2.dfcfs.com/finskillshub",
     "_note_apikey": "read from env MX_APIKEY, do NOT hardcode here"
