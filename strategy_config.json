@@ -1207,5 +1207,28 @@
       "113066"
     ],
     "min_premium_note": "实盘需校验溢价率/YTM, 当前仅按流动性+债底初筛"
+  },
+  "ai_overlay": {
+    "_comment": "v6.14 AI增强层: 剧本智能生成(script_advisor) + AI选股加权打分(ai_score). 设计原则: AI仅作乘数/建议, 不替代规则; 失败退回纯规则; shadow_mode默认true(只打印不执行); enabled默认false. LLM走OpenAI兼容API(DeepSeek/Qwen等均支持).",
+    "enabled": false,
+    "shadow_mode": true,
+    "llm": {
+      "base_url": "",
+      "api_key": "",
+      "model": "",
+      "timeout_sec": 30,
+      "max_tokens": 2000
+    },
+    "script_advisor": {
+      "enable": true,
+      "max_news_items": 20,
+      "max_industries": 8
+    },
+    "ai_score": {
+      "enable": true,
+      "multiplier_min": 0.8,
+      "multiplier_max": 1.2,
+      "max_candidates": 10
+    }
   }
 }

@@ -49,14 +49,34 @@ def market_regime(cfg):
         return "balance", f"趋势判断异常:{e}, 默认平衡市"
 
 
-def score_one(code, cfg):
+def score_one(code, cfg, rt=None, kline=None):
     """
     单只股票三维评分(0~1): 低PE + 高热度 + 历史低位
+    rt/kline 可选: 调用方预取的实时行情 dict 与历史K线列表, 传入则复用避免重复网络请求;
+                   不传或为空则内部自行获取(向后兼容, 行为与旧版一致)。
     返回 (score, detail)
     """
     sc = cfg["scoring"]
-    rt = md.get_realtime([code]).get(code, {})
-    cur, pct = md.price_percentile(code, sc["history_window_days"])
+    win = sc["history_window_days"]
+
+    # 实时行情: 优先复用预取, 空则回退单只请求(兼容)
+    if not rt:
+        rt = md.get_realtime([code]).get(code, {})
+
+    # 历史K线: 优先复用预取(分位+避险共用一次请求), 不足则回退 price_percentile
+    if kline is not None and len(kline) >= 20:
+        kl_win = kline[-(win + 5):][-win:] if len(kline) > win else kline[-win:]
+        if kl_win:
+            lows = [k["low"] for k in kl_win]
+            highs = [k["high"] for k in kl_win]
+            cur = kl_win[-1]["close"]
+            minp, maxp = min(lows), max(highs)
+            pct = 0.5 if maxp == minp else (cur - minp) / (maxp - minp)
+            pct = round(pct, 3)
+        else:
+            cur, pct = None, None
+    else:
+        cur, pct = md.price_percentile(code, win)
 
     # 1) PE 维度: 越低越好 (pe_low_cap~pe_high_cap 线性映射)
     pe = rt.get("pe_ttm") or rt.get("pe_dynamic")
@@ -81,7 +101,8 @@ def score_one(code, cfg):
     # 计算近20日相对沪深300的超额收益
     safe_score = 0.5
     try:
-        kl = md.get_kline(code, "day", 25)
+        # 复用预取 kline; 否则单独取 25 日
+        kl = kline if (kline is not None and len(kline) >= 20) else md.get_kline(code, "day", 25)
         if len(kl) >= 20:
             chg20 = (kl[-1]["close"] / kl[-20]["close"] - 1) * 100
             # 弱市(沪深300下跌)中, 标的涨幅越高=避险属性越强
@@ -118,7 +139,8 @@ def select(cfg, top_n=None, verbose=True, defensive_only=False):
     """
     asel = cfg.get("auto_select", {})
     pool = asel.get("candidate_pool", [])
-    top_n = top_n or asel.get("top_n", 5)
+    if top_n is None:
+        top_n = asel.get("top_n", 5)
     threshold = cfg["scoring"]["buy_score_min"]
     batch = asel.get("max_codes_per_batch", 50)
     min_ind = asel.get("min_industries", 4)
@@ -139,16 +161,19 @@ def select(cfg, top_n=None, verbose=True, defensive_only=False):
               f"阈值 {threshold}, 至少 {min_ind} 行业, 科技硬约束={req_tech}/软偏好={prefer_tech}")
         print(f"  📉 趋势: {trend_msg}")
 
+    sc_win = cfg["scoring"]["history_window_days"]
     ranked = []
     for i in range(0, len(pool), batch):
         chunk = pool[i:i + batch]
         codes = [p["code"] for p in chunk]
-        rt_map = md.get_realtime(codes)
+        rt_map = md.get_realtime(codes)  # 批量一次, 复用给 score_one
         for p in chunk:
             code = p["code"]
-            if code in rt_map:
-                rt_map[code]["name"] = p["name"]
-            _, detail = score_one(code, cfg)
+            rt = rt_map.get(code)  # None 则 score_one 内回退单只请求(兼容兜底)
+            if rt and p.get("name"):
+                rt["name"] = p["name"]
+            kl = md.get_kline(code, "day", sc_win + 5)  # 单次K线, 分位+避险共用
+            _, detail = score_one(code, cfg, rt=rt, kline=kl)
             detail["industry"] = p.get("industry", "未知")
             detail["tech"] = p.get("tech", False)
             if detail.get("pe") is not None or detail.get("hist_pct") is not None:
@@ -217,19 +242,38 @@ def select_offensive(cfg, top_n=1, verbose=True):
     """
     asel = cfg.get("auto_select", {})
     pool = asel.get("offensive_pool", [])
-    top_n = top_n or asel.get("_offensive_top_n", 1)
+    if top_n is None:
+        top_n = asel.get("_offensive_top_n", 1)
 
     if verbose:
         print(f"[{datetime.now():%H:%M:%S}] 🔥 进攻选股: 候选池 {len(pool)} 只, 目标 Top {top_n}")
 
+    # 批量预取实时行情 (一次请求全池), 未命中再单只回退
+    codes = [p["code"] for p in pool]
+    rt_map = md.get_realtime(codes) if codes else {}
     scored = []
     for p in pool:
         code = p["code"]
-        rt = md.get_realtime([code]).get(code, {})
-        cur, pct = md.price_percentile(code, 250)
+        rt = rt_map.get(code)
+        if not rt:
+            rt = md.get_realtime([code]).get(code, {})
+        if p.get("name"):
+            rt.setdefault("name", p["name"])
+
+        # 单次K线(255日) 复用: 分位(后250日) + 动量(近20日)
+        kl = md.get_kline(code, "day", 255)
+        if kl and len(kl) >= 20:
+            kl_win = kl[-255:][-250:]
+            lows = [k["low"] for k in kl_win]
+            highs = [k["high"] for k in kl_win]
+            cur = kl_win[-1]["close"]
+            minp, maxp = min(lows), max(highs)
+            pct = 0.5 if maxp == minp else (cur - minp) / (maxp - minp)
+            pct = round(pct, 3)
+        else:
+            _, pct = md.price_percentile(code, 250)
 
         # 动量因子: 近20日涨幅(弱市中独立上涨=有主题资金介入)
-        kl = md.get_kline(code, "day", 25)
         momentum_score = 0.5
         chg20 = 0
         if len(kl) >= 20:

@@ -372,6 +372,16 @@ def run_once(cfg, do_trade=True):
     else:
         print(f"  🛡️ 死叉去风险: 跳过进攻选股, 本周全防御(进攻仓=0)")
 
+    # v6.14 AI 加权打分 (enabled=false 时 pass-through, 零影响)
+    try:
+        import ai_score
+        if chosen_def:
+            chosen_def = ai_score.augment(chosen_def, cfg, tag="defensive")
+        if chosen_off:
+            chosen_off = ai_score.augment(chosen_off, cfg, tag="offensive")
+    except Exception as e:
+        print(f"  [ai_score] 模块异常({e}), 跳过 AI 打分, 使用纯规则结果")
+
     all_chosen = (chosen_def or []) + (chosen_off or [])
     if not all_chosen:
         print("  本轮无任何标的")
