@@ -20,8 +20,8 @@ crypto_hist_data.py - 加密历史周K线数据下载 (v2.0, 免费·多源·全
   - 估值不用PE/PB, 用市值/流通市值/网络活跃度
 
 ★ 诚实性:
-  本脚本拉的是 Binance/OKX **真实成交周K线**. 沙箱可能墙掉这些 API
-  (本项目已确认 Binance/OKX/CoinGecko 在本机被墙), 此时需在可联网环境运行.
+  本脚本拉的是 Binance/OKX **真实成交周K线**. 经 127.0.0.1:3067 代理可直连
+  (脚本自动从 HTTPS_PROXY/http_proxy 环境变量读取代理, 留空则直连).
   拉到的数据喂给 backtest_v2.py 即为**真实倍数**; 切勿用 generate_synthetic_* 的
   合成数据当真值 (详见 README 真相化章节).
 
@@ -44,6 +44,15 @@ os.makedirs(DATA, exist_ok=True)
 
 sys.path.insert(0, HERE)
 import crypto_adoption_v2 as ca2
+
+# ---------- 代理支持 (本机经 127.0.0.1:3067 出网; 有网环境留空则直连) ----------
+_PROXY = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+          or os.environ.get('HTTP_PROXY') or os.environ.get('http_proxy'))
+if _PROXY:
+    _op = urllib.request.build_opener(
+        urllib.request.ProxyHandler({'http': _PROXY, 'https': _PROXY}))
+    urllib.request.install_opener(_op)
+    print(f"  [代理] 已启用: {_PROXY}", file=sys.stderr)
 
 
 # ---------- 原始 3 防御币配置 (v1.0 兼容) ----------
@@ -125,14 +134,23 @@ def fetch_binance_full(symbol, start_date):
 
 # ========== OKX 周K线 (备源) ==========
 def fetch_okx_weekly(instId, start_date):
-    start_str = start_date.replace('-', '') + 'T00:00:00Z'
+    """OKX candles: after/before 为毫秒时间戳(非ISO); 返回 newest-first, 需翻页."""
+    start_ms = int(datetime.strptime(start_date, '%Y-%m-%d').timestamp() * 1000)
     rows = []
-    url = f"https://www.okx.com/api/v5/market/candles?instId={instId}&bar=1W&after={start_str}&limit=100"
+    after = int(time.time() * 1000)   # 从当前向历史翻页
     try:
-        raw = _get(url)
-        data = json.loads(raw).get("data", [])
-        for x in data:
-            rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
+        while True:
+            url = f"https://www.okx.com/api/v5/market/candles?instId={instId}&bar=1W&after={after}&limit=100"
+            data = json.loads(_get(url)).get("data", [])
+            if not data:
+                break
+            for x in data:
+                rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
+            oldest = min(int(x[0]) for x in data)
+            if oldest <= start_ms:
+                break
+            after = oldest - 1
+            time.sleep(0.2)
         rows.sort(key=lambda r: r['timestamp'])
     except Exception as e:
         print(f"  [OKX] {instId} 拉取失败: {e}", file=sys.stderr)

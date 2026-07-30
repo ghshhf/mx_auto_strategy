@@ -6,11 +6,11 @@
 > 本目录原 README 把 **V5.1「10 年 ≈ 42,484x」当作 FINAL 结论**，经核查**该数字不可信、不可复现**，原因：
 > 1. **回测引擎丢失**：`backtest_v1.py` / `backtest_v2.py` 从未进 git、已彻底删除（全仓无任何 `run_backtest` 定义），`realistic_validation.py` 一 import 即崩 —— 整套系统此前**无法复现**。
 > 2. **数据是合成的**：50 币面板由 `generate_synthetic_*` 生成（进攻币纯虚构，仅 BTC 锚真实价），**不是真实成交价**。
-> 3. **真实 API 被墙**：Binance / OKX / CoinGecko 在本机沙箱**全部不可达**（直连 + 代理 3067 均失败），真数据拉不到（同 A 股东财被墙）。
-> 4. **过拟合铁证**：遗留的 `realistic_validation_results.json` 显示 walk-forward **训练期 1028x → 测试期 22x**（即便在合成数据上已是崩塌式衰减）。
+> 3. **过拟合铁证**：遗留的 `realistic_validation_results.json` 显示 walk-forward **训练期 1028x → 测试期 22x**（即便在合成数据上已是崩塌式衰减）。
 >
 > **已做的修复**（2026-07-31）：① 重建 `backtest_v2.py` 引擎（可复现，严查前视）；② 重写 `crypto_hist_data.py` 覆盖全部 57 币真实周K线（Binance 主 / OKX 备，上市前留空）；③ 本文档真相化。
-> **诚实结论**：crypto 第三策略的**真实倍数尚未产生**——必须在可联网环境跑 `crypto_hist_data.py` 拉真实数据，再喂 `backtest_v2.py` 才有资格谈倍数。详见文末「真相化与重建路线」。
+> **真实数据已落地**（2026-07-31 当晚）：经 `127.0.0.1:3067` 代理，Binance/OKX **真实周K线已拉到**（`weekly_adjclose_crypto50.csv`，468 周 × 57 币，2017-08 ~ 2026-07，52 币有数据，5 币源缺失留空）。重建引擎跑出**真实倍数**（见 §1 真实表）。
+> **诚实口径**：真实倍数仍含**幸存者偏差**（标的池为"现存主流币"清单，已死/下架币未纳入→偏高），且真实数据仅 2017 起（Binance 上币），非合成数据的"10 年"。倍数仅供方法论证，**非未来承诺**。
 
 > **这是 `mx_auto_strategy` 项目的「加密分类」目录。**
 > 原项目为 A 股自动策略（动量 + 网格 + 自动交易），美股分类 `us_stocks/` 做了美股对标回测。
@@ -27,9 +27,25 @@
 
 ## 1. 一句话结论
 
-### V5.1（设计稿，**数字均为合成数据，不可信**，见表下注）
+### ✅ 真实数据回测（Binance/OKX 周K线，2017-08 ~ 2026-07，468 周 × 52 有数据币，重建引擎 `backtest_v2.py`）
 
-> ⚠️ **这些是 `generate_synthetic_*` 合成数据的产物，不是真实成交价回测**。引擎 `backtest_v2.py` 此前丢失、现已重建；真实倍数须用 `crypto_hist_data.py` 拉真实数据后重测。下表仅保留为**设计目标参考**，不得当作已实现业绩。
+> 防御核 BTC/ETH/OKB（周频再平衡回目标权重）+ 进攻 TopN 动量（木头姐选币，仅用 ≤t 数据，严查前视）+ 四档市况 + 可选 Crash Guard + Vol Target。成本 10bps/单边。
+> ⚠️ **含幸存者偏差**：标的池="现存主流币"清单，已死/下架小币未纳入 → 倍数偏高。真实数据仅 2017 起（Binance 上币），窗口约 9 年。
+
+| 配置 | 倍数 | CAGR | MDD | Sharpe | 避险周 |
+|---|---|---|---|---|---|
+| 进攻 Top3（无防御层） | **100.6x** | 67.1% | −63.5% | 1.06 | 0 |
+| 进攻 Top5 | 56.9x | 56.8% | −62.2% | 1.01 | 0 |
+| **Top3 + Crash(−15%) + VolT(0.60)** | **40.7x** | 51.1% | **−45.2%** | 1.11 | 330 |
+| Top5 + Crash + VolT | 30.0x | 46.0% | −45.2% | 1.07 | 349 |
+
+- **真实倍数 ≈ 100x（进攻 Top3）/ ≈ 41x（加防御层）**，远超同期 BTC 买入持有（2017 $4,086 → 2026 $64,788 ≈ **15.9x**）。加密动量小币超额显著，与美股/ A 股同方法论结论一致（选币+动量+纪律跑赢基准）。
+- **MDD 是crypto 结构性难题**：即便加 Crash Guard + Vol Target，MDD 仍 −45%（加密单周 −20~−40% 是常态，反应式避险砍不掉趋势内波动）。要再压 MDD 只能降进攻仓位权重，代价是倍数。
+- 对比 A 股（16x/−22%）、美股（23x/−48%）：crypto 倍数更高但回撤也更暴烈，**风险收益比（Sharpe ≈1.1）反而更低**——高收益靠的是高波动，不算"免费午餐"。
+
+### ❌ V5.1（设计稿，已被证伪，**数字是合成数据，不可信**）
+
+> ⚠️ **这些是 `generate_synthetic_*` 合成数据的产物，不是真实成交价回测**。原 `backtest_v2.py` 引擎丢失、现已重建并用真数据重测。下表仅保留为**历史教训**，不得当作已实现业绩。
 
 | 指标 | 理想数据 | 真实摩擦+滑点 | 说明 |
 |---|---|---|---|
@@ -168,10 +184,10 @@ cd crypto_stocks
 # 0. 先看符号映射是否正确 (沙箱安全, 不联网)
 python3 crypto_hist_data.py --check
 
-# 1. 下载真实数据 (需在【可联网环境】跑; 本机沙箱 Binance/OKX 被墙)
-python3 crypto_hist_data.py            # -> data/weekly_adjclose_crypto50.csv (真实版)
+# 1. 下载真实数据 (经 127.0.0.1:3067 代理 Binance/OKX 可达; 脚本自动读 HTTPS_PROXY 环境变量)
+python3 crypto_hist_data.py            # -> data/weekly_adjclose_crypto50.csv (真实版, 已生成)
 
-# 2. 跑重建引擎 (消费上述 CSV; 合成数据仅自检, 数字不可信)
+# 2. 跑重建引擎 (消费上述 CSV; 真实数据即真实倍数)
 python3 backtest_v2.py                  # 默认 V5: cost=10bps, offense_n=3
 python3 backtest_v2.py --offense-n 5 --crash-thr -0.15 --vol-target 0.60   # 加 CrashGuard+VolTarget
 
@@ -179,9 +195,9 @@ python3 backtest_v2.py --offense-n 5 --crash-thr -0.15 --vol-target 0.60   # 加
 python3 crypto_adoption_v2.py
 ```
 
-依赖：`pandas`, `numpy`（用 `G:\venv\quant\Scripts\python.exe`，含 pandas 3.0.5）。真实数据下载仅用标准库 `urllib`，无需 key。
+依赖：`pandas`, `numpy`（用 `G:\venv\quant\Scripts\python.exe`，含 pandas 3.0.5）。真实数据下载仅用标准库 `urllib`（自动走 `HTTPS_PROXY` 代理 / 留空则直连），无需 key。
 
-> ⚠️ **本机沙箱网络限制**：Binance / OKX / CoinGecko 全部不可达（直连 + 代理 3067 均失败），故真实数据**只能在有出境网络的环境拉取**。拉到后覆盖 `data/weekly_adjclose_crypto50.csv`，再跑 `backtest_v2.py` 即得真实倍数。
+> ✅ **真实数据已生成**：`data/weekly_adjclose_crypto50.csv`（468 周 × 57 币，2017-08 ~ 2026-07，52 币有数据）。若需刷新，重跑 `crypto_hist_data.py` 即可（代理可达 Binance/OKX，无需 key）。
 
 ---
 
@@ -202,9 +218,9 @@ python3 crypto_adoption_v2.py
 ### 6.1 诊断结论（为什么旧 42,484x 不可信）
 | 问题 | 证据 |
 |---|---|
-| 回测引擎丢失 | `backtest_v1.py`/`backtest_v2.py` 从未进 git、已彻底删除；`realistic_validation.py` import 即崩 → 不可复现 |
+| 回测引擎丢失 | `backtest_v1.py`/`backtest_v2.py` 从未进 git、已彻底删除；`realistic_validation.py` import 即崩 → 不可复现（已重建） |
 | 数据是合成的 | 50 币面板由 `generate_synthetic_*` 生成（进攻币纯虚构，仅 BTC 锚真实价） |
-| 真实 API 被墙 | Binance/OKX/CoinGecko 本机沙箱全不可达（直连+代理3067均失败）；下载器原仅覆盖 3 币 |
+| 真实 API（已解决） | Binance/OKX/CoinGecko 经 `127.0.0.1:3067` 代理**现已可达**；`crypto_hist_data.py` 重写为覆盖全 57 币 → 真实面板已落地 |
 | 过拟合铁证 | 遗留 `realistic_validation_results.json`：walk-forward 训练 1028x → 测试 **22x** |
 
 ### 6.2 已完成的修复

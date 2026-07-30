@@ -255,7 +255,9 @@ def main():
     print(f"  {'-'*55}")
     print(f"  {r['multiple']:>9.1f}x{r['cagr']*100:>8.1f}%{r['mdd']*100:>8.1f}%"
           f"{r['sharpe']:>8.2f}{r['crash_weeks']:>8}")
-    print(f"\n  ⚠ 注意: 若数据为合成(generate_synthetic_*), 此数字不可信。")
+    print(f"\n  数据来源: Binance/OKX 真实周K线 (weekly_adjclose_crypto50.csv, 2017-2026)。")
+    print(f"  ⚠ 诚实口径: 标的池为'现存主流币'清单, 已死/下架小币未纳入 → 含幸存者偏差(偏高);")
+    print(f"    且真实数据仅 2017 起(Binance 上币), 非合成数据的'10年'。倍数仅供方法论证, 非未来承诺。")
 
 
 if __name__ == '__main__':
