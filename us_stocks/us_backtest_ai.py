@@ -6,18 +6,23 @@ us_backtest_ai.py - 美股真实面板回测 + AI 选股层接入 (v6.15+)
   GLD/JPM)上, 量化美股引擎(对齐 A 股16倍方法论, 适配美股长牛/赢家集中) + A 股系统的
   AI 选股打分层(ai_score.py, 0.8~1.2 乘数)。
 
-  防御端设计(用户指定, v6.15 修正): 彻底去黄金。防御 = 分红股(低波动候选 KO/ABBV/JNJ/
-  PG/XOM/VZ/MO 等, 面板已有真实数据) + 债券(极端防御/crash 时若有债券 ETF 列 TLT/IEF/
-  AGG/BND 则配债券作危机对冲, 占小仓; 债券数据需经 extend_panel_bonds.py 并入)。防御占比
-  整体小(平衡5% / 弱市15% / crash 15%), 符合"防御配置不大"的要求。
+  防御端设计(用户指定, v6.15 修正): 彻底去黄金。防御 = 分红股(低波动候选 KO/JNJ/ABBV/
+  PG/XOM 等, 面板已有真实数据)。极端防御 = 现金(非长债!): 经验证 TLT 2022 -28.4% / IEF -13.5%
+  与成长同跌, 利率驱动使其非危机对冲; 故 crash/波动飙升时把压掉的股权敞口转现金(或短久期/
+  分红)。防御占比整体小(平衡5% / 弱市15% / crash 15%), 符合"防御配置不大"的要求。早期
+  extend_panel_bonds.py 债券对冲路径已废弃。
 
-  报告四档:
+  报告五档(同一引擎, 不同风险旋钮):
   1) baseline    : v6.14b 修正控制组(弱市停车进分红防御篮, 去黄金, 季频, 等权 Top10)
-  2) optimized   : 美股优化引擎(无杠杆, 进攻主导+防御小): 周频 + 动量Top3集中 + MA5>MA20门
-                   + 动态池月度re-screen + crash现金(有债券则改债券)。倍数硬上限 ≈30x(≈2×A股16x)
-  3) optimized+ai: optimized 进攻仓再叠 ai_score 质量乘数(确定性可复现 / --with-llm 真接线)
-  4) optimized+杠杆: 净杠杆档(默认1.2x 总敞口, --lev 可调), 冲 40~50x 的合法路径。
-                    无杠杆硬上限30x, 1.2x净杠杆→~45x(40~50x区间); 杠杆放大回撤, 借入成本未计。
+  2) optimized   : 美股优化引擎(无杠杆, 进攻主导+防御小, 主题解相关max2): 周频 + 动量Top3集中
+                   + MA5>MA20门 + 动态池月度re-screen + crash现金(正确极端防御=现金, 非长债)。
+                   倍数 ≈33.7x(≈2×A股16x), 但纯动量高beta -> MDD≈-46%(结构性)。
+  3) optimized-defensive(结构性现金袖 --struct-def, 默认20%->现金): 无杠杆下均匀压每年回撤的
+                   唯一有效手段。40%袖 -> ≈11x / MDD≈-30%; 可选叠加波动率目标化 --vol-target。
+  4) optimized+ai: optimized 进攻仓再叠 ai_score 质量乘数(确定性可复现 / --with-llm 真接线)
+  5) optimized+lev(--lev>1, 默认1.0关闭): 净杠杆档, 1.2x→≈52x / 1.3x→≈62x(回撤放大, 借入成本未计)
+  注: 用户要求无杠杆(≈34x/MDD-46%); 纯动量MDD无法靠事后信号压, 结构性降敞口(现金袖/波动目标)
+      是唯一路径, 代价是收益。"34x且-30%"无杠杆下不可兼得(见 README 7.1 前沿表)。
 
 为什么叫「AI 选股层」:
   ai_score.augment(candidates, cfg, tag) 是 A 股系统通用 AI 加权打分层, 输出 0.8~1.2 质量乘数。
@@ -25,14 +30,15 @@ us_backtest_ai.py - 美股真实面板回测 + AI 选股层接入 (v6.15+)
   --with-llm 时真正调用 ai_score.augment(未配 LLM 自动 pass-through=1.0)。
 
 运行:
-  python us_backtest_ai.py                       # 四档全跑(确定性 AI)
+  python us_backtest_ai.py                       # 五档全跑(确定性 AI; 杠杆档默认1.0不显示)
   python us_backtest_ai.py --mode optimized      # 仅 optimized 两档
   python us_backtest_ai.py --refresh monthly     # 动态池刷新频率(monthly/quarterly, 默认 monthly)
+  python us_backtest_ai.py --struct-def 0.40     # 防御档切 40% 现金袖(→~11x / MDD≈-30%)
   python us_backtest_ai.py --with-llm            # optimized+ai 真正调用 ai_score.augment
-  python us_backtest_ai.py --no-ai               # 关闭 AI(仅 baseline+optimized+杠杆)
-  python us_backtest_ai.py --lev 1.3             # 杠杆档用 1.3x(→~53x, 回撤放大)
+  python us_backtest_ai.py --no-ai               # 关闭 AI(仅 baseline+optimized+防御档)
+  python us_backtest_ai.py --lev 1.3             # 杠杆档用 1.3x(→~62x, 回撤放大, 默认1.0关闭)
 输出:
-  us_stocks/data/us_nav_ai.csv (date, baseline_nav, optimized_nav, [optimized_ai_nav], optimized_lev_nav)
+  us_stocks/data/us_nav_ai.csv (date, baseline_nav, optimized_nav, [optimized_def_nav], [optimized_ai_nav])
 """
 import os
 import csv
@@ -50,12 +56,24 @@ DATA = os.path.join(HERE, "data")
 PANEL = os.path.join(DATA, "weekly_adjclose_full_ext.csv")
 OUT_CSV = os.path.join(DATA, "us_nav_ai.csv")
 
-EXCLUDE = {"SPY", "QQQ", "DIA", "IWM", "MDY", "VTI", "CWB", "GLD"}  # 指数/工具/停车资产, 不进选股
+EXCLUDE = {"SPY", "QQQ", "DIA", "IWM", "MDY", "VTI", "CWB", "GLD",
+           "TLT", "IEF", "AGG", "BND", "SHY"}  # 指数/工具/债券: 不进进攻选股(债券仅 crash 对冲)
 BROAD = ["SPY", "QQQ", "DIA", "IWM", "MDY", "VTI"]
 DEF_NEW = ["KO", "NEE", "JPM"]                  # v6.14b 静态防御篮(baseline 用)
 DEF_CANDIDATES = ["KO", "JNJ", "COST", "ABBV", "MCD", "PG", "WMT", "MMM",
                   "UNH", "HD", "PEP", "CL", "DHR", "LIN", "CAT", "DE"]  # 动态防御候选池
 WARMUP = 52                                     # 需 1 年历史算动量
+
+# 木头姐主题解相关: 标的 -> 主题(来自 us_adoption.THEME_STOCKS 13 主题原生篮子)
+sys.path.insert(0, HERE)
+_THEME_MAP = {}
+try:
+    from us_adoption import THEME_STOCKS as _US_THEMES, get_adoption as _us_get_adoption
+    for _th, _stocks in _US_THEMES.items():
+        for _s in _stocks:
+            _THEME_MAP.setdefault(_s, _th)
+except Exception:
+    _us_get_adoption = None
 
 # ----------------------------------------------------------------- 数据/工具
 def load_panel(path):
@@ -118,10 +136,14 @@ def select_baseline(series, i, universe, top_n=10):
     return scored[:top_n]
 
 
-def select_optimized(series, i, universe, top_n=8, trend_gate="ma5", lookback=52, score_mode="mom"):
-    """动量 + 趋势门 + 集中加权候选。lookback=动量窗口(周)。trend_gate: 'ma5'|'ma200'|None。
-    score_mode: 'mom'(原始动量) | 'risk_adj'(动量/年化波动, 风险调整, 规避高波动陷阱)。
-    返回 [(mom, code), ...] 降序(按 score 排序)。"""
+def select_optimized(series, i, universe, top_n=8, trend_gate="ma5", lookback=52,
+                      score_mode="mom", theme_div=False, max_per_theme=2,
+                      phase_tilt=False, year=None):
+    """动量 + 趋势门 + 可选主题解相关(木头姐) + 可选渗透率相位倾斜。
+    theme_div: 跨主题分散(限制同主题最多 max_per_theme 只, 降低进攻仓内部相关性, 压回撤)。
+    phase_tilt: 动量得分 × 主题渗透率相位乘子(加速1.35/早期1.15/成熟0.80), 木头姐倾斜。
+    year: 相位查询年份(回测按年取时变相位); None 用当前。
+    返回 [(mom, code), ...] 降序。"""
     scored = []
     for c in universe:
         arr = series.get(c)
@@ -136,15 +158,30 @@ def select_optimized(series, i, universe, top_n=8, trend_gate="ma5", lookback=52
             ma20 = _ma(arr, i, 20); ma200 = _ma(arr, i, 200)
             if ma20 is None or ma200 is None or ma20 <= ma200:
                 continue
-        if score_mode == "risk_adj":
+        score = mom
+        if phase_tilt and _us_get_adoption is not None and c in _THEME_MAP:
+            try:
+                score = mom * _us_get_adoption(_THEME_MAP[c], year=year)["multiplier"]
+            except Exception:
+                score = mom
+        elif score_mode == "risk_adj":
             win = [v for v in arr[max(0, i - lookback + 1):i + 1] if v not in (None, 0)]
             rets = [win[k] / win[k - 1] - 1 for k in range(1, len(win)) if win[k - 1] not in (None, 0)]
             vol = statistics.pstdev(rets) if len(rets) > 1 else 0.0
             score = mom / (vol * (52 ** 0.5)) if vol > 0 else mom
-        else:
-            score = mom
         scored.append((score, mom, c))
     scored.sort(reverse=True)
+    # 主题分散(木头姐解相关): 限制同主题最多 max_per_theme 只, 强制跨主题铺开
+    if theme_div:
+        picked = []; per_theme = {}
+        for score, mom, c in scored:
+            th = _THEME_MAP.get(c, "__unmapped__")
+            if per_theme.get(th, 0) >= max_per_theme:
+                continue
+            picked.append((mom, c)); per_theme[th] = per_theme.get(th, 0) + 1
+            if len(picked) >= top_n:
+                break
+        return picked
     return [(sm, c) for _, sm, c in scored[:top_n]]
 
 
@@ -287,7 +324,9 @@ def run_baseline(series, dates, use_ai, cfg=None):
 
 def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                   trend_gate="ma5", lookback=52, alloc=None, rebal=1, lev=1.0,
-                  score_mode="mom"):
+                  score_mode="mom", theme_div=False, max_per_theme=2,
+                  phase_tilt=False, crash_off=80, vol_target=0.0, vol_floor=0.3,
+                  struct_def=0.0, gauge="QQQ"):
     """美股优化引擎(默认 = 稳健甜点配置, 扫参确定):
     - 进攻占比拉满(bull100/balance95/weak75), 仅 death-cross 重仓现金(替代 GLD 停车)
     - 周频再平衡(对齐 A 股)
@@ -295,18 +334,27 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
     - 趋势门 MA5>MA20(剔除下行趋势)
     - 52 周动量窗口(扫参稳健胜出)
     - 动态股票池: 月度/季度 re-screen, IPO 满1年自动入池, 退市自动出池
+    - 主题解相关(theme_div) + 渗透率相位倾斜(phase_tilt): 木头姐框架, 压进攻仓内部相关性
+    - crash_off: death-cross(crash)档进攻占比(其余转现金+分红对冲), 越小越防御、回撤越小
+    - vol_target: 波动率目标化(无杠杆下压MDD的唯一有效手段)。用 gauge(默认QQQ, 高beta)
+      近20周已实现波动率(年化)作风险温度, 股权敞口 = clip(vol_target/realized, vol_floor, 1)
+      × 基准进攻占比。平静牛市 vol低->满仓吃收益; 崩盘 vol飙->敞口自动压到 floor, 削深跌段。
+      压掉的敞口 + 防御袖剩余 -> 现金(正确极端防御: 2022长债TLT -28%与成长同跌, 现金/短久期才是对冲)。
+      经验证: 事后信号(MA/护栏/止损/广度)均无法压MDD(要么太迟要么鞭梢); 结构性降敞口是唯一路径, 代价是收益。
     trend_gate: 'ma5'(MA5>MA20) | 'ma200'(MA20>MA200) | None。"""
     ALLOC = alloc or {  # 默认: 进攻主导 + 防御小(用户指定); 防御=分红股(非黄金)
         "bull":    {"off": 100, "def": 0,  "cash": 0},
         "balance": {"off": 95,  "def": 5,  "cash": 0},
         "weak":    {"off": 85,  "def": 15, "cash": 0},
-        "crash":   {"off": 80,  "def": 15, "cash": 5},   # death_cross>=3; 现金仓若有债券ETF改配债券
+        "crash":   {"off": 80,  "def": 15, "cash": 5},   # death_cross>=3; 现金+分红对冲
     }
+    # crash 档进攻占比覆盖(压回撤核心杠杆): 其余 def(15)+cash
+    ALLOC["crash"] = {"off": crash_off, "def": 15, "cash": 85 - crash_off}
     REBAL = rebal                               # 再平衡周期(周, 默认1=周频, 对齐A股)
     n = len(dates); nav = 1.0; nav_hist = []; peak = 1.0; mdd = 0.0
     weights = {"__cash__": 1.0}; selected = []; last_rebal = -100; yearly = {}
-    weak_weeks = 0; crash_weeks = 0
-    last_pool = -100; universe = []
+    weak_weeks = 0; crash_weeks = 0; vol_weeks = 0
+    last_pool = -100; universe = []; gauge_arr = series.get(gauge) or series.get("SPY")
     for t in range(n):
         if t > 0 and weights:
             growth = 0.0
@@ -328,7 +376,9 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
         need_rebal = (t == WARMUP) or (t - last_rebal >= REBAL)
         if t >= WARMUP and need_rebal:
             selected = select_optimized(series, t, universe, top_n,
-                                        trend_gate, lookback, score_mode); last_rebal = t
+                                        trend_gate, lookback, score_mode,
+                                        theme_div, max_per_theme, phase_tilt,
+                                        year=dates[t][:4]); last_rebal = t
         if t >= WARMUP and selected:
             dcc = death_cross_count(series, t)
             regime = regime_of(series, t)
@@ -339,6 +389,18 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
             else:
                 key = regime
             a = ALLOC[key]
+            # 波动率目标化: 压股权敞口(崩盘 vol 飙升时自动降仓到现金)
+            vol_scale = 1.0
+            if vol_target > 0 and t >= 20 and gauge_arr is not None:
+                rets = []
+                for k in range(t - 19, t + 1):
+                    if gauge_arr[k] and gauge_arr[k - 1] and gauge_arr[k - 1] > 0:
+                        rets.append(gauge_arr[k] / gauge_arr[k - 1] - 1)
+                if len(rets) >= 10:
+                    rv = statistics.pstdev(rets) * (52 ** 0.5)
+                    vol_scale = max(vol_floor, min(1.0, vol_target / rv)) if rv > 0 else 1.0
+            if vol_scale < 1.0:
+                vol_weeks += 1
             tw = {}
             if use_ai and cfg is not None:
                 mult_map = ai_mult_via_llm(series, t, selected, cfg)
@@ -348,14 +410,16 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                 mult_map = {c: 1.0 for _, c in selected}
             # 集中加权: 进攻仓按(质量乘数 × 动量强度^0.5)分配, 赢家权重更高
             # lev = 总杠杆(默认1.0); >1 时进攻仓放大, 现金变负=借入(净杠杆)。防御仓不放大。
-            off_pct = a["off"] * lev
+            # struct_def = 永久防御袖(现金/分红): 结构性降股权敞口, 是唯一能均匀压每年回撤的手段。
+            off_pct = a["off"] * vol_scale * lev
+            equity_pct = off_pct * (1.0 - struct_def)
             wts = []
             for mom, c in selected:
                 m = mult_map.get(c, 1.0) * max(mom, 0.0) ** 0.5
                 wts.append((m, c))
             msum = sum(m for m, _ in wts) or 1.0
             for m, c in wts:
-                tw[c] = (off_pct / 100.0) * m / msum
+                tw[c] = (equity_pct / 100.0) * m / msum
             # 动态防御(低波动候选 Top3, 小仓) —— 分红相关防御(用户指定, 非黄金)
             def_b = pick_defense_lowvol(series, t, n=3,
                                         exclude={c for _, c in selected})
@@ -363,26 +427,18 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                 per = a["def"] / 100.0 / len(def_b)
                 for c in def_b:
                     tw[c] = per
-            cash_frac = a["cash"] / 100.0
-            # 极端防御(crash): 若有债券 ETF(TLT/IEF/AGG/BND/SHY), 现金仓改配债券(用户指定债券对冲)
-            if key == "crash":
-                bonds = [b for b in ("TLT", "IEF", "AGG", "BND", "SHY")
-                         if b in series and series[b][t] is not None]
-                if bonds and cash_frac > 0:
-                    per = cash_frac / len(bonds)
-                    for b in bonds:
-                        tw[b] = tw.get(b, 0.0) + per
-                    cash_frac = 0.0
+            # 极端防御(正确): 压掉的股权敞口 + 永久防御袖 + 防御袖剩余 -> 现金。
+            # 长债(TLT/IEF)在2022与成长同跌(利率驱动), 非危机对冲; 现金/短久期/分红才是对冲。
+            struct_pct = off_pct * struct_def
+            cash_frac = (a["cash"] + (a["off"] - off_pct) + struct_pct) / 100.0
             tw["__cash__"] = cash_frac
-            # 不做归一化: 权重和可直接 >1(净杠杆, lev>1 时进攻仓放大, 现金仓为负=借入);
-            # 权重和=1.0(无杠杆)时与原始行为一致。NAV 增长按加权收益累计, 自然体现杠杆/借入。
-            weights = {c: w for c, w in tw.items()} if tw else {"__cash__": 1.0}
+            weights = {c: w for c, w in tw.items() if w > 0} or {"__cash__": 1.0}
         elif t == WARMUP and not selected:
             weights = {"__cash__": 1.0}
-    return finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks)
+    return finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks, 0)
 
 
-def finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks=0):
+def finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks=0, guard_weeks=0):
     yrs = (n - WARMUP) / 52.0
     cagr = (nav ** (1 / yrs) - 1) * 100 if yrs > 0 else 0
     spy_arr = series_proxy.get("SPY")
@@ -391,6 +447,7 @@ def finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks=0):
         "multiple": nav, "cagr": cagr, "mdd": mdd,
         "weak_pct": weak_weeks / max(1, (n - WARMUP)) * 100,
         "crash_pct": crash_weeks / max(1, (n - WARMUP)) * 100,
+        "guard_pct": guard_weeks / max(1, (n - WARMUP)) * 100,
         "spy_mult": spy_mult, "yrs": yrs, "yearly": yearly,
     }
 
@@ -408,8 +465,12 @@ def main():
                     help="动态股票池刷新频率(默认 monthly=4周)")
     ap.add_argument("--with-llm", action="store_true", help="optimized+ai 调用 ai_score.augment")
     ap.add_argument("--no-ai", action="store_true", help="关闭 AI(仅 baseline+optimized)")
-    ap.add_argument("--lev", type=float, default=1.2,
-                    help="optimized+杠杆档的总杠杆(默认1.2=净杠杆, 冲40~50x的合法路径; 1.0=无杠杆)")
+    ap.add_argument("--vol-target", type=float, default=0.0,
+                    help="防御档波动率目标(年化, 默认0=关闭; >0 崩盘降仓到现金)")
+    ap.add_argument("--struct-def", type=float, default=0.0,
+                    help="防御档永久现金袖比例(默认0; 0.20≈-38%MDD@20x, 0.40≈-30%MDD@11x)")
+    ap.add_argument("--lev", type=float, default=1.0,
+                    help="净杠杆档总杠杆(默认1.0=无杠杆; >1 冲更高倍数, 放大回撤, 用户默认不用)")
     args = ap.parse_args()
 
     use_ai = not args.no_ai
@@ -434,69 +495,103 @@ def main():
     print(f"[baseline ] 期末倍数 {base_st['multiple']:.2f}x | CAGR {base_st['cagr']:.1f}% | "
           f"MDD {base_st['mdd']*100:.1f}% | SPY买入持有 {base_st['spy_mult']:.2f}x")
 
-    opt_hist, opt_st = run_optimized(series, dates, use_ai=False, cfg=None, refresh_weeks=refresh_weeks)
+    # optimized (max, 无杠杆, 无vol目标, 主题解相关max2)
+    opt_hist, opt_st = run_optimized(series, dates, use_ai=False, cfg=None,
+                                     refresh_weeks=refresh_weeks,
+                                     theme_div=True, max_per_theme=2)
     print(f"[optimized] 期末倍数 {opt_st['multiple']:.2f}x | CAGR {opt_st['cagr']:.1f}% | "
           f"MDD {opt_st['mdd']*100:.1f}% | 弱市 {opt_st['weak_pct']:.1f}% | crash {opt_st['crash_pct']:.1f}%")
 
+    # optimized-defensive (结构性防御袖 -> 现金, 均匀压每年回撤; 可选叠加波动率目标)
+    def_struct = args.struct_def if args.struct_def > 0 else 0.20
+    def_hist, def_st = (None, None)
+    if def_struct > 0 or args.vol_target > 0:
+        def_hist, def_st = run_optimized(series, dates, use_ai=False, cfg=None,
+                                         refresh_weeks=refresh_weeks,
+                                         theme_div=True, max_per_theme=2,
+                                         vol_target=args.vol_target, struct_def=def_struct)
+        tag = f"结构袖{def_struct*100:.0f}%"
+        if args.vol_target > 0:
+            tag += f"+volT{args.vol_target}"
+        print(f"[opt-def ] 期末倍数 {def_st['multiple']:.2f}x | CAGR {def_st['cagr']:.1f}% | "
+              f"MDD {def_st['mdd']*100:.1f}%  ({tag}->现金, 无杠杆)")
+
+    # optimized + AI
     opt_ai_hist, opt_ai_st = (None, None)
     if use_ai:
         opt_ai_hist, opt_ai_st = run_optimized(series, dates, use_ai=True,
                                                cfg=(cfg if args.with_llm else None),
-                                               refresh_weeks=refresh_weeks)
+                                               refresh_weeks=refresh_weeks,
+                                               theme_div=True, max_per_theme=2)
         print(f"[opt+ai  ] 期末倍数 {opt_ai_st['multiple']:.2f}x | CAGR {opt_ai_st['cagr']:.1f}% | "
               f"MDD {opt_ai_st['mdd']*100:.1f}%")
 
-    # optimized + 净杠杆档(冲 40~50x 的合法路径; 默认 1.2x 总敞口)
+    # 净杠杆档(可选, 默认1.0=无杠杆)
     lev = max(1.0, args.lev)
     lev_hist, lev_st = run_optimized(series, dates, use_ai=False, cfg=None,
-                                     refresh_weeks=refresh_weeks, lev=lev)
-    print(f"[opt+{lev:.1f}x] 期末倍数 {lev_st['multiple']:.2f}x | CAGR {lev_st['cagr']:.1f}% | "
-          f"MDD {lev_st['mdd']*100:.1f}%  (净杠杆, 借入成本未计)")
+                                     refresh_weeks=refresh_weeks,
+                                     theme_div=True, max_per_theme=2, lev=lev)
+    if lev > 1.0:
+        print(f"[opt+{lev:.1f}x] 期末倍数 {lev_st['multiple']:.2f}x | CAGR {lev_st['cagr']:.1f}% | "
+              f"MDD {lev_st['mdd']*100:.1f}%  (净杠杆, 借入成本未计)")
 
     print("\n=== 优化引擎净效应(baseline -> optimized, 无杠杆) ===")
     print(f"  收益倍数: {base_st['multiple']:.2f}x -> {opt_st['multiple']:.2f}x  "
           f"({(opt_st['multiple']/base_st['multiple']-1)*100:+.1f}%)")
     print(f"  MDD:      {base_st['mdd']*100:.1f}% -> {opt_st['mdd']*100:.1f}%  "
           f"({(opt_st['mdd']-base_st['mdd'])*100:+.1f}pp)")
+    if def_st:
+        print(f"\n=== 防御档净效应(optimized -> opt-def, 结构袖{def_struct*100:.0f}%"
+              + (f"+波动率目标{args.vol_target}" if args.vol_target > 0 else "") + ") ===")
+        print(f"  收益倍数: {opt_st['multiple']:.2f}x -> {def_st['multiple']:.2f}x  "
+              f"({(def_st['multiple']/opt_st['multiple']-1)*100:+.1f}%)")
+        print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {def_st['mdd']*100:.1f}%  "
+              f"({(def_st['mdd']-opt_st['mdd'])*100:+.1f}pp)")
     if use_ai and opt_ai_st:
         print(f"\n=== AI 选股层净效应(optimized -> opt+ai, 无杠杆) ===")
         print(f"  收益倍数: {opt_st['multiple']:.2f}x -> {opt_ai_st['multiple']:.2f}x  "
               f"({(opt_ai_st['multiple']/opt_st['multiple']-1)*100:+.1f}%)")
         print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {opt_ai_st['mdd']*100:.1f}%  "
               f"({(opt_ai_st['mdd']-opt_st['mdd'])*100:+.1f}pp)")
-    print(f"\n=== 净杠杆效应(optimized -> opt+{lev:.1f}x) ===")
-    print(f"  收益倍数: {opt_st['multiple']:.2f}x -> {lev_st['multiple']:.2f}x  "
-          f"({(lev_st['multiple']/opt_st['multiple']-1)*100:+.1f}%)")
-    print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {lev_st['mdd']*100:.1f}%  "
-          f"({(lev_st['mdd']-opt_st['mdd'])*100:+.1f}pp)  ⚠️ 杠杆放大回撤; 借入成本未计")
+    if lev > 1.0:
+        print(f"\n=== 净杠杆效应(optimized -> opt+{lev:.1f}x) ===")
+        print(f"  收益倍数: {opt_st['multiple']:.2f}x -> {lev_st['multiple']:.2f}x  "
+              f"({(lev_st['multiple']/opt_st['multiple']-1)*100:+.1f}%)")
+        print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {lev_st['mdd']*100:.1f}%  "
+              f"({(lev_st['mdd']-opt_st['mdd'])*100:+.1f}pp)  ⚠️ 杠杆放大回撤; 借入成本未计")
 
     print("\n  逐年收益(baseline / optimized" +
-          (" / opt+ai" if use_ai and opt_ai_st else "") + f" / opt+{lev:.1f}x):")
+          (" / opt-def" if def_st else "") +
+          (" / opt+ai" if use_ai and opt_ai_st else "") + "):")
     yrs = sorted(set(base_st['yearly']) | set(opt_st['yearly']) |
-                 (set(opt_ai_st['yearly']) if opt_ai_st else set()) | set(lev_st['yearly']))
+                 (set(def_st['yearly']) if def_st else set()) |
+                 (set(opt_ai_st['yearly']) if opt_ai_st else set()))
     for y in yrs:
         bv = base_st['yearly'].get(y, 1.0); ov = opt_st['yearly'].get(y, 1.0)
         line = f"    {y}: baseline {(bv-1)*100:+.1f}%  optimized {(ov-1)*100:+.1f}%"
+        if def_st:
+            dv = def_st['yearly'].get(y, 1.0)
+            line += f"  opt-def {(dv-1)*100:+.1f}%"
         if opt_ai_st:
             av = opt_ai_st['yearly'].get(y, 1.0)
             line += f"  opt+ai {(av-1)*100:+.1f}%"
-        lv = lev_st['yearly'].get(y, 1.0)
-        line += f"  opt+{lev:.1f}x {(lv-1)*100:+.1f}%"
         print(line)
 
-    # 输出 CSV (date, baseline_nav, optimized_nav, [optimized_ai_nav], optimized_lev_nav)
+    # 输出 CSV (date, baseline_nav, optimized_nav, [optimized_def_nav], [optimized_ai_nav])
     with open(OUT_CSV, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         cols = ["date", "baseline_nav", "optimized_nav"]
+        if def_st:
+            cols.append("optimized_def_nav")
         if use_ai and opt_ai_hist:
             cols.append("optimized_ai_nav")
-        cols.append("optimized_lev_nav")
         w.writerow(cols)
         for idx, d in enumerate(dates):
             row = [d, f"{base_hist[idx]:.6f}", f"{opt_hist[idx]:.6f}"]
+            if def_st:
+                row.append(f"{def_hist[idx]:.6f}")
             if use_ai and opt_ai_hist:
                 row.append(f"{opt_ai_hist[idx]:.6f}")
-            row.append(f"{lev_hist[idx]:.6f}")
             w.writerow(row)
     print(f"\n  已写出 NAV 曲线: {OUT_CSV}")
 
