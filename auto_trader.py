@@ -390,7 +390,8 @@ def run_once(cfg, do_trade=True):
     # 仓位分配 (v6.7 市况自适应): 弱势收敛进攻/强势加仓博名次
     total = 1_000_000
     # 三档仓位模板 (防御% / 进攻% / 现金%): 和为100
-    REGIME_ALLOC = {
+    # v6.15: 提升为 strategy_config.json 的 REGIME_ALLOC 单一真相源(代码不再硬编码, 避免文档漂移)
+    REGIME_ALLOC = cfg.get("REGIME_ALLOC") or {
         "weak":    {"def": 60, "off": 24, "cash": 16},  # 弱势: 守, 不赌
         "balance": {"def": 45, "off": 45, "cash": 10},  # 平衡: 进攻加码(45%)贴近18倍基线
         "bull":    {"def": 35, "off": 60, "cash": 5},   # 强势: 进攻顶满60%(18倍基线, 博名次)
