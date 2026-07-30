@@ -12,6 +12,11 @@ __pycache__/
 backtest_*.py
 backtest_*_report.md
 
+# 美股/加密分类的核心回测引擎需纳入版本管理（不被上面的 backtest_*.py 规则排除）
+!us_stocks/backtest_*.py
+!crypto_stocks/backtest_*.py
+!ashare_backtest/backtest_engine.py
+
 # 环境变量/密钥（绝不提交）
 .env
 *.env

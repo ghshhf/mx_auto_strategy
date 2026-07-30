@@ -1,13 +1,23 @@
 <!-- CATEGORY: crypto | 加密分类 | AUTO-CLASSIFY: yes -->
 <!-- CLASSIFY_KEYWORDS: crypto, 加密, BTC, ETH, OKB, bitcoin, ethereum, crypto backtest, 加密回测, 加密策略 -->
-# 加密分类 (Crypto) — mx_auto_strategy 加密回测 V5.1
+# 加密分类 (Crypto) — mx_auto_strategy 加密回测
+
+> ## ⚠️ 2026-07-31 真相化（必读）
+> 本目录原 README 把 **V5.1「10 年 ≈ 42,484x」当作 FINAL 结论**，经核查**该数字不可信、不可复现**，原因：
+> 1. **回测引擎丢失**：`backtest_v1.py` / `backtest_v2.py` 从未进 git、已彻底删除（全仓无任何 `run_backtest` 定义），`realistic_validation.py` 一 import 即崩 —— 整套系统此前**无法复现**。
+> 2. **数据是合成的**：50 币面板由 `generate_synthetic_*` 生成（进攻币纯虚构，仅 BTC 锚真实价），**不是真实成交价**。
+> 3. **真实 API 被墙**：Binance / OKX / CoinGecko 在本机沙箱**全部不可达**（直连 + 代理 3067 均失败），真数据拉不到（同 A 股东财被墙）。
+> 4. **过拟合铁证**：遗留的 `realistic_validation_results.json` 显示 walk-forward **训练期 1028x → 测试期 22x**（即便在合成数据上已是崩塌式衰减）。
+>
+> **已做的修复**（2026-07-31）：① 重建 `backtest_v2.py` 引擎（可复现，严查前视）；② 重写 `crypto_hist_data.py` 覆盖全部 57 币真实周K线（Binance 主 / OKX 备，上市前留空）；③ 本文档真相化。
+> **诚实结论**：crypto 第三策略的**真实倍数尚未产生**——必须在可联网环境跑 `crypto_hist_data.py` 拉真实数据，再喂 `backtest_v2.py` 才有资格谈倍数。详见文末「真相化与重建路线」。
 
 > **这是 `mx_auto_strategy` 项目的「加密分类」目录。**
 > 原项目为 A 股自动策略（动量 + 网格 + 自动交易），美股分类 `us_stocks/` 做了美股对标回测。
-> 本目录把同一套方法论**迁移到加密货币**：
-> - **V1**: Crypto3 篮子（BTC 防御 + ETH/OKB 进攻），三档市况，7 年回测
-> - **V2**: Crypto50 池子（3 防御 + 47 进攻），四档市况，木头姐选币 Top5，10 年回测
-> - **V5.1 (FINAL)**: 3 防御 + 3 进攻，Crash Guard + VolTarget + 暴跌过滤，10 年 ≈ 42,484x
+> 本目录把同一套方法论**迁移到加密货币**（用户已决定 crypto 作为继 A 股、美股后的**第三策略**，不再仅是额度汇总）：
+> - **V1**: Crypto3 篮子（BTC 防御 + ETH/OKB 进攻），三档市况，7 年回测（设计）
+> - **V2**: Crypto50 池子（3 防御 + 进攻），四档市况，木头姐选币，10 年回测（设计）
+> - **引擎重建 (2026-07-31)**: `backtest_v2.py` 恢复可复现；真实数据通道 `crypto_hist_data.py` 覆盖全 57 币
 >
 > **AI 分类提示**：本目录所有内容归属「加密」类别。未来 `git pull` 后，若 AI 需要按市场自动归类，
 > 请以本文件 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS` 为权威标记，将本目录整体识别为「加密分类」，
@@ -17,14 +27,16 @@
 
 ## 1. 一句话结论
 
-### V5.1 FINAL (10 年, Crypto50, 四档市况, 3防+3攻+暴跌过滤)
+### V5.1（设计稿，**数字均为合成数据，不可信**，见表下注）
+
+> ⚠️ **这些是 `generate_synthetic_*` 合成数据的产物，不是真实成交价回测**。引擎 `backtest_v2.py` 此前丢失、现已重建；真实倍数须用 `crypto_hist_data.py` 拉真实数据后重测。下表仅保留为**设计目标参考**，不得当作已实现业绩。
 
 | 指标 | 理想数据 | 真实摩擦+滑点 | 说明 |
 |---|---|---|---|
-| 10 年收益倍数 | **46,238x** | **42,484x** | 1 万 → 4.25 亿 |
-| BTC 买入持有 | 631x | 631x | 同期基准 |
+| 10 年收益倍数 | **46,238x** | **42,484x** *(合成)* | 1 万 → 4.25 亿（合成数据，不可信） |
+| BTC 买入持有 | 631x | 631x | 同期基准（合成锚定） |
 | 策略 vs BTC 超额 | +7,234% | +6,638% | 选币 + 动量 + 防御 |
-| 最大回撤 | −32.9% | −30.8% | 真实数据回撤更小 |
+| 最大回撤 | −32.9% | −30.8% | 合成数据回撤更小 |
 | Sharpe 比率 | 3.68 | 3.03 | 周频, 无风险利率=0 |
 | 真实/理想收益比 | — | **92%** | 真实摩擦仅损失 8% |
 
@@ -41,7 +53,7 @@
 | Train 2016-2020 | 1,222x | −30.8% | 3.39 |
 | Test 2021-2025 | 20x | −27.5% | 2.68 |
 
-两期 Sharpe 均 > 2.5，无过拟合。
+两期 Sharpe 均 > 2.5，但 **Train 1,222x → Test 20x 的崩塌式衰减本身就是过拟合铁证**（且这还只是合成数据上的表现，真实数据只会更严峻）。原「无过拟合」结论**不成立**。
 
 ### 赛道分类 (12 个赛道, 54 个进攻代币)
 
@@ -97,16 +109,23 @@ crypto_stocks/
 ├── crypto_hist_data.py               # 历史数据下载 (Binance 主 + OKX 备, 免费)
 ├── generate_synthetic_data.py        # V1 合成数据 (3 币, 7 年)
 ├── generate_synthetic_v2.py          # V2 合成数据 (50 币, 10 年)
-├── backtest_v1.py                    # V1 引擎 (3 币, 三档市况)
-├── backtest_v2.py                    # V2 引擎 (50 池, 四档市况, 木头姐选币)
-├── backtest_v2_results.json          # V2 回测结果
+├── backtest_v2.py                    # V2 引擎 (**2026-07-31 重建**, 50池/四档/木头姐选币/CrashGuard/VolTarget, 严查前视)
+├── backtest_v2_results.json          # 遗留的*合成数据*结果 (不可信, 仅供参考)
+├── crypto_hist_data.py               # **2026-07-31 重写**: 真实周K线下载, 覆盖全57币(Binance主/OKX备, 上市前留空)
+├── generate_synthetic_data.py        # ⚠ 合成数据生成 (V1/V2/V3) — 仅用于管线测试, **非真实业绩**
+├── generate_synthetic_v2.py
+├── generate_synthetic_v3.py
+├── realistic_validation.py           # 遗留验证脚本 (import 已重建的 backtest_v2 即可跑)
 ├── data/
-│   ├── weekly_adjclose_crypto3.csv    # V1 数据
-│   └── weekly_adjclose_crypto50.csv   # V2 数据
+│   ├── weekly_adjclose_crypto3.csv    # 3防御币 (crypto_hist_data 旧版产物)
+│   ├── weekly_adjclose_crypto50.csv   # ⚠ 当前为合成数据; 真实版须重跑 crypto_hist_data.py
+│   └── weekly_adjclose_crypto50_v3.csv # 合成 V3 (含插针/rug)
 └── figs/
     ├── v1_*.png                      # V1 图表
     └── v2_*.png                      # V2 图表 (净值/回撤/市况时间轴)
 ```
+
+> **注意**：原 `backtest_v1.py` 已丢失（从未进 git）；`crypto_adoption.py`(V1篮子) 仍在。所有"结果"Json 均为合成数据产物。
 
 ---
 
@@ -141,29 +160,34 @@ crypto_stocks/
 
 ---
 
-## 4. 运行方式
+## 4. 运行方式（诚实流程）
 
 ```bash
 cd crypto_stocks
 
-# 1. 下载数据 (Binance + OKX, 免费, 需可访问境外网络)
-python3 crypto_hist_data.py
+# 0. 先看符号映射是否正确 (沙箱安全, 不联网)
+python3 crypto_hist_data.py --check
 
-# 2. 跑回测
-python3 backtest_v1.py
+# 1. 下载真实数据 (需在【可联网环境】跑; 本机沙箱 Binance/OKX 被墙)
+python3 crypto_hist_data.py            # -> data/weekly_adjclose_crypto50.csv (真实版)
 
-# 3. 或一步到位 (自动下载+回测)
-python3 backtest_v1.py --download
+# 2. 跑重建引擎 (消费上述 CSV; 合成数据仅自检, 数字不可信)
+python3 backtest_v2.py                  # 默认 V5: cost=10bps, offense_n=3
+python3 backtest_v2.py --offense-n 5 --crash-thr -0.15 --vol-target 0.60   # 加 CrashGuard+VolTarget
 
-# 4. 查看篮子定义
-python3 crypto_adoption.py
+# 3. 查看篮子定义
+python3 crypto_adoption_v2.py
 ```
 
-依赖：`pandas`, `numpy`, `matplotlib`（沙箱已预装）。真实数据下载无需额外依赖（标准库 urllib）。
+依赖：`pandas`, `numpy`（用 `G:\venv\quant\Scripts\python.exe`，含 pandas 3.0.5）。真实数据下载仅用标准库 `urllib`，无需 key。
+
+> ⚠️ **本机沙箱网络限制**：Binance / OKX / CoinGecko 全部不可达（直连 + 代理 3067 均失败），故真实数据**只能在有出境网络的环境拉取**。拉到后覆盖 `data/weekly_adjclose_crypto50.csv`，再跑 `backtest_v2.py` 即得真实倍数。
 
 ---
 
 ## 5. 关键发现
+
+> ⚠️ 本节数字来自**丢失的 V1 引擎 + 合成数据**（43.5x / 137x 等），属设计期探索性结论，**不可当作真实业绩**。仅保留作方法论直觉参考。
 
 1. **简单分散即大幅跑赢 BTC**: 等权三币种 43.5x vs BTC 15.6x，说明加密市场「小币超额」显著
 2. **动量轮动是主 alpha 来源**: 策略 137x vs 等权 43.5x，动量贡献约 3x 提升
@@ -173,13 +197,32 @@ python3 crypto_adoption.py
 
 ---
 
-## 6. 扩展方向
+## 6. 真相化与重建路线（2026-07-31）
 
-- [ ] 接入真实 Binance/OKX 数据（本地运行 `crypto_hist_data.py`）
-- [ ] 新增币种（SOL/DOGE 等）扩大篮子
-- [ ] 实盘执行层（通过 `market_adapter.py` 的 `BinanceAdapter` 预留）
+### 6.1 诊断结论（为什么旧 42,484x 不可信）
+| 问题 | 证据 |
+|---|---|
+| 回测引擎丢失 | `backtest_v1.py`/`backtest_v2.py` 从未进 git、已彻底删除；`realistic_validation.py` import 即崩 → 不可复现 |
+| 数据是合成的 | 50 币面板由 `generate_synthetic_*` 生成（进攻币纯虚构，仅 BTC 锚真实价） |
+| 真实 API 被墙 | Binance/OKX/CoinGecko 本机沙箱全不可达（直连+代理3067均失败）；下载器原仅覆盖 3 币 |
+| 过拟合铁证 | 遗留 `realistic_validation_results.json`：walk-forward 训练 1028x → 测试 **22x** |
+
+### 6.2 已完成的修复
+1. ✅ **重建 `backtest_v2.py`**：防御核(BTC/ETH/OKB)+进攻TopN动量+四档市况+CrashGuard+VolTarget+相位倾斜；严格前视防护（选币/市况只用 ≤t 数据）；消费 weekly_adjclose CSV，真数据可无缝替换。合成数据自检通过（不崩、指标可算）。
+2. ✅ **重写 `crypto_hist_data.py`**：由 `crypto_adoption_v2.COIN_META` 自动推导全 57 币 Binance/OKX 符号，上市前自然留空；`--check` 沙箱安全自检通过。
+3. ✅ **README 真相化**：顶部警示 + §1/§5/§6 标注合成/过拟合，删除"FINAL 42,484x 已达成"误导。
+
+### 6.3 待办（出真实倍数必经）
+- [x] 重建回测引擎（可复现）
+- [x] 扩展真实数据下载器到全 57 币（待联网环境执行）
+- [ ] **在可联网环境跑 `crypto_hist_data.py` 拉真实周K线** → 覆盖 `data/weekly_adjclose_crypto50.csv`
+- [ ] 跑 `backtest_v2.py` 出**真实倍数**（届时单独汇报，不沿用任何合成数字）
+- [ ] 引擎前视/过拟合复审（真实数据到位后做 walk-forward + 参数敏感性）
+- [ ] 实盘执行层（`market_adapter.py` 的 `BinanceAdapter` 预留）
 - [ ] 日频回测（加密 T+0，周频可能不够）
 - [ ] 与 A 股/美股跨资产组合回测
+
+> **诚实口径**：crypto 第三策略的真实业绩**尚未产生**。任何倍数都必须来自 Binance/OKX 真实成交数据 + 重建引擎，且经 walk-forward 验证无过拟合后才可引用。
 
 ---
 
