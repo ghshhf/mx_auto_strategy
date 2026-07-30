@@ -18,15 +18,15 @@ us_adoption.py - 美股原生「科技渗透率 / 采用率 S 曲线」引擎
 # 对标 科创50 / 美股50 指数式篮子: 流动性大盘核心为主, 砍掉高波动投机票(鞭梢源)。
 THEME_STOCKS = {
     "AI算力":     ["NVDA", "AMD", "AVGO", "PLTR", "ORCL"],
-    "半导体":     ["AMAT", "MU", "LRCX", "MRVL", "ASML", "QCOM"],
+    "半导体":     ["AMAT", "MU", "LRCX", "MRVL", "ASML", "QCOM", "TSM"],
     "CloudSaaS":  ["AMZN", "MSFT", "CRM", "NOW", "DDOG", "NET", "ADBE", "SNOW"],
     "EV新能源":    ["TSLA", "GOOGL"],
     "光伏储能":    ["ENPH", "FSLR", "NEE"],
     "GLP1减肥药":  ["LLY", "NVO", "VRTX", "REGN"],
     "网络安全":    ["CRWD", "ZS", "PANW", "FTNT"],
     "机器人":      ["ISRG", "TER"],
-    "Fintech":    ["MA", "PYPL", "COIN", "AXP"],
-    "电商互联网":   ["META", "BABA", "BKNG", "DASH", "SPOT"],
+    "Fintech":    ["MA", "PYPL", "COIN", "AXP", "V", "NU"],
+    "电商互联网":   ["META", "BABA", "BKNG", "DASH", "SPOT", "MELI", "SE", "PDD", "SHOP"],
     "流媒体娱乐":   ["NFLX"],
     "算力基础设施":  ["EQIX", "VRT"],
     "前沿科技":     ["AAPL", "HOOD"],

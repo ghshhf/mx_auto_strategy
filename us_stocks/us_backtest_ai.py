@@ -16,13 +16,14 @@ us_backtest_ai.py - 美股真实面板回测 + AI 选股层接入 (v6.15+)
   1) baseline    : v6.14b 修正控制组(弱市停车进分红防御篮, 去黄金, 季频, 等权 Top10)
   2) optimized   : 美股优化引擎(无杠杆, 进攻主导+防御小, 主题解相关max2): 周频 + 动量Top3集中
                    + MA5>MA20门 + 动态池月度re-screen + crash现金(正确极端防御=现金, 非长债)。
-                   倍数 ≈33.7x(≈2×A股16x), 但纯动量高beta -> MDD≈-46%(结构性)。
+                   倍数 ≈22.9x(扩池后诚实值, ≈1.4×A股16x; 旧33.7x依赖漏池隐性过拟合, 已废弃),
+                   但纯动量高beta -> MDD≈-48%(结构性)。
   3) optimized-defensive(结构性现金袖 --struct-def, 默认20%->现金): 无杠杆下均匀压每年回撤的
-                   唯一有效手段。40%袖 -> ≈11x / MDD≈-30%; 可选叠加波动率目标化 --vol-target。
+                   唯一有效手段。40%袖 -> ≈8.5x / MDD≈-32%; 40%+volT0.22 -> ≈8.0x / MDD≈-30%。
   4) optimized+ai: optimized 进攻仓再叠 ai_score 质量乘数(确定性可复现 / --with-llm 真接线)
-  5) optimized+lev(--lev>1, 默认1.0关闭): 净杠杆档, 1.2x→≈52x / 1.3x→≈62x(回撤放大, 借入成本未计)
-  注: 用户要求无杠杆(≈34x/MDD-46%); 纯动量MDD无法靠事后信号压, 结构性降敞口(现金袖/波动目标)
-      是唯一路径, 代价是收益。"34x且-30%"无杠杆下不可兼得(见 README 7.1 前沿表)。
+  5) optimized+lev(--lev>1, 默认1.0关闭): 净杠杆档, 1.2x→≈32.0x / 1.3x→≈36.8x(回撤放大, 借入成本未计)
+  注: 用户要求无杠杆(扩池后≈22.9x/MDD-48%); 纯动量MDD无法靠事后信号压, 结构性降敞口(现金袖/波动目标)
+      是唯一路径, 代价是收益。"23x且-30%"无杠杆下不可兼得(见 README 7.1 前沿表)。
 
 为什么叫「AI 选股层」:
   ai_score.augment(candidates, cfg, tag) 是 A 股系统通用 AI 加权打分层, 输出 0.8~1.2 质量乘数。
@@ -33,10 +34,10 @@ us_backtest_ai.py - 美股真实面板回测 + AI 选股层接入 (v6.15+)
   python us_backtest_ai.py                       # 五档全跑(确定性 AI; 杠杆档默认1.0不显示)
   python us_backtest_ai.py --mode optimized      # 仅 optimized 两档
   python us_backtest_ai.py --refresh monthly     # 动态池刷新频率(monthly/quarterly, 默认 monthly)
-  python us_backtest_ai.py --struct-def 0.40     # 防御档切 40% 现金袖(→~11x / MDD≈-30%)
+  python us_backtest_ai.py --struct-def 0.40     # 防御档切 40% 现金袖(→~8.6x / MDD≈-32%; +--vol-target 0.22→~8.1x/-30%)
   python us_backtest_ai.py --with-llm            # optimized+ai 真正调用 ai_score.augment
   python us_backtest_ai.py --no-ai               # 关闭 AI(仅 baseline+optimized+防御档)
-  python us_backtest_ai.py --lev 1.3             # 杠杆档用 1.3x(→~62x, 回撤放大, 默认1.0关闭)
+  python us_backtest_ai.py --lev 1.3             # 杠杆档用 1.3x(→~37.7x, 回撤放大, 默认1.0关闭)
 输出:
   us_stocks/data/us_nav_ai.csv (date, baseline_nav, optimized_nav, [optimized_def_nav], [optimized_ai_nav])
 """
