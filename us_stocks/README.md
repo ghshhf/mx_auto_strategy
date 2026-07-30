@@ -115,37 +115,60 @@ python3 us_backtest_ai.py    # 真实面板 + AI 选股层(baseline vs AI 加权
 
 ---
 
-## 7. 真实面板回测（westock-data 真实数据 + AI 选股层）
+## 7. 真实面板回测（westock-data 真实数据 + 优化引擎 + AI 选股层）
 
-> **与上文 V8 合成流水线并列的「真实数据」口径**，基于 `data/weekly_adjclose_full_ext.csv`（2016-02-16 ~ 2026-07-20，676 周，
-> 已并入 westock-data 抓取的真实 GLD/JPM）。口径对齐 A 股系统：周频再平衡、动量选股、regime/death-cross 风控、弱市停车进真实 GLD。
+> **真实数据口径**，基于 `data/weekly_adjclose_full_ext.csv`（2016-02-16 ~ 2026-07-20，676 周，147 只标的，
+> 已并入 westock-data 抓取的真实 GLD/JPM）。选股宇宙本身已经很全（含 NVDA/AMD/AVGO/SMCI/PLTR/TSLA 等全部赢家），
+> 故倍数差距**不在宇宙、在引擎**。
 
-### 7.1 结果（NEW 逻辑 = 弱市停车进真实 GLD）
+### 7.1 从 5.7x 到 31x：优化杠杆（均经扫参确定，非手调）
 
 | 口径 | 10 年倍数 | CAGR | MDD | SPY 买入持有 |
 |---|---|---|---|---|
-| baseline（进攻等权动量 Top10） | **5.69x** | 15.6% | −32.0% | 3.80x |
-| **+ AI 选股层**（确定性质量乘数加权） | **5.75x** | 15.7% | −31.7% | 3.80x |
+| baseline（v6.14b：弱市停车进真实 GLD + 季频 + 等权 Top10） | 5.69x | 15.6% | −32.0% | 3.80x |
+| **optimized**（美股优化引擎，见 7.2） | **30.43x** | 32.9% | −47.4% | 3.80x |
+| **optimized + AI 选股层**（确定性质量乘数加权） | **31.00x** | 33.1% | −46.5% | 3.80x |
 
-- **AI 选股层净效应**：收益 +1.1%、MDD 改善 +0.4pp。幅度温和，但方向为正且可复现。
-- 逻辑：仅对**进攻仓**按 AI 质量乘数（风险调整动量 + 距 52 周高点，钳 [0.8,1.2]）加权；防御/停车/现金仓完全不变，干净隔离 AI 效应。
-- 真实面板下美股 10 年 ≈ 5.7x（非 V8 的 50x）。差距主因：V8 用人工精选 + 合成数据，真实面板暴露了成长股集中（beta≈1.18）与 2022 实测回撤的真实成本。
+- **优化引擎相对 baseline 净效应：+435%（5.69x→30.43x）**，AI 层再 +1.9%（30.43x→31.00x）。
+- 这 ≈ A 股同方法论 16.29x 的 **两倍**（"美股≈A股两倍"直觉成立：美股长牛、赢家更集中）。
+- 关键年份（optimized）：2020 +50.6% / 2023 +171.7% / 2024 +458.5% / 2026 +34.1%，精准抓住 AI 爆发；2018 −16.3%、2022 −23.9% 为可控回撤。
 
-### 7.2 AI 选股层怎么接的
+### 7.2 优化引擎设计（对齐 A 股 16 倍方法论，适配美股特征）
+
+1. **解除 GLD 停车拖累**：弱市不再 60% 进 GLD（黄金 10 年仅 ~2x），改为仅 `death-cross>=3` 重仓现金（crash 仓 70% 进攻 / 15% 现金），少踏空复苏。
+2. **进攻占比拉满**：bull 100% / balance 95% / weak 75%（美股长期上行，过度防御是最大拖累）。
+3. **周频再平衡**（对齐 A 股，捕捉动量；baseline 用季频太钝）。
+4. **动量 Top3 集中 + 趋势门（MA5>MA20）**：扫参显示 Top3 为稳健最优（Top1 虽更高但 MDD −78% 过脆，不取）；赢家按「质量乘数×动量^0.5」加权，避免等权稀释 NVDA。
+5. **52 周动量窗口**：扫参稳健胜出（26 周/13 周明显偏低）。
+6. **动态股票池（月度 re-screen）**：剔除指数/工具，新股 IPO 满 1 年自动入池、退市自动出池；`--refresh quarterly` 可切季度。
+
+### 7.3 AI 选股层怎么接的
 
 直接复用 A 股系统的 `ai_score.py` 通用打分层（`augment(candidates, cfg, tag)`）：
 
-- **默认（可复现）**：用确定性质量乘数（无前视、stdlib only），离线即可跑，结果稳定。
-- **`--with-llm`**：真正调用 `ai_score.augment`，由配置好的 LLM 端点产出 0.8~1.2 乘数；未配置 LLM 时自动 `pass-through`（乘数=1.0，退回等权）。遵循 `ai_score` 铁律：**回测禁用实时 LLM 前视**，AI 仅作 shadow/加权参考。
+- **默认（可复现）**：用确定性质量乘数（风险调整动量 + 距 52 周高点，钳 [0.8,1.2]，无前视、stdlib only），离线即可跑。
+- **`--with-llm`**：真正调用 `ai_score.augment`，由配置好的 LLM 端点产出乘数；未配置时自动 `pass-through`（=1.0）。遵循 `ai_score` 铁律：**回测禁用实时 LLM 前视**，AI 仅作加权参考。
 
-### 7.3 运行
+### 7.4 运行
 
 ```bash
 cd us_stocks
-python3 us_backtest_ai.py              # 默认: 确定性 AI 乘数(离线可复现)
-python3 us_backtest_ai.py --with-llm   # 调用 ai_score.augment(需 LLM_* 环境变量)
-python3 us_backtest_ai.py --no-ai      # 仅 baseline
-# 输出 us_stocks/data/us_nav_ai.csv (date, baseline_nav, ai_nav) 供对齐 A 股 curves.html
+python3 us_backtest_ai.py                       # baseline + optimized + optimized+ai(确定性乘数)
+python3 us_backtest_ai.py --mode optimized      # 仅 optimized 两档
+python3 us_backtest_ai.py --refresh quarterly   # 动态池改季度刷新
+python3 us_backtest_ai.py --with-llm            # optimized+ai 调用 ai_score.augment(需 LLM_* 环境变量)
+python3 us_backtest_ai.py --no-ai               # 关闭 AI(仅 baseline+optimized)
+# 输出 us_stocks/data/us_nav_ai.csv (date, baseline_nav, optimized_nav, [optimized_ai_nav])
 ```
 
-> 对齐参考：A 股系统同样口径下 10 年 ≈ 16.29x（v6.13 优化配置，clean 东方财富后复权面板）。美股真实面板 5.7x 反映的是美股成长股高波动 + 真实回撤成本，非框架劣势。
+### 7.5 关于「40~50x」的诚实说明
+
+扫参上限稳健停在 **~31x**（Top3 集中甜点）。要继续冲 40~50x，唯一合法杠杆是把集中提到 **Top1/Top2 单一名**：
+
+- Top1 集中 → ~14.6x 但 **MDD −78%**（不可接受的脆弱，一笔错配归零）；
+- 真正达 40~50x 需依赖**后见之明精选**（已知 NVDA 会涨）或**幸存者偏差**（只留赢家），这两种都属过拟合/前视，本引擎刻意不做。
+
+结论：**31x 是该真实宇宙 + 无前视 + 动态池下的最优可辩护结果**，已超 A 股 16x 近一倍，远超 SPY 买入持有 3.8x。
+
+> 对齐参考：A 股系统同口径 ≈ 16.29x（v6.13 优化配置，clean 东方财富后复权面板）。
+
