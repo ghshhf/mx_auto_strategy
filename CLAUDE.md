@@ -20,7 +20,7 @@
 本仓库按**市场**分两大类，请按此归类与隔离：
 
 - **A 股（主系统，默认根目录）**：龙虾炒股大赛模拟盘自动交易。依赖 `mx-moni` API、T+1、限价；含 `auto_trader.py` / `grid_trader.py` / `momentum_*.py` 与 A 股 `data/`。
-- **美股（对标迁移，目录 `us_stocks/`）**：同一套方法论迁移到美股。US50 篮子（48 进攻 + KO/ABBV 防御）+ 动量轮动 + Walk-forward 样本外验证 + 崩盘保护 + 网格叠加，10 年 ≈ 50x。权威分类标记为 `us_stocks/README.md` 首行 HTML 注释 `CATEGORY: us_stocks`。
+- **美股（对标迁移，目录 `us_stocks/`）**：同一套方法论迁移到美股。US50 篮子（48 进攻 + KO/ABBV 防御）+ 动量轮动 + Walk-forward 样本外验证 + 崩盘保护 + 网格叠加。真实面板回测（含 AI 选股层 `us_backtest_ai.py`）结果见 `us_stocks/README.md`（⚠️ 早期 ~50x 为合成数据未计成本，仅供参照）。权威分类标记为 `us_stocks/README.md` 首行 HTML 注释 `CATEGORY: us_stocks`。
 
 > 归类规则：涉及美股的代码、数据、报告一律放在 `us_stocks/` 内；涉及 A 股的放在根目录。两者逻辑互不混入。新增美股文件请同步更新 `us_stocks/README.md`。
 
@@ -52,7 +52,9 @@ export MX_APIKEY="你的mx-moni API key"   # 从环境变量读，绝不硬编�
 
 ### 2. 给用户「给方向」
 
-直接编辑 `user_script.md` 写人话即可，例如：
+> 🔒 **剧本已封印（2026-07-30 / W31）**：`user_script.md` 方向主轴已移交 AI（`script_advisor` + `ai_score`）。默认不再手写作业；智能体改方向请走 AI 路径。重新启用手写需 `playbook.sealed=false` 并清除封印横幅。
+
+直接编辑 `user_script.md` 写人话即可（仅限封印解除后），例如：
 
 ```
 下周主攻电力和医疗，防御端你定，弱势市多留现金。
@@ -166,7 +168,7 @@ python3 manual_log.py delete --account real2 --confirm
 
 ---
 
-## 扩展工具（能力补全，已在 v7.2 加入）
+## 扩展工具（能力补全）
 
 | 工具 | 能力 | 命令示例 |
 |---|---|---|

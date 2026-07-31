@@ -1,4 +1,4 @@
-# mx_auto_strategy — 龙虾炒股大赛自动交易系统 v6.11
+# mx_auto_strategy — 龙虾炒股大赛自动交易系统 v6.14
 
 > 模拟盘专用：龙虾炒股大赛（账户 261984600000041416，100 万虚拟金，全零持仓）
 > 核心模式：**剧本书写者** —— 防御端系统自治 + 进攻端用户方向叠加 + 大方向甩剧本
@@ -16,8 +16,8 @@
 | 类别 | 路径 | 说明 | 分类标记 |
 |---|---|---|---|
 | **A 股（主系统）** | 仓库根目录 | 龙虾炒股大赛自动交易（剧本书写者 + 防御自治 + 网格），依赖 mx-moni API / T+1 / 限价 | 无（默认根） |
-| **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + Walk-forward OOS + 崩盘保护 + 网格叠加，10 年 ≈ 50x | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
-| **加密（对标迁移）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + 暴跌过滤，10 年 ≈ 42,000x | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
+| **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + 崩盘保护 + AI 选股层（`us_backtest_ai.py`）；真实面板回测结果见 `us_stocks/README.md` | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
+| **加密（对标迁移）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + 暴跌过滤（⚠️ 早期 ~42,000x 为合成数据、未计成本，仅供参考，非实盘口径） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
 
 > 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。
 > 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
@@ -56,7 +56,9 @@ python3 auto_trader.py
 
 ## 给方向（人话入口）
 
-直接编辑 `user_script.md`：
+> 🔒 **剧本已封印（2026-07-30 / W31）**：`user_script.md` 顶部有封印横幅，方向主轴已全面移交 AI（`script_advisor` 生成剧本草稿 + `ai_score` 选股加权）。**默认不再手写作业**；重新启用手写需置 `strategy_config.json` 的 `playbook.sealed=false` 并清除封印横幅。智能体改方向请走 AI 路径，勿直接改 `user_script.md` 正文。
+
+直接编辑 `user_script.md`（仅限封印解除后）：
 
 ```
 下周主攻电力和医疗，防御端你定，弱势市多留现金。
@@ -106,8 +108,8 @@ python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口�
 | 市况 | 判定 | 防御% | 进攻% | 现金% |
 |---|---|---|---|---|
 | 弱势 | 沪深300 低于20日MA -3% | 60 | 24 | 16 |
-| 平衡 | MA ±3% 带内 | 54 | 30 | 16 |
-| 强势 | 高于 MA +3% | 44 | 40 | 16 |
+| 平衡 | MA ±3% 带内 | 45 | 45 | 10 |
+| 强势 | 高于 MA +3% | 35 | 60 | 5 |
 
 ---
 
@@ -142,6 +144,8 @@ python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口�
 **数据**：内置精选渗透率表（`tech_adoption.THEMES`），离线零依赖、无网络；渗透率为近似估值（截至 `as_of`），用于相位判断而非精确预测，定期人工复核即可。`strategy_config.json` 中 `tech_adoption.shadow_mode=true` 可先只打印倾斜建议不执行供观察；乘子（boost_accelerating / early_boost / cut_saturating / mature_mult）均可调。任何模块异常 → 自动降级中性、不中断主流程。
 
 - **v6.11b 时变渗透率表（按年代标相位）**：新增 `PHASE_HISTORY`，给每个赛道按年代标相位——例如宁德 2019-2021=加速×1.35、2022+=饱和×0.65；AI 2023+=加速；白酒 2016-2020=加速。新增 `get_adoption(industry, year=Y)` 可按年份查当年真实相位。`strategy_config.json` 中 `tech_adoption.shadow_mode=true` 可先只打印倾斜建议不执行供观察；乘子（boost_accelerating / early_boost / cut_saturating / mature_mult）均可调。任何模块异常 → 自动降级中性、不中断主流程。**live 不传 year 时行为不变（仍用当前 2025 评估），向后兼容**。这修复了旧版「2025 静态快照错配早年主升浪」的缺陷——回测 10 年从静态版 −2.1% 转为时变版 **+7.4%**（≈18.0 万 vs 16.8 万），且 3/5/10 年全段净正。
+
+> ⚠️ **口径更正**：上句「≈18.0 万」基线来自已废弃的 westock 腾讯面板（全程含 +50%~+35000% 伪迹跳变），自 2026-07-30 起改用干净东方财富后复权面板，10 年权威值为 **16.29x**（v6.13 优化配置，core_frac=0.5+趋势过滤）。「18 倍封顶」口径已废弃，不再作为收益上限引用。
 
 ---
 
@@ -193,7 +197,7 @@ mx_auto_strategy/
 └── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
 ```
 
-### 扩展工具（v7.2 能力补全）
+### 扩展工具
 
 | 工具 | 能力 |
 |---|---|
