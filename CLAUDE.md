@@ -7,7 +7,7 @@
 
 ## 这是什么
 
-龙虾炒股大赛（模拟盘）自动交易系统 v6.13，核心模式叫**「剧本书写者」**：
+龙虾炒股大赛（模拟盘）自动交易系统 v6.14，核心模式叫**「剧本书写者」**：
 
 - **防御端**：系统自治。从低 beta 蓝筹白名单自动选 Top3，按三档市况（弱势/平衡/强势）自动调仓位。
 - **进攻端**：用户给方向就锁定用户方向，不给就走自适应主线（行业动量扫描）。
@@ -17,12 +17,13 @@
 
 ## 市场分类导航（智能体自动归类）
 
-本仓库按**市场**分两大类，请按此归类与隔离：
+本仓库按**市场**分**三大类**，请按此归类与隔离：
 
-- **A 股（主系统，默认根目录）**：龙虾炒股大赛模拟盘自动交易。依赖 `mx-moni` API、T+1、限价；含 `auto_trader.py` / `grid_trader.py` / `momentum_*.py` 与 A 股 `data/`。
-- **美股（对标迁移，目录 `us_stocks/`）**：同一套方法论迁移到美股。US50 篮子（48 进攻 + KO/ABBV 防御）+ 动量轮动 + Walk-forward 样本外验证 + 崩盘保护 + 网格叠加。真实面板回测（含 AI 选股层 `us_backtest_ai.py`）结果见 `us_stocks/README.md`（⚠️ 早期 ~50x 为合成数据未计成本，仅供参照）。权威分类标记为 `us_stocks/README.md` 首行 HTML 注释 `CATEGORY: us_stocks`。
+- **A 股（主系统，默认根目录）**：龙虾炒股大赛模拟盘自动交易。依赖 `mx-moni` API、T+1、限价；含 `auto_trader.py` / `grid_trader.py` / `selector.py` / `weekly_theme.py` / `death_cross.py` / `tech_adoption.py` 等。回测在 `ashare_backtest/`（面板由 `ashare_backtest/eastmoney_hfq_rebuild.py` 联网重建生成，**面板 CSV 未入库**）。
+- **美股（对标迁移，目录 `us_stocks/`）**：同一套方法论迁移到美股。US50 篮子（48 进攻 + KO/ABBV 防御）+ 动量轮动 + Walk-forward 样本外验证 + 崩盘保护 + 网格叠加。真实面板回测（含 AI 选股层 `us_backtest_ai.py`）结果见 `us_stocks/README.md`（⚠️ 早期 ~50x 为合成数据未计成本，仅供参照；真实值 22.48x）。权威分类标记为 `us_stocks/README.md` 首行 HTML 注释 `CATEGORY: us_stocks`。
+- **加密（第三策略，目录 `crypto_stocks/`）**：同一套方法论迁移到加密货币，已由「仅额度汇总」升级为**独立第三策略**。Crypto50 池（BTC/ETH/OKB 防御核 + 进攻 TopN 动量）+ 12 赛道木头姐相位 + 四档市况 + CrashGuard + VolTarget。真实数据经 `127.0.0.1:3067` 代理从 Binance/OKX 拉取（`crypto_hist_data.py`）。**权威真值：进攻 Top3 = 100.6x（MDD −63.5%）／防御档 Top3+Crash+VolT = 40.7x（MDD −45.2%）**；旧「42,484x」系合成数据，**已废弃推翻**。权威分类标记为 `crypto_stocks/README.md` 首行 `CATEGORY: crypto`。
 
-> 归类规则：涉及美股的代码、数据、报告一律放在 `us_stocks/` 内；涉及 A 股的放在根目录。两者逻辑互不混入。新增美股文件请同步更新 `us_stocks/README.md`。
+> 归类规则：涉及美股的代码、数据、报告一律放在 `us_stocks/` 内；涉及加密的一律放在 `crypto_stocks/` 内；涉及 A 股的放在根目录。三者逻辑互不混入。新增文件请同步更新对应目录的 `README.md`。
 
 ## 选股决策总则（智能体必须先读，这是系统灵魂）
 
@@ -35,7 +36,9 @@
 
 > 前三层是叠加关系（方向→置信度→节奏），第四层是价格门槛问题不是算法问题。
 > 新闻/政策面的获取交给智能体自身能力，系统不内置新闻爬取依赖（已有 `news_feed.py` 仅作离线兜底，非必需）。
-> 加密资产：用户额度与股票并列，但属独立认知维度（不对外解释）。系统用 `crypto_data.py` 拉公开行情并入院本做总资金统计，**仅做汇总、不分析不选币**，且对普通人而言框架只需股票即可（年化~13%已足够）。
+> 加密资产：用户额度与股票并列，但属独立认知维度（不对外解释）。根目录 `crypto_data.py` 仍**仅做总资金汇总**（拉公开行情并入账本，不分析不选币）。
+> 但**策略研究已独立成第三大类** `crypto_stocks/`（Crypto50 + 动量选币 + 四档市况，真实数据回测 100.6x / 防御档 40.7x）——注意区分：`crypto_data.py`=记账汇总，`crypto_stocks/`=策略回测，两者互不混入。
+> 对普通人而言框架只需股票即可（年化~13%已足够）；crypto 波动极大（真实 MDD −63.5%），非必需。
 
 ---
 
@@ -46,9 +49,14 @@
 ```bash
 git clone https://github.com/ghshhf/mx_auto_strategy.git
 cd mx_auto_strategy
-pip install requests
+pip install pandas numpy matplotlib     # 仅回测/画图需要；实盘主流程只用标准库
 export MX_APIKEY="你的mx-moni API key"   # 从环境变量读，绝不硬编码
 ```
+
+> 📦 **依赖说明（已核实）**：本仓库**代码零引用 `requests`**（旧文档写的 `pip install requests` 是错的，已更正）。
+> 所有 HTTP 请求走标准库 `urllib`，无需安装。第三方依赖只有三个，且**仅回测与绘图链路**用到：
+> `pandas` / `numpy`（回测引擎）、`matplotlib`（净值图）。
+> 只跑实盘主流程（`auto_trader.py`）时，**标准库即可，无需任何 pip 安装**。
 
 ### 2. 给用户「给方向」
 
@@ -191,4 +199,7 @@ python3 manual_log.py delete --account real2 --confirm
 - `strategy_script_proof.md` —— 十层证据链：用户「剧本书写者」能力论证（3年5000%/50倍为何很正常）
 - `pool_analysis_report.md` —— 为什么5年回测失真（池子太小）
 - `strategy_power_proof.md` —— 散户-30% vs 用户-2.67% 的实力论证
-- `backtest_script_july.py` —— 6月底交剧本→7月关仓+5.79% 的量化验证
+- `ashare_backtest/REPORT_10Y_LIMIT.md` —— ⚠️ **已废弃**：westock 面板伪迹踩坑记录（其中 19.5x 为虚增假数，勿引用）
+
+> ⚠️ **收益真值口径（唯一可引用）**：A 股 trailing10y ≈ **14.5x**（基线）／**16.29x**（v6.13 动态选股优化，MDD −22.2%），全长窗口 ≈ **28x**，数据源为**干净东方财富后复权面板**。
+> 旧的「18 倍 / 19.5 倍」出自 westock（腾讯）面板伪迹虚增（单周跳变 ±50%~±35000%），**已于 2026-07-30 全面废弃**，任何文档不得再引用。

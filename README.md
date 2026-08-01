@@ -17,7 +17,7 @@
 |---|---|---|---|
 | **A 股（主系统）** | 仓库根目录 | 龙虾炒股大赛自动交易（剧本书写者 + 防御自治 + 网格），依赖 mx-moni API / T+1 / 限价 | 无（默认根） |
 | **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + 崩盘保护 + AI 选股层（`us_backtest_ai.py`）；真实面板回测结果见 `us_stocks/README.md` | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
-| **加密（对标迁移）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + 暴跌过滤（⚠️ 早期 ~42,000x 为合成数据、未计成本，仅供参考，非实盘口径） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
+| **加密（第三策略）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + VolTarget。**真实 Binance/OKX 数据权威真值：进攻 Top3 = 100.6x（MDD −63.5%）／防御档 = 40.7x（MDD −45.2%）**（⚠️ 旧 ~42,484x 系**合成数据 · 非实盘口径 · 已废弃推翻**；真值含幸存者偏差，非未来承诺） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
 
 > 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。
 > 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
@@ -40,7 +40,7 @@
 ```bash
 git clone https://github.com/ghshhf/mx_auto_strategy.git
 cd mx_auto_strategy
-pip install requests
+pip install pandas numpy matplotlib     # 仅回测/画图需要; 实盘主流程只用标准库
 export MX_APIKEY="你的mx-moni API key"   # 从环境变量读, 绝不硬编码
 
 # 干跑选股(不交易)
