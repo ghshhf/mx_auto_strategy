@@ -17,8 +17,10 @@ import json
 from datetime import datetime
 
 import market_data as md
+import instrument  # v6.16 手数取整单一入口
 from auto_trader import (
-    call_mx_moni, ensure_trade_window, load_cost_cache, save_cost_cache, _cost_basis,
+    call_mx_moni, ensure_trade_window, load_cost_cache, save_cost_cache,
+    resolve_qty, _cost_basis,
 )
 
 
@@ -94,7 +96,9 @@ def rebalance_once(cfg, do_trade=True, verbose=True):
                     continue
                 # 卖出比例: 偏离度/总涨幅, 封顶max_sell_ratio
                 sell_ratio = min(max_sell_ratio, abs(dev) / abs(g) if g else 0)
-                sell_qty = int(b["qty"] * sell_ratio // 100 * 100)
+                # v6.16 漏钱洞#7: 防御再平衡卖出收口(market 取自持仓缓存, 存量无字段则形态推断)
+                sell_qty = resolve_qty(b["qty"] * sell_ratio, code, cfg,
+                                       market=instrument.market_of(code, b), ctx="防御再平衡")
                 if sell_qty <= 0:
                     logs.append(f"    {code} 偏离{dev:+.2f}% 但不足1手, 跳过")
                     continue
@@ -128,7 +132,9 @@ def rebalance_once(cfg, do_trade=True, verbose=True):
             g = (price - b["price"]) / b["price"] * 100
             if g >= rcfg.get("offensive_trim_gain_pct", 10.0):
                 trim_ratio = rcfg.get("offensive_trim_ratio", 0.2)
-                sell_qty = int(b["qty"] * trim_ratio // 100 * 100)
+                # v6.16 漏钱洞#8: 进攻仓减仓收口
+                sell_qty = resolve_qty(b["qty"] * trim_ratio, code, cfg,
+                                       market=instrument.market_of(code, b), ctx="进攻仓减仓")
                 if sell_qty <= 0:
                     continue
                 limit_up = rt.get("limit_up")

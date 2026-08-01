@@ -17,8 +17,9 @@ import json
 from datetime import datetime
 
 import market_data as md
+import instrument  # v6.16 手数取整单一入口
 from auto_trader import (
-    call_mx_moni, ensure_trade_window, load_cost_cache, _cost_basis,
+    call_mx_moni, ensure_trade_window, load_cost_cache, resolve_qty, _cost_basis,
 )
 
 GRID_CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".grid_state.json")
@@ -100,6 +101,8 @@ def grid_once(cfg, do_trade=True):
     for t in grid_targets:
         code = t["code"]
         name = t.get("name", code)
+        # v6.16: 网格标的市场类型(池子显式标注优先, 缺失按代码形态推断)
+        market = instrument.market_of(code, t)
         step, layers, base = compute_grid_params(code, cfg)
         if base is None:
             logs.append(f"[{code} {name}] 无K线, 跳过网格")
@@ -138,7 +141,9 @@ def grid_once(cfg, do_trade=True):
                 logs.append(f"  [{code}] 已跌停封死, 不买")
             else:
                 amt = min(per_layer * to_buy, free_ammo)
-                qty = int(amt // price // 100 * 100)
+                # v6.16 漏钱洞#5: 原 //100*100 与 buy() 的 unit 逻辑重复且不一致
+                #                 (buy 认 KZZ=10, 网格不认) -> 统一走 round_qty
+                qty = resolve_qty(amt / price, code, cfg, market=market, ctx="网格买入")
                 if qty > 0:
                     cmd = f"买入 {code} {price:.2f} {qty}"
                     resp = call_mx_moni(cmd)
@@ -158,7 +163,10 @@ def grid_once(cfg, do_trade=True):
             if limit_up and price >= limit_up * 0.995:
                 logs.append(f"  [{code}] 已涨停封死, 不卖")
             else:
-                sell_qty = min(st["holding_qty"], int(per_layer * to_sell // price // 100 * 100))
+                # v6.16 漏钱洞#6: 网格卖出收口
+                sell_qty = min(st["holding_qty"],
+                               resolve_qty(per_layer * to_sell / price, code, cfg,
+                                           market=market, ctx="网格卖出"))
                 if sell_qty > 0:
                     cmd = f"卖出 {code} {price:.2f} {sell_qty}"
                     resp = call_mx_moni(cmd)

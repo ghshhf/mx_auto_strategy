@@ -9,6 +9,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
+import instrument  # v6.16 品种元数据单一真相源: market 标注
 
 
 def apply_trend_filter(scored, top_n, enabled=True):
@@ -188,6 +189,9 @@ def select(cfg, top_n=None, verbose=True, defensive_only=False):
             _, detail = score_one(code, cfg, rt=rt, kline=kl)
             detail["industry"] = p.get("industry", "未知")
             detail["tech"] = p.get("tech", False)
+            # v6.16 market 全链路贯通: 候选池显式标注优先, 缺失则按代码形态推断。
+            # 下游 buy() 据此解析每手股数 —— 缺了这一行, 转债/港股手数会退化为 100。
+            detail["market"] = instrument.market_of(code, p)
             if detail.get("pe") is not None or detail.get("hist_pct") is not None:
                 ranked.append(detail)
 
@@ -330,6 +334,8 @@ def select_offensive(cfg, top_n=1, verbose=True):
             "name": p["name"],
             "industry": p.get("industry", "进攻"),
             "tech": p.get("tech", True),
+            # v6.16 market 全链路贯通(同 select(), 进攻端同样不能丢)
+            "market": instrument.market_of(code, p),
             "pe": rt.get("pe_ttm"),
             "turnover_pct": to,
             "hist_pct": pct,

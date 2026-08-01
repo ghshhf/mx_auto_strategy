@@ -3,10 +3,15 @@ market_data.py - 免费行情数据获取 (腾讯财经)
 依赖: 仅标准库 (urllib, json, re)
 用途: 为 auto_trader 提供 实时价 / 历史K线 / PE / 价格分位
 """
+import os
+import sys
 import urllib.request
 import json
 import re
-from datetime import datetime, time
+from datetime import datetime, time  # noqa: F401  (保留对外符号, 历史调用方可能引用)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import instrument  # noqa: E402  (v6.16 品种元数据单一真相源: 交易时段)
 
 PREFIX = {"6": "sh", "0": "sz", "3": "sz", "9": "sh"}
 # ETF 代码映射: 51xxxx->sh(沪), 15xxxx->sz(深), 其它5位默认sh
@@ -75,10 +80,77 @@ def _pad(code):
     return f"{PREFIX[code[0]]}{code}"
 
 
+def _derive_turnover(fnum, is_hk):
+    """
+    换手率(%)统一口径。
+
+    A 股 (88 字段): [38] 由腾讯自报, 直接用 —— 保持与改造前逐位一致(防回归)。
+    港股 (78 字段): [38] 恒为 '0'(腾讯不提供), 必须派生:
+                        换手率% = 成交额[37] / 1e8 / 总市值[44](亿) * 100
+                    注意单位差异 —— 港股 [37] 单位是「元」, A 股 [37] 单位是「万元」。
+
+    同尺度验证(实测 2026-07-31 收盘):
+        A 股用 [37]/1e4/[44]*100 反算自报值: 茅台 0.4367≈0.44 / 工行 0.2211≈0.22 /
+        五粮液 1.2825≈1.28  → 误差 < 0.01pp, 证明派生公式与 A 股口径同尺度, 无反向偏置。
+
+    返回 float 或 None(数据不足)。None 会让 selector 走 pop_score=0.5 中性回退。
+    """
+    if not is_hk:
+        return fnum(38)
+    amount = fnum(37)     # 港股成交额, 单位: 元
+    total_mv = fnum(44)   # 总市值, 单位: 亿
+    if amount is None or total_mv is None or total_mv <= 0 or amount < 0:
+        return None
+    return round(amount / 1e8 / total_mv * 100, 4)
+
+
+def _parse_quote(prefixed, parts):
+    """
+    把腾讯行情单条报文的字段数组解析成统一 dict。
+    prefixed: 带前缀的代码(如 hk00700 / sh600519), 用于判定市场分支。
+    parts   : 报文按 '~' 切分后的字段数组。
+    """
+    is_hk = str(prefixed).lower().startswith("hk")
+
+    def g(i):
+        return parts[i] if i < len(parts) else ""
+
+    def fnum(i):
+        """安全解析浮点: 复合串取第一段, 非法返回None"""
+        s = g(i).split("/")[0].strip()
+        try:
+            return float(s) if s else None
+        except ValueError:
+            return None
+
+    # 港股 [46] 是英文名(如 'TENCENT'/'XIAOMI-W'), 不是 PB —— 显式置 None, 避免污染数值字段。
+    # (fnum 本身也会因 ValueError 返回 None, 此处显式化以表达意图。)
+    pb = None if is_hk else fnum(46)
+
+    return {
+        "name": g(1),
+        "price": fnum(3),
+        "prev_close": fnum(4),
+        "open": fnum(5),
+        "pe_ttm": fnum(39),
+        "pe_dynamic": fnum(39),
+        "pb": pb,
+        "turnover_pct": _derive_turnover(fnum, is_hk),
+        # 港股无涨跌停, [41]/[42] 恒为 0.0(假值) —— 下游 `if limit_down and ...`
+        # 判断会自动跳过, 行为恰好正确, 不要"修".
+        "limit_up": fnum(41),
+        "limit_down": fnum(42),
+        "total_mv": g(44),
+        "circ_mv": g(45),
+        "market": instrument.market_of(prefixed),
+    }
+
+
 def get_realtime(codes):
     """
     获取实时行情。交易时段返回数据, 非交易时段可能为空(正常)。
-    返回: {code: {price, pe_ttm, pe_dynamic, pb, turnover, name, ...}}
+    返回: {code: {price, pe_ttm, pe_dynamic, pb, turnover_pct, name, market, ...}}
+    v6.16: 拆出 _parse_quote 分市场解析, 港股换手率由成交额/市值派生。
     """
     if isinstance(codes, str):
         codes = [codes]
@@ -94,34 +166,7 @@ def get_realtime(codes):
         if code == "pv_none_match":
             continue
         parts = data.split("~")
-        if len(parts) < 50:
-            # 字段不全(非交易时段部分字段缺失), 仍尽量解析
-            pass
-        def g(i):
-            return parts[i] if i < len(parts) else ""
-
-        def fnum(i):
-            """安全解析浮点: 复合串取第一段, 非法返回None"""
-            s = g(i).split("/")[0].strip()
-            try:
-                return float(s) if s else None
-            except ValueError:
-                return None
-
-        out[code[2:]] = {
-            "name": g(1),
-            "price": fnum(3),
-            "prev_close": fnum(4),
-            "open": fnum(5),
-            "pe_ttm": fnum(39),
-            "pe_dynamic": fnum(39),
-            "pb": fnum(46),
-            "turnover_pct": fnum(38),
-            "limit_up": fnum(41),
-            "limit_down": fnum(42),
-            "total_mv": g(44),
-            "circ_mv": g(45),
-        }
+        out[code[2:]] = _parse_quote(code, parts)
     return out
 
 
@@ -179,15 +224,19 @@ def price_percentile(code, window=250, ktype="day"):
     return cur, round(pct, 3)
 
 
-def is_trade_time(now=None):
-    """判断当前是否为交易时段(简单版, 不含节假日)"""
-    now = now or datetime.now()
-    if now.weekday() >= 5:  # 周末
-        return False
-    t = now.time()
-    am = (time(9, 30) <= t <= time(11, 30))
-    pm = (time(13, 0) <= t <= time(15, 0))
-    return am or pm
+def is_trade_time(now=None, market="A"):
+    """
+    判断当前是否为交易时段(简单版, 不含节假日)。
+
+    v6.16: 支持分市场时段, 时段表来自 instrument(读 strategy_config.json):
+        A / ETF / KZZ : 09:30-11:30, 13:00-15:00
+        HK            : 09:30-12:00, 13:00-16:00  (港股午休更短、收盘更晚, 每日多 1.5 小时)
+
+    ⚠️ 参数顺序保持 (now, market) 而非设计稿的 (market, now) —— 因为
+       market_adapter.py:75 存在位置调用 `md.is_trade_time(now)`, 换序会把
+       datetime 误当 market 传入。无参调用 is_trade_time() 语义仍为 A 股(向后兼容)。
+    """
+    return instrument.is_trade_time(market=market or "A", now=now)
 
 
 if __name__ == "__main__":

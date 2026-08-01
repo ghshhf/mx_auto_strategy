@@ -1138,11 +1138,54 @@
     "cut_saturating": 0.65,
     "unknown_neutral": 1.0
   },
+  "instrument": {
+    "_comment": "v6.16 品种元数据单一真相源: 资产类型 -> 每手股数/单位/交易时段. 消除全仓8处 //100*100 硬编码(转债漏钱洞). 唯一解析入口 instrument.lot_of / instrument.round_qty.",
+    "default_lot": 100,
+    "strict_unknown_lot": true,
+    "_strict_note": "港股未在 per_code 登记每手股数时抛 UnknownLotError 拒单, 绝不猜100. 宁可不交易, 不可发废单.",
+    "lot_rules": {
+      "A": {
+        "lot": 100,
+        "unit": "股",
+        "sessions": "09:30-11:30,13:00-15:00"
+      },
+      "ETF": {
+        "lot": 100,
+        "unit": "份",
+        "sessions": "09:30-11:30,13:00-15:00"
+      },
+      "KZZ": {
+        "lot": 10,
+        "unit": "张",
+        "sessions": "09:30-11:30,13:00-15:00"
+      },
+      "HK": {
+        "lot": null,
+        "unit": "股",
+        "sessions": "09:30-12:00,13:00-16:00",
+        "_note": "港股每只每手股数不同, 必须走 per_code; lot=null 表示无市场级默认值"
+      }
+    },
+    "per_code": {
+      "_comment": "港股每手股数(board lot). ⚠️人工录入, 交易所可调整, 首单前建议逐条核对(见 mx_hk_design/docs/CHANGELOG.md 核对清单).",
+      "00700": 100,
+      "03690": 100,
+      "01810": 200,
+      "00941": 500,
+      "00388": 100
+    }
+  },
   "market": {
     "_comment": "v6.5 市场抽象层: 当前A股模拟盘, 未来可切同花顺/币圈/真实券商. 策略逻辑不变, 只换adapter.",
     "provider": "tencent",
     "adapter_class": "TencentMarketAdapter",
     "tradable_hours": "09:30-11:30,13:00-15:00",
+    "tradable_markets": [
+      "A",
+      "ETF",
+      "KZZ"
+    ],
+    "_tradable_note": "v6.16 降级开关(可下单市场白名单). 当前不含 HK —— 港股只做'行情+选股': 参与评分/主线/报表, 但不下单(记为观察仓). 待用户在 mx-moni 模拟盘确认支持港股下单(R1)后, 把 \"HK\" 加进本列表即可一行启用, 无需改码.",
     "settle_cycle": "weekly",
     "t_plus": 1,
     "leverage": false,
@@ -1168,7 +1211,7 @@
     "cache_file": "weekly_theme.json"
   },
   "universe_split": {
-    "_comment": "v6.6 防御/进攻行业分离: 防御选股只在 defensive_industries 白名单里挑(低beta价值/避险), 进攻端用 weekly_theme 从 offensive_industries 题材里挑. 避免消费电子/军工等弹性票误入防御端.",
+    "_comment": "v6.6 防御/进攻行业分离: 防御选股只在 defensive_industries 白名单里挑(低beta价值/避险), 进攻端用 weekly_theme 从 offensive_industries 题材里挑. 避免消费电子/军工等弹性票误入防御端. v6.16 港股接入: 防御端补4个港股标签, 进攻端补'港股高股息/港股金融', 使5只港股可进选股链路(回测口径变动已记录, 见 mx_hk_design/docs/CHANGELOG.md).",
     "defensive_industries": [
       "银行",
       "保险",
@@ -1189,7 +1232,11 @@
       "安防",
       "煤炭",
       "钢铁",
-      "高速"
+      "高速",
+      "港股科技",
+      "港股消费",
+      "港股高股息",
+      "港股金融"
     ],
     "offensive_industries": [
       "半导体",
@@ -1207,7 +1254,9 @@
       "电网",
       "光伏",
       "港股科技",
-      "港股消费"
+      "港股消费",
+      "港股高股息",
+      "港股金融"
     ]
   },
   "convertible_bond": {

@@ -21,6 +21,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
 import selector
+import instrument  # v6.16 品种元数据单一真相源: 手数/时段/降级开关
 
 
 def _read_temperature(cfg):
@@ -79,12 +80,31 @@ def save_cost_cache():
         pass
 
 
-def ensure_trade_window():
-    """硬守卫: 非交易时段禁止发出真实下单指令。返回 True 表示可交易。"""
-    if not md.is_trade_time():
-        print(f"[{datetime.now():%H:%M:%S}] ⚠️ 非交易时段, 跳过真实下单(闭市无法排单, 需开盘时段成交)")
+def ensure_trade_window(market="A"):
+    """
+    硬守卫: 非交易时段禁止发出真实下单指令。返回 True 表示可交易。
+    v6.16: 支持分市场时段(A/ETF/KZZ 09:30-11:30,13:00-15:00; HK 09:30-12:00,13:00-16:00)。
+           无参调用保持 A 股语义, 既有调用点行为不变。
+    """
+    if not md.is_trade_time(market=market):
+        print(f"[{datetime.now():%H:%M:%S}] ⚠️ 非交易时段({market} {instrument.session_of(market)}), "
+              f"跳过真实下单(闭市无法排单, 需开盘时段成交)")
         return False
     return True
+
+
+def resolve_qty(qty, code, cfg, market=None, ctx=""):
+    """
+    手数取整统一入口(带安全兜底)。
+
+    包裹 instrument.round_qty: 若港股每手股数未登记(UnknownLotError), 打印告警并返回 0
+    -> 调用方按"数量不足"跳过, 绝不发废单。这是"宁可不交易, 不可发废单"的落点。
+    """
+    try:
+        return instrument.round_qty(qty, code, cfg, market=market)
+    except instrument.UnknownLotError as e:
+        print(f"  [{code}] ⛔ {ctx}手数未登记, 拒单: {e}")
+        return 0
 
 
 def load_config():
@@ -110,23 +130,30 @@ def call_mx_moni(text):
 def buy(detail, cfg, cash_amount, is_add=False):
     """
     触发买入: 限价(当前价)买入。
-    股票: 数量取整到100股; 可转债(KZZ): 1手=10张, 取整到10。
+    数量按 instrument.lot_of 解析的每手股数取整:
+        A/ETF 100 股/份 · 可转债 10 张 · 港股逐只不同(per_code, 如小米 200/移动 500)。
     cash_amount: 本次投入金额(元)
     is_add: 是否加仓(计入flex池跟踪)
     """
     global _flex_used
     load_cost_cache()
     code, name = detail["code"], detail.get("name") or detail["code"]
-    market = detail.get("market", "A")
+    # v6.16: detail 未带 market 时按代码形态回退推断, 不再无脑默认 "A"
+    market = instrument.market_of(code, detail)
+
+    # v6.16 降级开关: 市场不在 market.tradable_markets 白名单 -> 只选不买(观察仓)。
+    # 当前 tradable_markets = ["A","ETF","KZZ"], 港股走此分支。
+    if not instrument.is_tradable(market, cfg):
+        return (f"[{code} {name}] 📋 已选中({market}), 但下单通道未开通"
+                f"(market.tradable_markets 不含 {market}), 记为观察仓, 不下单")
+
     rt = md.get_realtime([code]).get(code, {})
     price = rt.get("price")
     if not price:
         return f"[{code}] 无法获取实时价, 跳过买入"
-    # 交易单位: 股票100股/手, 可转债10张/手(1张=100元面值)
-    unit = 10 if market == "KZZ" else 100
-    qty = int(cash_amount // price // unit * unit)
+    qty = resolve_qty(cash_amount / price, code, cfg, market=market, ctx="买入")
     if qty <= 0:
-        return f"[{code}] 资金不足, 跳过"
+        return f"[{code}] 资金不足或手数不可解析, 跳过"
     kind = "加仓" if is_add else "底仓"
     cmd = f"买入 {code} {price:.2f} {qty}"
     resp = call_mx_moni(cmd)
@@ -136,8 +163,11 @@ def buy(detail, cfg, cash_amount, is_add=False):
         new_qty = old["qty"] + qty
         old["price"] = (old["price"] * old["qty"] + price * qty) / new_qty
         old["qty"] = new_qty
+        old.setdefault("market", market)
     else:
-        _cost_basis[code] = {"price": price, "qty": qty, "sold_ratio": 0.0}
+        # v6.16: 持久化 market —— 卖出侧只拿得到 code, 不存 market 就无法知道资产类型,
+        #        这正是 8 处 //100*100 硬编码的根因。
+        _cost_basis[code] = {"price": price, "qty": qty, "sold_ratio": 0.0, "market": market}
     if is_add:
         _flex_used += cash_amount
     save_cost_cache()
@@ -178,9 +208,10 @@ def check_stop_loss(code, cfg, defensive=False):
         print(f"  [{code}] 触及止损{loss_pct:.1f}% 但已跌停封死, 锁定 STOP_LOCKED, 等次日开盘清")
         save_cost_cache()
         return True
-    # 正常止损清仓
+    # 正常止损清仓 (v6.16 漏钱洞#1: 原 //100*100 使 60 张转债 -> sell_qty=0 静默失败)
     remain_qty = base["qty"] * (1 - base["sold_ratio"])
-    sell_qty = int(remain_qty // 100 * 100)
+    market = instrument.market_of(code, base)
+    sell_qty = resolve_qty(remain_qty, code, cfg, market=market, ctx="硬止损")
     if sell_qty <= 0:
         return False
     cmd = f"卖出 {code} {price:.2f} {sell_qty}"
@@ -235,7 +266,10 @@ def check_sell(code, cfg):
     if target_cum <= base["sold_ratio"]:
         base["tier_idx"] = idx  # 已达标, 跳过推进序号
         return None
-    sell_qty = int(base["qty"] * (target_cum - base["sold_ratio"]) // 100 * 100)
+    # v6.16 漏钱洞#2: 阶梯止盈同样收口到 round_qty(转债 lot=10, 港股逐只 per_code)
+    market = instrument.market_of(code, base)
+    sell_qty = resolve_qty(base["qty"] * (target_cum - base["sold_ratio"]),
+                           code, cfg, market=market, ctx="阶梯止盈")
     if sell_qty <= 0:
         base["tier_idx"] = idx
         return None
@@ -261,6 +295,9 @@ def weekly_reset(cfg):
     比赛一周结算一次, 结算后重置, 下周重新选股建仓。
     非交易时段跳过(闭市无法下单, 需开盘后执行)。
     """
+    # v6.16 修复: 缺 global 声明时 `_flex_used = 0.0` 只是局部赋值, 模块级变量不动
+    #             -> 机动资金已用比例跨周累积, 持续压制加仓额度。
+    global _flex_used
     load_cost_cache()
     if not _cost_basis:
         print("[周度重置] 当前无持仓, 无需清仓")
@@ -274,8 +311,10 @@ def weekly_reset(cfg):
         if not price:
             print(f"  [{code}] 无实时价, 跳过(下次开盘再清)")
             continue
+        # v6.16 漏钱洞#3: 周度清仓收口(原 150 张转债只卖 100, 剩 50 张成孤儿仓)
         remain_qty = base["qty"] * (1 - base["sold_ratio"])
-        sell_qty = int(remain_qty // 100 * 100)
+        market = instrument.market_of(code, base)
+        sell_qty = resolve_qty(remain_qty, code, cfg, market=market, ctx="周度清仓")
         if sell_qty <= 0:
             continue
         cmd = f"卖出 {code} {price:.2f} {sell_qty}"
@@ -470,7 +509,10 @@ def run_once(cfg, do_trade=True):
             if chg <= pull or chg >= brk:
                 amt = flex_total * 0.5
                 tag = "[进攻]" if is_off else ""
-                print(buy({"code": code, "name": base.get("name", code)}, cfg, amt, is_add=True))
+                # v6.16: 加仓 detail 必须带 market, 否则 buy() 里手数退化为 100(原字面量无 market)
+                print(buy({"code": code, "name": base.get("name", code),
+                           "market": instrument.market_of(code, base)},
+                          cfg, amt, is_add=True))
                 base["add_cnt"] = add_cnt + 1
 
     # 6) 持仓检查: 止损(区分防御/进攻) + 止盈(阶梯)
@@ -529,9 +571,10 @@ def check_stop_loss_offensive(code, cfg):
         print(f"  [{code}] 🔥进攻仓 触及止损{loss_pct:.1f}% 但已跌停封死, 锁定STOP_LOCKED")
         save_cost_cache()
         return True
-    # 正常止损清仓
+    # 正常止损清仓 (v6.16 漏钱洞#4: 进攻仓止损同源收口)
     remain_qty = base["qty"] * (1 - base["sold_ratio"])
-    sell_qty = int(remain_qty // 100 * 100)
+    market = instrument.market_of(code, base)
+    sell_qty = resolve_qty(remain_qty, code, cfg, market=market, ctx="进攻仓止损")
     if sell_qty <= 0:
         return False
     cmd = f"卖出 {code} {price:.2f} {sell_qty}"
