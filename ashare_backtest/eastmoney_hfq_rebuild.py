@@ -69,6 +69,8 @@ ENGINE_CODES = list(_E.DEF16) + list(_E.OFF4) + list(_E.CORE_SUB.values())
 
 
 def secid(code, market=None):
+    if market == "HK":
+        return f"116.{code}"   # 港股(东方财富 secid 前缀 116)
     if market:
         pre = "1" if market == "sh" else "0"
         return f"{pre}.{code}"
@@ -140,9 +142,9 @@ def collect_codes(cfg):
     """汇总所有需拉取的标的: 配置池 + 引擎内置篮子 + 指数 + 可转债。"""
     codes = {}
     for p in cfg.get("auto_select", {}).get("candidate_pool", []):
-        codes[p["code"]] = None
+        codes[p["code"]] = p.get("market")   # 保留 market(港股=HK), secid 据此生成 116.xxxxx
     for p in cfg.get("auto_select", {}).get("offensive_pool", []):
-        codes.setdefault(p["code"], None)
+        codes.setdefault(p["code"], p.get("market"))
     for c in ENGINE_CODES:
         codes.setdefault(c, None)
     for c, m in INDICES:
