@@ -1,0 +1,245 @@
+{
+  "currency": "USD",
+  "experiment": "dynamic_top3_vs_static_btc_eth",
+  "params": {
+    "start": "2021-08-01",
+    "end": "2026-08-02",
+    "capital_usd": 100.0,
+    "pool": [
+      "BTC",
+      "ETH",
+      "XRP",
+      "BNB",
+      "TRX"
+    ],
+    "fee_rate": 0.001,
+    "lookback_weeks": 12,
+    "ma_window": 20,
+    "top_n": 3,
+    "rebalance_every_weeks": 4,
+    "warmup_weeks": 20
+  },
+  "data": {
+    "coins": [
+      "BTC",
+      "ETH",
+      "XRP",
+      "BNB",
+      "TRX"
+    ],
+    "sources": {
+      "BTC": [
+        "yahoo/chart-api:BTC-USD [2017-11-01~2026-08-02] 3197d"
+      ],
+      "ETH": [
+        "yahoo/chart-api:ETH-USD [2017-11-09~2026-08-02] 3189d",
+        "coinbase:ETH-USD [2017-11-01~2017-11-08] 8d (gap fill)"
+      ],
+      "XRP": [
+        "yahoo/chart-api:XRP-USD [2017-11-09~2026-08-02] 3189d",
+        "bitfinex:tXRPUSD [2017-11-01~2017-11-08] 8d (gap fill)"
+      ],
+      "BNB": [
+        "yahoo/chart-api:BNB-USD [2017-11-09~2026-08-02] 3189d"
+      ],
+      "TRX": [
+        "yahoo/chart-api:TRX-USD [2017-11-09~2026-08-02] 3189d"
+      ]
+    },
+    "splices": {
+      "ETH": {
+        "boundary_date": "2017-11-09",
+        "last_filler_date": "2017-11-08",
+        "last_filler_close": 307.91,
+        "first_primary_close": 320.8840026855469,
+        "boundary_return_pct": 4.2135697721888965
+      },
+      "XRP": {
+        "boundary_date": "2017-11-09",
+        "last_filler_date": "2017-11-08",
+        "last_filler_close": 0.21692,
+        "first_primary_close": 0.21748800575733185,
+        "boundary_return_pct": 0.26185033990957507
+      }
+    },
+    "daily_rows": 1828,
+    "daily_start": "2021-08-01",
+    "daily_end": "2026-08-02",
+    "daily_missing_days": 0,
+    "daily_gaps": [],
+    "weekly_rows": 262,
+    "weekly_start": "2021-08-06",
+    "weekly_end": "2026-08-02",
+    "weekly_rule": "W-FRI",
+    "weekly_non_friday_bars": [
+      "2026-08-02"
+    ],
+    "proxy": "http://127.0.0.1:3067 (本次复用本地缓存, 未联网)"
+  },
+  "dynamic_top3": {
+    "name": "dynamic_top3",
+    "label": "动态 Top3 选币(动量+趋势过滤)",
+    "start_date": "2021-08-06",
+    "end_date": "2026-08-02",
+    "weeks": 262,
+    "years": 4.9884,
+    "gross_invested_usd": 100.0,
+    "final_nav_usd": 177.62,
+    "total_return_pct": 77.62,
+    "cagr_pct": 12.21,
+    "max_drawdown_pct": 83.22,
+    "volatility_annual_pct": 53.48,
+    "rebalance_count": 94,
+    "total_fee_usd": 3.68,
+    "final_weights_pct": {
+      "BTC": 0.0,
+      "ETH": 0.0,
+      "XRP": 0.0,
+      "BNB": 0.0,
+      "TRX": 100.0
+    }
+  },
+  "equal_weight_5_rolling": {
+    "name": "line1_rolling_rebalance",
+    "label": "等权5币 滚动互平衡",
+    "start_date": "2021-08-06",
+    "end_date": "2026-08-02",
+    "weeks": 262,
+    "years": 4.9884,
+    "gross_invested_usd": 100.0,
+    "final_nav_usd": 218.27,
+    "total_return_pct": 118.27,
+    "cagr_pct": 16.94,
+    "max_drawdown_pct": 66.3,
+    "volatility_annual_pct": 50.8,
+    "rebalance_count": 95,
+    "total_fee_usd": 0.59,
+    "final_weights_pct": {
+      "BTC": 19.65,
+      "ETH": 20.73,
+      "XRP": 19.51,
+      "BNB": 20.36,
+      "TRX": 19.74
+    }
+  },
+  "equal_weight_5_hold": {
+    "name": "line2_buy_and_hold",
+    "label": "等权5币 买入持有",
+    "start_date": "2021-08-06",
+    "end_date": "2026-08-02",
+    "weeks": 262,
+    "years": 4.9884,
+    "gross_invested_usd": 100.0,
+    "final_nav_usd": 196.57,
+    "total_return_pct": 96.57,
+    "cagr_pct": 14.51,
+    "max_drawdown_pct": 66.7,
+    "volatility_annual_pct": 48.85,
+    "rebalance_count": 0,
+    "total_fee_usd": 0.1,
+    "final_weights_pct": {
+      "BTC": 15.01,
+      "ETH": 6.57,
+      "XRP": 14.72,
+      "BNB": 17.45,
+      "TRX": 46.25
+    }
+  },
+  "btc_eth_rolling": {
+    "name": "line1_rolling_rebalance",
+    "label": "BTC/ETH 滚动互平衡",
+    "start_date": "2021-08-06",
+    "end_date": "2026-08-02",
+    "weeks": 262,
+    "years": 4.9884,
+    "gross_invested_usd": 100.0,
+    "final_nav_usd": 105.58,
+    "total_return_pct": 5.58,
+    "cagr_pct": 1.1,
+    "max_drawdown_pct": 74.04,
+    "volatility_annual_pct": 56.46,
+    "rebalance_count": 93,
+    "total_fee_usd": 0.31,
+    "final_weights_pct": {
+      "BTC": 50.07,
+      "ETH": 49.93
+    }
+  },
+  "btc_eth_hold": {
+    "name": "line2_buy_and_hold",
+    "label": "BTC/ETH 买入持有",
+    "start_date": "2021-08-06",
+    "end_date": "2026-08-02",
+    "weeks": 262,
+    "years": 4.9884,
+    "gross_invested_usd": 100.0,
+    "final_nav_usd": 106.04,
+    "total_return_pct": 6.04,
+    "cagr_pct": 1.18,
+    "max_drawdown_pct": 74.53,
+    "volatility_annual_pct": 54.92,
+    "rebalance_count": 0,
+    "total_fee_usd": 0.1,
+    "final_weights_pct": {
+      "BTC": 69.57,
+      "ETH": 30.43
+    }
+  },
+  "single_asset_reference": {
+    "all_btc_final_usd": 147.54,
+    "btc_price_start": 42816.5,
+    "btc_price_end": 63235.22,
+    "all_eth_final_usd": 64.55,
+    "eth_price_start": 2890.94,
+    "eth_price_end": 1867.86,
+    "all_xrp_final_usd": 144.65,
+    "xrp_price_start": 0.75,
+    "xrp_price_end": 1.08,
+    "all_bnb_final_usd": 171.53,
+    "bnb_price_start": 342.14,
+    "bnb_price_end": 587.44,
+    "all_trx_final_usd": 454.59,
+    "trx_price_start": 0.07,
+    "trx_price_end": 0.33
+  },
+  "comparison": {
+    "dyn_vs_btceth_rolling_final_ratio": 1.6822,
+    "dyn_vs_btceth_rolling_cagr_diff_pp": 11.11,
+    "dyn_vs_eq5_rolling_final_ratio": 0.8137
+  },
+  "honesty_notes": [
+    "池子仅 5 币且全部幸存 -> 含幸存者偏差，结果为示意性、非 Alpha 证明。",
+    "选币在周 i 仅用截至周 i 的数据（walk-forward），无前视。",
+    "趋势过滤(价格>=MA)天然排除暴跌/濒死币，系统不故意买退市币。",
+    "手续费机制与已验证的 backtest.run_rolling_rebalance 逐位一致。"
+  ],
+  "self_check": {
+    "verdict": "YES",
+    "checks": [
+      {
+        "code": "a",
+        "title": "终值 == Σ q_i×末价_i",
+        "passed": true,
+        "detail": "recon 177.6174 vs NAV 177.6174"
+      },
+      {
+        "code": "b",
+        "title": "逐周 NAV 无 NaN（无前视/无断点）",
+        "passed": true,
+        "detail": "262 周全部有效"
+      },
+      {
+        "code": "c",
+        "title": "手续费只在交易周计提",
+        "passed": true,
+        "detail": "trade_weeks=95 == fee_weeks=95"
+      },
+      {
+        "code": "d",
+        "title": "周线数据充足（>=4年）",
+        "passed": true,
+        "detail": "262 周"
+      }
+    ]
+  }
+}

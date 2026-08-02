@@ -1,0 +1,19 @@
+# Python 字节码
+__pycache__/
+*.pyc
+
+# 运行日志
+*.log
+
+# Plotly 图表 HTML（整库 JS 内联, ~5MB/个, 重跑脚本即可重新生成）
+*.html
+
+# 可经代理重新抓取/重算的本地数据缓存（非源码资产）
+btc_eth_daily_raw.csv
+btc_eth_daily_raw.meta.json
+btc_eth_weekly.csv
+multi_coin_daily_raw.csv
+multi_coin_daily_raw.meta.json
+multi_coin_weekly.csv
+universe100_panel.csv
+universe100_panel.meta.json

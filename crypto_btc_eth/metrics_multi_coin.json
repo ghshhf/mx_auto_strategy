@@ -1,0 +1,244 @@
+{
+  "generated_by": "multi_coin_rebalance.py",
+  "currency": "USD",
+  "config": {
+    "initial_capital_usd": 500.0,
+    "coins": [
+      "BTC",
+      "ETH",
+      "XRP",
+      "BNB",
+      "TRX"
+    ],
+    "target_weights": {
+      "BTC": 0.2,
+      "ETH": 0.2,
+      "XRP": 0.2,
+      "BNB": 0.2,
+      "TRX": 0.2
+    },
+    "rebalance_band": 0.0158113883008419,
+    "fee_rate": 0.001,
+    "requested_start": "2017-11-01",
+    "requested_end": "2026-08-03"
+  },
+  "data": {
+    "coins": [
+      "BTC",
+      "ETH",
+      "XRP",
+      "BNB",
+      "TRX"
+    ],
+    "sources": {
+      "BTC": [
+        "yahoo/chart-api:BTC-USD [2017-11-01~2026-08-02] 3197d"
+      ],
+      "ETH": [
+        "yahoo/chart-api:ETH-USD [2017-11-09~2026-08-02] 3189d",
+        "coinbase:ETH-USD [2017-11-01~2017-11-08] 8d (gap fill)"
+      ],
+      "XRP": [
+        "yahoo/chart-api:XRP-USD [2017-11-09~2026-08-02] 3189d",
+        "bitfinex:tXRPUSD [2017-11-01~2017-11-08] 8d (gap fill)"
+      ],
+      "BNB": [
+        "yahoo/chart-api:BNB-USD [2017-11-09~2026-08-02] 3189d"
+      ],
+      "TRX": [
+        "yahoo/chart-api:TRX-USD [2017-11-09~2026-08-02] 3189d"
+      ]
+    },
+    "splices": {
+      "ETH": {
+        "boundary_date": "2017-11-09",
+        "last_filler_date": "2017-11-08",
+        "last_filler_close": 307.91,
+        "first_primary_close": 320.8840026855469,
+        "boundary_return_pct": 4.2135697721888965
+      },
+      "XRP": {
+        "boundary_date": "2017-11-09",
+        "last_filler_date": "2017-11-08",
+        "last_filler_close": 0.21692,
+        "first_primary_close": 0.21748800575733185,
+        "boundary_return_pct": 0.26185033990957507
+      }
+    },
+    "daily_rows": 3189,
+    "daily_start": "2017-11-09",
+    "daily_end": "2026-08-02",
+    "daily_missing_days": 0,
+    "daily_gaps": [],
+    "weekly_rows": 457,
+    "weekly_start": "2017-11-10",
+    "weekly_end": "2026-08-02",
+    "weekly_rule": "W-FRI",
+    "weekly_non_friday_bars": [
+      "2026-08-02"
+    ],
+    "proxy": "http://127.0.0.1:3067"
+  },
+  "line1_rolling_rebalance": {
+    "name": "line1_rolling_rebalance",
+    "label": "线1 滚动互平衡 (等权 banded rebalance)",
+    "start_date": "2017-11-10",
+    "end_date": "2026-08-02",
+    "weeks": 457,
+    "years": 8.7255,
+    "gross_invested_usd": 500.0,
+    "initial_nav_usd": 499.5,
+    "final_nav_usd": 64708.12467179161,
+    "total_return_pct": 12841.624934358322,
+    "cagr_pct": 74.60112545191284,
+    "max_drawdown_pct": 84.39158886160646,
+    "drawdown": {
+      "max_drawdown_pct": 84.39158886160646,
+      "peak_date": "2018-01-05",
+      "trough_date": "2018-12-14",
+      "recovery_date": "2021-01-08",
+      "peak_nav": 8827.132695615164,
+      "trough_nav": 1377.775162863174
+    },
+    "rebalance_count": 219,
+    "total_fee_usd": 195.9020944873285,
+    "fee_pct_of_principal": 39.1804188974657,
+    "annual_returns_pct": {
+      "2017*": 658.66,
+      "2018": -48.31,
+      "2019": 13.8,
+      "2020": 207.62,
+      "2021": 427.51,
+      "2022": -52.91,
+      "2023": 95.97,
+      "2024": 148.54,
+      "2025": 3.88,
+      "2026*": -24.92
+    },
+    "best_year": [
+      "2017*",
+      658.66
+    ],
+    "worst_year": [
+      "2022",
+      -52.91
+    ],
+    "volatility_annual_pct": 93.91853520518752,
+    "final_weights_pct": {
+      "BTC": 19.653469333663388,
+      "ETH": 20.731668080426505,
+      "XRP": 19.514272096050952,
+      "BNB": 20.359938496605025,
+      "TRX": 19.740651993254133
+    }
+  },
+  "line2_buy_and_hold": {
+    "name": "line2_buy_and_hold",
+    "label": "线2 买入持有 (等权 buy & hold)",
+    "start_date": "2017-11-10",
+    "end_date": "2026-08-02",
+    "weeks": 457,
+    "years": 8.7255,
+    "gross_invested_usd": 500.0,
+    "initial_nav_usd": 499.5,
+    "final_nav_usd": 50994.271567090625,
+    "total_return_pct": 10098.854313418125,
+    "cagr_pct": 69.89964353593223,
+    "max_drawdown_pct": 92.03498700002875,
+    "drawdown": {
+      "max_drawdown_pct": 92.03498700002875,
+      "peak_date": "2018-01-05",
+      "trough_date": "2018-12-14",
+      "recovery_date": "2021-02-19",
+      "peak_nav": 13846.120641582114,
+      "trough_nav": 1102.8453090937192
+    },
+    "rebalance_count": 0,
+    "total_fee_usd": 0.5,
+    "fee_pct_of_principal": 0.1,
+    "annual_returns_pct": {
+      "2017*": 668.33,
+      "2018": -56.81,
+      "2019": -0.57,
+      "2020": 142.33,
+      "2021": 764.47,
+      "2022": -50.23,
+      "2023": 42.02,
+      "2024": 124.57,
+      "2025": 15.76,
+      "2026*": -19.61
+    },
+    "best_year": [
+      "2021",
+      764.47
+    ],
+    "worst_year": [
+      "2018",
+      -56.81
+    ],
+    "volatility_annual_pct": 128.6227121133037,
+    "final_weights_pct": {
+      "BTC": 1.8718332696704376,
+      "ETH": 1.2227844713288845,
+      "XRP": 1.0255227024835631,
+      "BNB": 64.04691525430451,
+      "TRX": 31.832944302212614
+    }
+  },
+  "single_asset_reference": {
+    "all_btc_final_usd": 4772.638704094474,
+    "btc_price_start": 6618.14013671875,
+    "btc_price_end": 63235.21875,
+    "all_eth_final_usd": 3117.750169948323,
+    "eth_price_start": 299.25299072265625,
+    "eth_price_end": 1867.8599853515625,
+    "all_xrp_final_usd": 2614.789159433175,
+    "xrp_price_start": 0.20648300647735596,
+    "xrp_price_end": 1.080899953842163,
+    "all_bnb_final_usd": 163301.28947562215,
+    "bnb_price_start": 1.796839952468872,
+    "bnb_price_end": 587.4400024414062,
+    "all_trx_final_usd": 81164.890326355,
+    "trx_price_start": 0.0020129999611526728,
+    "trx_price_end": 0.32709693908691406
+  },
+  "comparison": {
+    "final_nav_diff_usd": 13713.853104700982,
+    "final_nav_ratio": 1.2689292872172582,
+    "cagr_diff_pp": 4.701481915980608,
+    "max_drawdown_diff_pp": 7.643398138422285
+  },
+  "self_check": {
+    "is_pass": "YES",
+    "checks": [
+      {
+        "code": "a",
+        "title": "Line2 终值 == Σ q_i×末价_i（5 币, 除建仓费外无费用漂移）",
+        "passed": true,
+        "detail": "final NAV 50994.2715670906 USD vs q_btc*p_btc + q_eth*p_eth + q_xrp*p_xrp + q_bnb*p_bnb + q_trx*p_trx 50994.2715670906 USD | abs diff 0.000e+00 (tol 5.109e-06) | fees after t0 = 0.0000000000 USD",
+        "violations": []
+      },
+      {
+        "code": "b",
+        "title": "再平衡后各币市值≈目标权重（5 币, 偏差远小于再平衡阈值）",
+        "passed": true,
+        "detail": "219 rebalances x 5 legs inspected | worst |w_i-target_i| after trade = 6.439e-05 (XRP) | band = 0.0158 | fee-induced cap = 2.002e-04",
+        "violations": []
+      },
+      {
+        "code": "c",
+        "title": "手续费只在实际交易周计提；无交易周 NAV 仅随价格变动",
+        "passed": true,
+        "detail": "237 non-trading weeks: zero fees and NAV driven by prices only (max NAV error 0.000e+00) | trading weeks = 220 = fee weeks 220",
+        "violations": []
+      },
+      {
+        "code": "d",
+        "title": "周线数据完整性（无缺失/重复/非正价格，间隔均为一周）",
+        "passed": true,
+        "detail": "457 weekly bars 2017-11-10~2026-08-02 x 5 列, median spacing 7 days, no NaN/duplicate/non-positive values",
+        "violations": []
+      }
+    ]
+  }
+}

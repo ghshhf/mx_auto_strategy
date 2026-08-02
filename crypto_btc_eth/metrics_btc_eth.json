@@ -1,0 +1,205 @@
+{
+  "generated_by": "btc_eth_rebalance.py",
+  "currency": "USD",
+  "config": {
+    "initial_capital_usd": 200.0,
+    "coins": [
+      "BTC",
+      "ETH"
+    ],
+    "target_weights": {
+      "BTC": 0.5,
+      "ETH": 0.5
+    },
+    "rebalance_band": 0.01,
+    "fee_rate": 0.001,
+    "requested_start": "2016-08-01",
+    "requested_end": "2026-08-03"
+  },
+  "data": {
+    "coins": [
+      "BTC",
+      "ETH"
+    ],
+    "sources": {
+      "BTC": [
+        "yahoo/yfinance:BTC-USD [2016-08-01~2026-08-02] 3654d"
+      ],
+      "ETH": [
+        "yahoo/yfinance:ETH-USD [2017-11-09~2026-08-02] 3189d",
+        "coinbase:ETH-USD [2016-08-01~2017-11-08] 465d (gap fill)"
+      ]
+    },
+    "splices": {
+      "ETH": {
+        "boundary_date": "2017-11-09",
+        "last_filler_date": "2017-11-08",
+        "last_filler_close": 307.91,
+        "first_primary_close": 320.8840026855469,
+        "boundary_return_pct": 4.2135697721888965
+      }
+    },
+    "daily_rows": 3654,
+    "daily_start": "2016-08-01",
+    "daily_end": "2026-08-02",
+    "daily_missing_days": 0,
+    "daily_gaps": [],
+    "weekly_rows": 523,
+    "weekly_start": "2016-08-05",
+    "weekly_end": "2026-08-02",
+    "weekly_rule": "W-FRI",
+    "weekly_non_friday_bars": [
+      "2026-08-02"
+    ],
+    "proxy": "http://127.0.0.1:3067 (本次复用本地缓存, 未联网)"
+  },
+  "line1_rolling_rebalance": {
+    "name": "line1_rolling_rebalance",
+    "label": "线1 滚动互平衡 (50/50 banded rebalance)",
+    "start_date": "2016-08-05",
+    "end_date": "2026-08-02",
+    "weeks": 523,
+    "years": 9.9904,
+    "gross_invested_usd": 200.0,
+    "initial_nav_usd": 199.8,
+    "final_nav_usd": 48999.071714980186,
+    "total_return_pct": 24399.535857490093,
+    "cagr_pct": 73.43827514303429,
+    "max_drawdown_pct": 87.18761869721169,
+    "drawdown": {
+      "max_drawdown_pct": 87.18761869721169,
+      "peak_date": "2018-01-12",
+      "trough_date": "2018-12-14",
+      "recovery_date": "2020-12-18",
+      "peak_nav": 14960.55828035984,
+      "trough_nav": 1916.8037719055733
+    },
+    "rebalance_count": 256,
+    "total_fee_usd": 150.5357967873753,
+    "fee_pct_of_principal": 75.26789839368764,
+    "annual_returns_pct": {
+      "2016*": 14.32,
+      "2017": 4916.73,
+      "2018": -76.33,
+      "2019": 36.01,
+      "2020": 320.61,
+      "2021": 254.97,
+      "2022": -65.23,
+      "2023": 121.64,
+      "2024": 83.37,
+      "2025": -7.45,
+      "2026*": -31.99
+    },
+    "best_year": [
+      "2017",
+      4916.73
+    ],
+    "worst_year": [
+      "2018",
+      -76.33
+    ],
+    "volatility_annual_pct": 74.69070315295622,
+    "final_weights_pct": {
+      "BTC": 50.14282285004271,
+      "ETH": 49.857177149957295
+    }
+  },
+  "line2_buy_and_hold": {
+    "name": "line2_buy_and_hold",
+    "label": "线2 买入持有 (50/50 buy & hold)",
+    "start_date": "2016-08-05",
+    "end_date": "2026-08-02",
+    "weeks": 523,
+    "years": 9.9904,
+    "gross_invested_usd": 200.0,
+    "initial_nav_usd": 199.8,
+    "final_nav_usd": 27533.43998602165,
+    "total_return_pct": 13666.719993010827,
+    "cagr_pct": 63.714896341219784,
+    "max_drawdown_pct": 90.4629317519312,
+    "drawdown": {
+      "max_drawdown_pct": 90.4629317519312,
+      "peak_date": "2018-01-12",
+      "trough_date": "2018-12-14",
+      "recovery_date": "2021-01-08",
+      "peak_nav": 13805.600032762864,
+      "trough_nav": 1316.649497180003
+    },
+    "rebalance_count": 0,
+    "total_fee_usd": 0.2,
+    "fee_pct_of_principal": 0.1,
+    "annual_returns_pct": {
+      "2016*": 20.3,
+      "2017": 3760.96,
+      "2018": -79.4,
+      "2019": 25.71,
+      "2020": 311.21,
+      "2021": 314.39,
+      "2022": -66.79,
+      "2023": 104.94,
+      "2024": 65.42,
+      "2025": -10.4,
+      "2026*": -33.35
+    },
+    "best_year": [
+      "2017",
+      3760.96
+    ],
+    "worst_year": [
+      "2018",
+      -79.4
+    ],
+    "volatility_annual_pct": 79.03021067225475,
+    "final_weights_pct": {
+      "BTC": 39.76737193800008,
+      "ETH": 60.23262806199992
+    }
+  },
+  "single_asset_reference": {
+    "all_btc_final_usd": 21898.650973134536,
+    "btc_price_start": 575.0430298,
+    "btc_price_end": 63026.35938,
+    "all_eth_final_usd": 33168.228998908766,
+    "eth_price_start": 11.18,
+    "eth_price_end": 1855.959961
+  },
+  "comparison": {
+    "final_nav_diff_usd": 21465.631728958535,
+    "final_nav_ratio": 1.7796204084871465,
+    "cagr_diff_pp": 9.723378801814505,
+    "max_drawdown_diff_pp": 3.275313054719504
+  },
+  "self_check": {
+    "is_pass": "YES",
+    "checks": [
+      {
+        "code": "a",
+        "title": "Line2 终值 == Σ q_i×末价_i（2 币, 除建仓费外无费用漂移）",
+        "passed": true,
+        "detail": "final NAV 27533.4399860217 USD vs q_btc*p_btc + q_eth*p_eth 27533.4399860217 USD | abs diff 0.000e+00 (tol 2.763e-06) | fees after t0 = 0.0000000000 USD",
+        "violations": []
+      },
+      {
+        "code": "b",
+        "title": "再平衡后各币市值≈目标权重（2 币, 偏差远小于再平衡阈值）",
+        "passed": true,
+        "detail": "256 rebalances x 2 legs inspected | worst |w_i-target_i| after trade = 1.012e-04 (BTC) | band = 0.0100 | fee-induced cap = 5.005e-04",
+        "violations": []
+      },
+      {
+        "code": "c",
+        "title": "手续费只在实际交易周计提；无交易周 NAV 仅随价格变动",
+        "passed": true,
+        "detail": "266 non-trading weeks: zero fees and NAV driven by prices only (max NAV error 0.000e+00) | trading weeks = 257 = fee weeks 257",
+        "violations": []
+      },
+      {
+        "code": "d",
+        "title": "周线数据完整性（无缺失/重复/非正价格，间隔均为一周）",
+        "passed": true,
+        "detail": "523 weekly bars 2016-08-05~2026-08-02 x 2 列, median spacing 7 days, no NaN/duplicate/non-positive values",
+        "violations": []
+      }
+    ]
+  }
+}
