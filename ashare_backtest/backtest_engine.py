@@ -74,6 +74,52 @@ PHASE_HISTORY = {
 }
 PHASE_MULT = {"accelerating": 1.35, "early": 1.15, "saturating": 0.65, "mature": 0.8, "unknown": 1.0}
 
+# ---- 脏数据 / 次新股防火墙参数 (动量选股专用) ----
+# MIN_VALID_PRICE : 低于此价视为错价(未复权残留/占位值)。
+MIN_VALID_PRICE = 0.5
+# MAX_WEEKLY_JUMP / MIN_WEEKLY_DROP : 常规期单周涨跌幅上限, 用于兜底拦截未复权或错价跳变。
+#   实测本面板内「真实」单周大涨全部 <= +77.5%
+#   (2024-09-30 东方财富 +77.5% / 同花顺 +67.4%, 2016-10 中际旭创重组复牌 +60.6%),
+#   故 +80% 只拦错价、不误伤真实利好行情; 原值 +160% 过松, 连 +93% 的 IPO 伪迹都漏过。
+MAX_WEEKLY_JUMP = 0.80
+MIN_WEEKLY_DROP = -0.75
+# IPO_SEASON_WEEKS : 次新股冷却期(周)。A 股新股上市后连续一字板 + 首发限售,
+#   前一个季度的价格序列是统计假象而非可交易动量。实测 9 只票的 15 处
+#   +50%~+93% 伪迹全部落在上市后第 1~4 根周线内; 而最早的一处「真实」单周大涨
+#   发生在上市后第 199 根周线 —— 用一个季度(13周)做冷却期, 安全边际充足。
+#   要求整段打分窗口都在冷却期之后, 即 i - first_listed >= max_lb + IPO_SEASON_WEEKS。
+IPO_SEASON_WEEKS = 13
+
+# first_listed_index 的缓存: momentum_select 对每周每只票都会调用一次(约 10 万次),
+# 逐次线性扫描代价太高。key=id(列表), value=(列表引用, 首个有效索引);
+# 保留列表引用有两个作用: (1) 防止列表被回收后 id 复用导致缓存串味;
+# (2) 使缓存命中判定可以用 `is` 精确校验。
+# 容量上限: list 不支持弱引用, 无法做自动淘汰, 故用「超限即整体清空」兜底。
+# 单张面板约 125 列, 512 的上限保证同一次回测内绝不触发清空(全程命中);
+# 而长驻进程/批量扫参反复 load_panel() 时, 内存有硬上界不会无限膨胀。
+_FIRST_LISTED_CACHE = {}
+_FIRST_LISTED_CACHE_MAX = 512
+
+
+def first_listed_index(vals):
+    """返回序列中首个有效价格(非 None 且 > 0)的索引; 整列无效返回 None。
+
+    对前向填充后的面板而言, 该索引即该代码的「上市/数据起点」。
+    """
+    key = id(vals)
+    hit = _FIRST_LISTED_CACHE.get(key)
+    if hit is not None and hit[0] is vals:
+        return hit[1]
+    fv = None
+    for k, v in enumerate(vals):
+        if v is not None and v > 0:
+            fv = k
+            break
+    if len(_FIRST_LISTED_CACHE) >= _FIRST_LISTED_CACHE_MAX:
+        _FIRST_LISTED_CACHE.clear()
+    _FIRST_LISTED_CACHE[key] = (vals, fv)
+    return fv
+
 
 def phase_for(industry, year):
     hist = PHASE_HISTORY.get(industry)
@@ -219,16 +265,25 @@ def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
             continue
         if i - lookback < 0 or vals[i - lookback] in (None, 0):
             continue
-        # 脏数据防火墙: 未复权/错误价格会产生单周>+150%或<-70%跳变, 或价格<0.5, 跳过
-        if vals[i] < 0.5 or vals[i - lookback] < 0.5:
+        # ---- 脏数据 / 次新股防火墙 (三道闸, 任一命中则本周不选该票) ----
+        # (1) 价格下限: 未复权残留/占位值通常表现为极小价格
+        if vals[i] < MIN_VALID_PRICE or vals[i - lookback] < MIN_VALID_PRICE:
             continue
         max_lb = max(lb for lb, _ in lbs)
+        # (2) 次新股冷却期(主闸, 精准拦 IPO 伪迹):
+        #     整段打分窗口 [i-max_lb, i] 必须完全落在上市冷却期之后, 否则该票的
+        #     动量由新股一字板跳涨堆出来(实测 +50%~+93%), 是统计假象而非真动量。
+        #     只按「距上市周数」判定, 不看涨幅, 因此不会误伤中途的真实大涨/重组复牌。
+        first_listed = first_listed_index(vals)
+        if first_listed is None or i - first_listed < max_lb + IPO_SEASON_WEEKS:
+            continue
+        # (3) 异常跳变兜底: 打分窗口内出现未复权/错价级别的单周涨跌
         bad_jump = False
         for k in range(max(1, i - max_lb + 1), i + 1):
             a, b = vals[k - 1], vals[k]
             if a and b and a > 0:
                 rr = b / a - 1
-                if rr > 1.6 or rr < -0.75:
+                if rr > MAX_WEEKLY_JUMP or rr < MIN_WEEKLY_DROP:
                     bad_jump = True
                     break
         if bad_jump:
