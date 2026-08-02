@@ -113,18 +113,14 @@ def load_config():
 
 
 def call_mx_moni(text):
-    """调用 mx_moni skill 执行一句话指令(买入/卖出/查询)。"""
-    env = os.environ.copy()
-    env["MX_APIKEY"] = os.environ.get("MX_APIKEY", "")
-    env["MX_API_URL"] = env.get("MX_API_URL", "https://mkapi2.dfcfs.com/finskillshub")
-    try:
-        out = subprocess.run(
-            ["python3.11", MX_MONI_PY, text],
-            capture_output=True, text=True, timeout=60, env=env
-        )
-        return out.stdout.strip() or out.stderr.strip()
-    except Exception as e:
-        return f"调用mx_moni失败: {e}"
+    """
+    下单通道已停用 —— 纯记账 / 模拟盘模式。
+
+    v6.x 决策: 系统不再向券商发送任何真实委托。所有买入/卖出指令仅记录在
+    本地账本(local_records) 与成本基准(_cost_basis) 中, 用于盈亏核算与回测验证。
+    原实现通过 subprocess 调起 mx-moni skill 发单, 现整体摘除(零网络请求)。
+    """
+    return f"[纯记账·模拟盘] 已记录指令(不发送真实下单): {text}"
 
 
 def buy(detail, cfg, cash_amount, is_add=False):

@@ -34,15 +34,13 @@ DEFAULT_SIM = "sim_261984600000041416"
 
 
 def _call_mx(text):
-    env = os.environ.copy()
-    env["MX_APIKEY"] = env.get("MX_APIKEY", "")
-    env["MX_API_URL"] = env.get("MX_API_URL", "https://mkapi2.dfcfs.com/finskillshub")
-    try:
-        out = subprocess.run(["python3.11", MX_MONI_PY, text],
-                             capture_output=True, text=True, timeout=60, env=env)
-        return (out.stdout or out.stderr).strip()
-    except Exception as e:
-        return f"mx_moni调用失败: {e}"
+    """
+    远程账户查询已停用 —— 纯本地记账模式。
+
+    v6.x 决策: 不再向券商发起任何远程查询/同步请求, 仅保留本地账本(local_records)。
+    原实现通过 subprocess 调起 mx-moni skill 拉取远程快照, 现整体摘除(零网络请求)。
+    """
+    return f"[远程同步已停用] 纯本地记账模式, 不向券商发起任何请求: {text}"
 
 
 def _latest_json(query):
@@ -96,11 +94,17 @@ def extract_balance(j):
 
 
 def sync_once(account, dry=False):
-    print(f"  🔄 同步远程账户 [{account}] ...")
-    _call_mx("我的持仓")   # 触发 mx-moni 写 JSON
-    _call_mx("查询资金")
-    positions = extract_positions(_latest_json("我的持仓"))
-    balance = extract_balance(_latest_json("查询资金"))
+    # v6.x: 远程同步已停用(纯本地记账模式), 不向券商发起任何请求。
+    # 仅返回一个"已停用"快照, 避免读取不存在的远程 JSON 导致崩溃。
+    print(f"  🔄 远程同步已停用(纯本地记账模式), 跳过远程账户拉取 [{account}]")
+    return {
+        "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "account": account,
+        "source": "local_only_disabled_remote_sync",
+        "note": "mx_moni 远程同步已停用, 仅保留本地账本(local_records)",
+        "total_assets": None, "avail_balance": None, "pos_value": None,
+        "nav": None, "init_money": None, "positions": [], "raw_pos_len": 0,
+    }
 
     snapshot = {
         "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

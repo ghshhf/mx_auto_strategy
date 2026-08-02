@@ -48,14 +48,13 @@ def latest_position_json():
 
 
 def pull_fresh():
-    env = os.environ.copy()
-    env["MX_APIKEY"] = os.environ.get("MX_APIKEY", "")
-    env["MX_API_URL"] = env.get("MX_API_URL", "https://mkapi2.dfcfs.com/finskillshub")
-    try:
-        subprocess.run(["python3.11", MX_MONI_PY, "我的持仓"],
-                       capture_output=True, text=True, timeout=60, env=env)
-    except Exception as e:
-        print(f"[warn] 拉取最新持仓失败: {e}")
+    """
+    拉取最新持仓已停用 —— 纯本地记账模式。
+
+    v6.x 决策: 不再向券商发起任何远程查询, 仅返回本地已有的最近持仓快照。
+    如需真正刷新远程持仓, 该能力已从本系统移除(零网络请求)。
+    """
+    print("[warn] 远程持仓拉取已停用(纯本地记账模式), 仅返回本地已有快照")
     return latest_position_json()
 
 
