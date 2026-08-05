@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-美股 20 年轮动回测 (IBM + 高通 QCOM, 科技双强平衡对)
+美股 20 年轮动回测 (AMD + Salesforce CRM, 高波动科技双强对)
 数据源: Yahoo Finance 日线 (经代理 127.0.0.1:3067), 本地重采样为周线(后复权, 含分红)
 机制: 50/50 再平衡轮动, 偏离目标权重 >1% 即调回, 单边费率 0.10%
 与 crypto_stocks 下 ashare_rotation_10y.py / us_rotation_10y.py 同机制, 仅窗口拉到 20 年。
@@ -18,8 +18,8 @@ CAPITAL = 200.0       # 起始本金 (两股各 100)
 CACHE_DIR = "data"
 
 # ===== 被测两股 (Yahoo ticker) =====
-SYM_A, NAME_A = "IBM", "IBM"
-SYM_B, NAME_B = "QCOM", "高通"
+SYM_A, NAME_A = "AMD", "AMD"
+SYM_B, NAME_B = "CRM", "Salesforce"
 # ================================
 
 UTC = datetime.timezone.utc
