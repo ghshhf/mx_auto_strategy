@@ -15,8 +15,8 @@ START = datetime.datetime(2015, 1, 1, tzinfo=datetime.timezone.utc)
 END   = datetime.datetime(2026, 8, 1, tzinfo=datetime.timezone.utc)
 
 # ===== 被测两 A股 =====
-NAME_A, YF_A = "海康威视", "002415.SZ"
-NAME_B, YF_B = "格力电器", "000651.SZ"
+NAME_A, YF_A = "大华股份", "002236.SZ"
+NAME_B, YF_B = "中国平安", "601318.SS"
 # ======================
 
 BAND = 1.0      # 再平衡触发阈值 (%)：任一侧 >50%+BAND 或 <50%-BAND 调回
