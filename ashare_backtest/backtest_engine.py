@@ -102,6 +102,18 @@ IPO_SEASON_WEEKS = 13
 _FIRST_LISTED_CACHE = {}
 _FIRST_LISTED_CACHE_MAX = 512
 
+# ---- 幸存者偏差声明 (诚实口径) ----
+# 候选池 (candidate_pool) 是当前"赢家"的静态名单, 回测建在历史幸存者上,
+# 不含已退市/暴跌至无关紧要的标的 -> 回测倍数系统性偏高。
+# 引擎的 first_listed_index 防止使用 IPO 前数据(技术层面已处理),
+# 但无法消除"池子本身就是幸存者"的结构性偏差。
+# 真正修复需历史指数成分股 point-in-time 宇宙, 目前不可得。
+# 敏感性检查: 用 survivorship_check.py 移除 TopN 涨幅股后重算, 评估偏差量级。
+SURVIVORSHIP_BIAS_NOTE = (
+    "候选池为静态幸存者样本(当前赢家), 回测倍数含向上偏差。"
+    "建议结合 survivorship_check.py 做敏感性分析。"
+)
+
 
 def first_listed_index(vals):
     """返回序列中首个有效价格(非 None 且 > 0)的索引; 整列无效返回 None。
@@ -609,6 +621,7 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         "trend_filter": trend_filter, "industry_diversify": industry_diversify,
         "rel_strength": rel_strength, "adaptive_lookback": adaptive_lookback,
         "costs": costs, "total_cost_deducted": round(total_cost_deducted),
+        "survivorship_bias": SURVIVORSHIP_BIAS_NOTE,
         "start": dates[lo], "end": dates[hi - 1], "weeks": (hi - lo),
         "final_multiple": round(mult, 3), "final_nav": round(final),
         "mdd": round(mdd * 100, 2), "cagr": round(cagr * 100, 2),
