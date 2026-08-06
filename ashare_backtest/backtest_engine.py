@@ -2,7 +2,9 @@
 backtest_engine.py - A 股策略周频回测引擎 (模块化, 可叠加优化杠杆)
 
 设计约束(重要, 诚实声明):
-  * 数据: 未复权周线 (与 18 倍基线"未复权缓存"同口径, 保证可比). 不含交易成本.
+  * 数据: 后复权周线 (腾讯 web.ifzq.gtimg.cn 源, 字段正确: open/close/high/low).
+  * 交易成本 (v6.16+): 默认 costs=True, 含佣金(万2.5双边)+印花税(0.05%卖出)+滑点(0.1%双边).
+    costs=False 可关闭以对比毛收益.
   * 防御端: 固定 DEF16 等权 (live 的 selector 三维评分需历史 PE/换手/分位, 无数据不可回测, 故防御锚定固定篮->忠实于 18 倍代理设定).
   * 进攻端: 可切换 固定 OFF4 / 动量动态选股(价格可回测) + 木头姐时变相位倾斜.
   * 网格: 以"现金弹药 sleeve"做周频均值回复代理(用周 OHLC 区间近似日网格), 低价超配进攻/高价回撤现金, 收割波动.
@@ -374,7 +376,17 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         start_capital=1_000_000, verbose=False, eval_lo=None, eval_hi=None,
         record_plan=False, score_mode="plain", panel_path=None, use_core_sub=False,
         trend_filter=False, industry_diversify=False, rel_strength=False,
-        adaptive_lookback=False):
+        adaptive_lookback=False,
+        costs=True, commission_rate=0.00025, stamp_duty_rate=0.0005, slippage=0.001):
+    """A 股周频回测引擎.
+
+    交易成本参数 (v6.16+):
+      costs=True (默认): 启用 A 股真实成本建模
+      commission_rate: 双边佣金费率 (默认 万2.5 = 0.00025)
+      stamp_duty_rate: 卖出印花税率 (默认 0.0005, 2023-08 起减半)
+      slippage: 单边滑点 (默认 0.1% = 0.001)
+      costs=False: 成本归零, 与旧版可比 (毛收益)
+    """
     dates, codes, series = load_panel(panel_path)
     if use_core_sub:
         # 核心仓时间扩展: needed 用代理票(更早上市)决定起点, 把窗口前推到 ~2011;
@@ -447,8 +459,18 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
                 o_pct = new_o
         return d_pct, o_pct, c_pct
 
+    # ---- 交易成本参数 (v6.16+) ----
+    if not costs:
+        commission_rate = 0.0
+        stamp_duty_rate = 0.0
+        slippage = 0.0
+    # 卖出侧费率 = 佣金 + 印花税 + 滑点; 买入侧费率 = 佣金 + 滑点
+    sell_cost_rate = commission_rate + stamp_duty_rate + slippage
+    buy_cost_rate = commission_rate + slippage
+    total_cost_deducted = 0.0  # 累计已扣成本 (用于统计)
+
     def rebalance(i, regime, dc_trig, off_spec, grid_on):
-        nonlocal nav_val, holdings, cash
+        nonlocal nav_val, holdings, cash, total_cost_deducted
         off_codes = [c for c, _ in off_spec]
         d_pct, o_pct, c_pct = compute_weights(i, regime, dc_trig, off_codes)
         total = nav_val
@@ -468,15 +490,37 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
             if G > 0:
                 for j, (c, _) in enumerate(off_spec):
                     w_off[c] = w_off.get(c, 0) + ammo * gs[j] / G
+        combined_w = {**w_def, **w_off}
+
+        # ---- 交易成本计算 (v6.16+) ----
+        if costs and holdings:
+            # 计算各标的调仓前/后市值, 算 turnover
+            all_codes = set(list(combined_w.keys()) + list(holdings.keys()))
+            sells_val = 0.0
+            buys_val = 0.0
+            for c in all_codes:
+                price = series.get(c, [None] * (i + 1))[i] if c in series else None
+                old_val = holdings.get(c, 0) * price if (price and price > 0) else 0.0
+                new_val = total * combined_w.get(c, 0.0)
+                if new_val < old_val:
+                    sells_val += (old_val - new_val)
+                elif new_val > old_val:
+                    buys_val += (new_val - old_val)
+            trade_cost = sells_val * sell_cost_rate + buys_val * buy_cost_rate
+            total_cost_deducted += trade_cost
+            net_total = total - trade_cost
+        else:
+            net_total = total
+
         new_hold = {}
-        for c, w in {**w_def, **w_off}.items():
+        for c, w in combined_w.items():
             price = series[c][i]
             if price is None or price <= 0:
                 continue
-            new_hold[c] = total * w / price
+            new_hold[c] = net_total * w / price
         holdings = new_hold
         invested = sum(holdings[c] * series[c][i] for c in holdings if series[c][i])
-        cash = max(0.0, total - invested)
+        cash = max(0.0, net_total - invested)
         if record_plan:
             plan.append({"i": i, "date": dates[i], "off": off_codes,
                          "off_spec": [[c, w] for c, w in off_spec],
@@ -564,6 +608,7 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         "vol_ref": vol_ref, "score_mode": score_mode,
         "trend_filter": trend_filter, "industry_diversify": industry_diversify,
         "rel_strength": rel_strength, "adaptive_lookback": adaptive_lookback,
+        "costs": costs, "total_cost_deducted": round(total_cost_deducted),
         "start": dates[lo], "end": dates[hi - 1], "weeks": (hi - lo),
         "final_multiple": round(mult, 3), "final_nav": round(final),
         "mdd": round(mdd * 100, 2), "cagr": round(cagr * 100, 2),
@@ -573,17 +618,18 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
 
 
 if __name__ == "__main__":
-    print("=== A 股回测引擎: 基线 vs 优化杠杆对比 ===\n")
+    print("=== A 股回测引擎: 基线 vs 优化杠杆对比 (含交易成本) ===\n")
+    panel = os.path.join(DATA, "ashare_panel_close_em.csv")
+    use_panel = panel_path if panel_path else (panel if os.path.exists(panel) else None)
     configs = [
-        ("基线(固定OFF4, 无网格)", dict(offense_mode="fixed", grid=False, death_cross=True)),
-        ("动态26(纯动量)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, death_cross=True)),
-        ("动态26+核心卫星(0.6)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, core_satellite=True, core_frac=0.6, death_cross=True)),
-        ("动态26+卫星+波动目标", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, core_satellite=True, core_frac=0.6, vol_target=True, vol_ref=0.06, death_cross=True)),
-        ("动态26+卫星+网格(非弱势)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=True, grid_weak=False, core_satellite=True, core_frac=0.6, death_cross=True)),
-        ("动态26+卫星+网格+波动", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=True, grid_weak=False, core_satellite=True, core_frac=0.6, vol_target=True, vol_ref=0.06, death_cross=True)),
+        ("基线(固定OFF4, 无网格)", dict(offense_mode="fixed", grid=False, death_cross=True, panel_path=use_panel, use_core_sub=True)),
+        ("动态26(纯动量)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, death_cross=True, panel_path=use_panel, use_core_sub=True)),
+        ("动态26+核心卫星(0.5)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, core_satellite=True, core_frac=0.5, death_cross=True, panel_path=use_panel, use_core_sub=True, trend_filter=True)),
+        ("动态26+卫星+波动目标", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, core_satellite=True, core_frac=0.5, vol_target=True, vol_ref=0.06, death_cross=True, panel_path=use_panel, use_core_sub=True, trend_filter=True)),
+        ("动态26+卫星+网格(非弱势)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=True, grid_weak=False, core_satellite=True, core_frac=0.5, death_cross=True, panel_path=use_panel, use_core_sub=True, trend_filter=True)),
     ]
-    print(f"{'配置':<30}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}{'HS300x':>9}{'超额x':>8}")
-    print("-" * 75)
+    print(f"{'配置':<30}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}{'HS300x':>9}{'超额x':>8}{'成本':>10}")
+    print("-" * 85)
     base_mult = None
     for name, kw in configs:
         s, _, _, _ = run(**kw)
@@ -591,7 +637,7 @@ if __name__ == "__main__":
             base_mult = s["final_multiple"]
         flag = "  <== 超基线" if s["final_multiple"] > base_mult else ""
         print(f"{name:<30}{s['final_multiple']:>8}{s['mdd']:>8}{s['cagr']:>8}"
-              f"{s['hs300_multiple']:>9}{s['excess_vs_hs300']:>8}{flag}")
+              f"{s['hs300_multiple']:>9}{s['excess_vs_hs300']:>8}{s['total_cost_deducted']:>10}{flag}")
     print(f"\n窗口: {s['start']} ~ {s['end']} ({s['weeks']}周) | 基线倍数={base_mult}")
-    print("(注: 2018-2026 短窗; 文档18倍基于2016-2026十年窗, 同等优化在十年窗只会更高)")
+    print(f"交易成本: 佣金万2.5双边 + 印花税0.05%卖出 + 滑点0.1%双边 | 累计扣费: {s['total_cost_deducted']}")
 
