@@ -51,8 +51,12 @@ def compute_stock_returns(panel_path):
     return returns
 
 
-def run_with_excluded(panel_path, exclude_codes, **run_kwargs):
-    """临时修改 strategy_config.json 排除指定股票后跑回测。"""
+def run_with_excluded(exclude_codes, **run_kwargs):
+    """临时修改 strategy_config.json 排除指定股票后跑回测。
+
+    注意: panel_path 由 run_kwargs 透传, 不再作为独立位置参数,
+    否则与调用方 run_kw 中的 panel_path 冲突 (multiple values)。
+    """
     cfg_path = os.path.join(ROOT, "strategy_config.json")
     cfg = json.load(open(cfg_path, encoding="utf-8"))
 
@@ -75,7 +79,7 @@ def run_with_excluded(panel_path, exclude_codes, **run_kwargs):
     os.rename(tmp_cfg, real_cfg)
 
     try:
-        s, _, _, _ = run(panel_path=panel_path, **run_kwargs)
+        s, _, _, _ = run(**run_kwargs)
     finally:
         # 恢复原始配置
         os.rename(real_cfg, tmp_cfg)
@@ -104,7 +108,7 @@ def main():
     print(f"面板共 {len(returns)} 只股票")
     print(f"涨幅 Top10:")
     for code, ret in returns[:10]:
-        print(f"  {code}: {ret*100:.1f}x")
+        print(f"  {code}: {ret + 1.0:.1f}x ({ret*100:+.0f}%)")
 
     run_kw = dict(
         offense_mode="momentum", momentum_lookback=26, use_tech=True,
@@ -122,22 +126,24 @@ def main():
         base_s = None
         for n in [0, 5, 10, 20]:
             if n == 0:
-                s = run(**run_kw)
+                s, _, _, _ = run(**run_kw)
             else:
                 excl = set(c for c, _ in returns[:n])
-                s = run_with_excluded(panel, excl, **run_kw)
+                s = run_with_excluded(excl, **run_kw)
             if base_s is None:
                 base_s = s["final_multiple"]
             delta = s["final_multiple"] - base_s
-            print(f"Top{n:<7}{s['final_multiple']:>8}{s['mdd']:>8}{s['cagr']:>8}{delta:>+10.3f}")
+            pct = delta / base_s * 100 if base_s else 0.0
+            print(f"Top{n:<7}{s['final_multiple']:>8.3f}{s['mdd']:>8.2f}{s['cagr']:>8.2f}"
+                  f"{delta:>+8.3f} ({pct:+.1f}%)")
     else:
         excl = set(c for c, _ in returns[:args.top])
         print(f"\n移除 Top{args.top} 涨幅股: {sorted(excl)}")
-        s_base = run(**run_kw)
-        s_excl = run_with_excluded(panel, excl, **run_kw)
+        s_base, _, _, _ = run(**run_kw)
+        s_excl = run_with_excluded(excl, **run_kw)
         print(f"\n{'':<20}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}")
-        print(f"{'原始(全池)':<20}{s_base['final_multiple']:>8}{s_base['mdd']:>8}{s_base['cagr']:>8}")
-        print(f"{'排除Top'+str(args.top):<20}{s_excl['final_multiple']:>8}{s_excl['mdd']:>8}{s_excl['cagr']:>8}")
+        print(f"{'原始(全池)':<20}{s_base['final_multiple']:>8.3f}{s_base['mdd']:>8.2f}{s_base['cagr']:>8.2f}")
+        print(f"{'排除Top'+str(args.top):<20}{s_excl['final_multiple']:>8.3f}{s_excl['mdd']:>8.2f}{s_excl['cagr']:>8.2f}")
         delta = s_excl['final_multiple'] - s_base['final_multiple']
         pct = delta / s_base['final_multiple'] * 100 if s_base['final_multiple'] else 0
         print(f"\n变化: {delta:+.3f}x ({pct:+.1f}%)")

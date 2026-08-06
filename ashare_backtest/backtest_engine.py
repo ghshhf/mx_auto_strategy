@@ -17,6 +17,7 @@ import os
 import sys
 import csv
 import json
+import datetime
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -148,6 +149,74 @@ def tech_mult(industry, year):
     return PHASE_MULT.get(phase_for(industry, year), 1.0)
 
 
+# ---- 数据驱动行业相位 (tech_mode="data", 用于消除 PHASE_HISTORY 的前视偏差) ----
+# ★ 手写 PHASE_HISTORY 的结构性缺陷: 它是 2026 年回看历史标注出来的
+#   (例 "AI": 2023-2026 accelerating, "新能源": 2022-2026 saturating)。
+#   回测跑到 2019 年那一周时, 引擎其实已经"知道"2023 年 AI 会加速 ——
+#   这是典型的前视偏差, 且无法通过参数调整消除, 只能换成时点数据推断。
+#   本节的数据驱动版在任意第 i 周只读 [0, i] 区间的行业指数, 不引用未来。
+PHASE_LONG_LB = 52   # 长期动量窗口(周)=1年, 判定该行业"是否处于上行"
+PHASE_SHORT_LB = 13  # 短期动量窗口(周)=1季, 年化后与长期比较得到加速度
+
+
+def build_industry_index(dates, series, pool_meta):
+    """按行业构建等权指数, point-in-time 安全。返回 {industry: [float]}。
+
+    用「逐周成分股收益等权平均, 再链式累乘」而非价格直接平均:
+    成分股在上市/停牌时进出样本, 价格平均会产生虚假跳变, 收益等权则不会。
+    单周收益同样过 MIN_WEEKLY_DROP/MAX_WEEKLY_JUMP 闸, 防止未复权错价污染指数。
+    """
+    by_ind = {}
+    for code, meta in pool_meta.items():
+        if code in series:
+            by_ind.setdefault(meta.get("industry", "unknown"), []).append(code)
+    n = len(dates)
+    out = {}
+    for ind, codes in by_ind.items():
+        idx = [1.0] * n
+        for i in range(1, n):
+            rs = []
+            for c in codes:
+                v = series[c]
+                a, b = v[i - 1], v[i]
+                if a and b and a > 0:
+                    rr = b / a - 1.0
+                    if MIN_WEEKLY_DROP <= rr <= MAX_WEEKLY_JUMP:
+                        rs.append(rr)
+            idx[i] = idx[i - 1] * (1.0 + (sum(rs) / len(rs) if rs else 0.0))
+        out[ind] = idx
+    return out
+
+
+def phase_from_index(idx_vals, i, long_lb=PHASE_LONG_LB, short_lb=PHASE_SHORT_LB):
+    """由行业指数在第 i 周判定渗透率相位(S 曲线四象限), 只用 [0, i] 的数据。
+
+      accelerating : 长期上行 且 短期年化 > 长期   (曲线陡峭段, 渗透加速)
+      mature       : 长期上行 但 短期年化 <= 长期  (仍在涨, 斜率已转平)
+      early        : 长期未上行 但 短期转正        (刚起步 / 触底回升)
+      saturating   : 长短期双负                    (渗透饱和 / 退潮)
+    数据不足 -> "unknown" -> 乘子 1.0 (中性, 等价于不加权)。
+    """
+    if idx_vals is None or i - long_lb < 0 or i - short_lb < 0:
+        return "unknown"
+    a, b, c = idx_vals[i - long_lb], idx_vals[i - short_lb], idx_vals[i]
+    if not a or not b or a <= 0 or b <= 0:
+        return "unknown"
+    mom_l = c / a - 1.0
+    mom_s = c / b - 1.0
+    ann_s = (1.0 + mom_s) ** (52.0 / short_lb) - 1.0 if mom_s > -1.0 else -1.0
+    if mom_l > 0:
+        return "accelerating" if ann_s > mom_l else "mature"
+    return "early" if mom_s > 0 else "saturating"
+
+
+def build_industry_phases(dates, series, pool_meta):
+    """预计算 {industry: [每周相位]}, 让选股环节 O(1) 查表而非逐票重算。"""
+    idxs = build_industry_index(dates, series, pool_meta)
+    return {ind: [phase_from_index(v, i) for i in range(len(dates))]
+            for ind, v in idxs.items()}
+
+
 # ------------------------- 数据加载 -------------------------
 def load_panel(panel_path=None):
     path = panel_path or os.path.join(DATA, "ashare_panel_close.csv")
@@ -175,6 +244,220 @@ def load_panel(panel_path=None):
                 col[k] = last
         series[c] = col
     return dates, codes, series
+
+
+def load_volume_panel(close_panel_path):
+    """加载与 close 面板同索引的成交量宽表, 返回 {code: [float|None]}。
+
+    路径推导: <...>_close_<tag>.csv -> <...>_volume_<tag>.csv。
+    与 load_panel 的关键差异: **不做前向填充**。
+    成交量前向填充会凭空捏造换手, 停牌周的真实成交量就是 0/缺失,
+    填充会让缩量停牌票被误判为"放量"。缺失一律返回 None, 由调用方决定如何处理。
+
+    找不到文件时返回 None (调用方据此自动关闭量能过滤器, 不报错)。
+    """
+    if not close_panel_path:
+        return None
+    vp = close_panel_path.replace("_close_", "_volume_")
+    if vp == close_panel_path or not os.path.exists(vp):
+        return None
+    vols = {}
+    with open(vp, encoding="utf-8") as f:
+        r = csv.reader(f)
+        header = next(r)
+        vcodes = header[1:]
+        cols = [[] for _ in vcodes]
+        for line in r:
+            for j in range(len(vcodes)):
+                v = line[j + 1].strip() if j + 1 < len(line) else ""
+                try:
+                    fv = float(v)
+                except ValueError:
+                    fv = None
+                cols[j].append(fv if (fv is not None and fv > 0) else None)
+    for j, c in enumerate(vcodes):
+        vols[c] = cols[j]
+    return vols
+
+
+def load_macro(path=None):
+    """加载 macro_monthly.csv, 返回按 available_date 升序的行列表。
+
+    ★ 每行的 available_date 是"该月数据最早可被使用的日期"(已含发布滞后),
+      引擎只按 available_date 取数, 因此不存在前视偏差。
+    文件缺失返回 None, 调用方据此静默关闭宏观叠加层。
+    """
+    p = path or os.path.join(BASE, "data", "macro_monthly.csv")
+    if not os.path.exists(p):
+        return None
+    rows = []
+    with open(p, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            def _f(k):
+                v = (r.get(k) or "").strip()
+                try:
+                    return float(v)
+                except ValueError:
+                    return None
+            rows.append({
+                "month": r.get("month", ""),
+                "avail": r.get("available_date", ""),
+                "pmi": _f("pmi"), "m2_yoy": _f("m2_yoy"), "shrz_yoy": _f("shrz_yoy"),
+            })
+    rows = [r for r in rows if r["avail"]]
+    rows.sort(key=lambda x: x["avail"])
+    return rows or None
+
+
+def load_valuation(path=None):
+    """加载 valuation_daily.csv, 返回按日期升序的 [(date, pe, pb)]。
+
+    文件缺失返回 None, 调用方据此静默关闭估值层。
+    """
+    p = path or os.path.join(BASE, "data", "valuation_daily.csv")
+    if not os.path.exists(p):
+        return None
+    rows = []
+    with open(p, encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            d = (r.get("date") or "").strip()
+            if not d:
+                continue
+
+            def _f(k):
+                v = (r.get(k) or "").strip()
+                try:
+                    x = float(v)
+                    return x if x > 0 else None
+                except ValueError:
+                    return None
+            rows.append((d, _f("pe_ttm_median"), _f("pb_median")))
+    rows.sort(key=lambda x: x[0])
+    return rows or None
+
+
+def build_valuation_pct(val_rows, min_hist=250):
+    """预计算每个交易日的 PE/PB **扩展窗口分位**, 返回 [(date, pe_pct, pb_pct)]。
+
+    ★ 扩展窗口 = 第 t 日的分位只统计 [0, t] 区间的历史观测, 绝不含未来。
+      这是与 akshare 自带 quantile 列的关键区别 —— 后者用整段历史(含未来)计算,
+      直接使用会让早年的回测"知道"自己处在全历史的第几分位。
+    min_hist: 历史样本不足该数量时分位置 None(视为中性), 默认 250≈1 个交易年。
+    """
+    import bisect
+    if not val_rows:
+        return None
+    pes, pbs, out = [], [], []
+    for d, pe, pb in val_rows:
+        pe_p = pb_p = None
+        if pe is not None:
+            bisect.insort(pes, pe)
+            if len(pes) >= min_hist:
+                pe_p = bisect.bisect_left(pes, pe) / (len(pes) - 1)
+        if pb is not None:
+            bisect.insort(pbs, pb)
+            if len(pbs) >= min_hist:
+                pb_p = bisect.bisect_left(pbs, pb) / (len(pbs) - 1)
+        out.append((d, pe_p, pb_p))
+    return out
+
+
+def valuation_score_at(pct_rows, date_str, lag_days=7):
+    """返回 date_str 当时可用的市场估值分, 范围 [-1, +1]。便宜为正, 贵为负。
+
+    score = 1 - 2 × mean(pe_pct, pb_pct)
+      全历史最低分位 -> +1 (极便宜, 倾向加进攻)
+      全历史最高分位 -> -1 (极贵,   倾向减进攻)
+    lag_days: 数据可用滞后(默认 7 天)。市场估值虽当日盘后即可得, 仍统一取
+      「一周前」的读数, 确保决策时点该数据必然已公开, 不存在同期前视。
+    无可用数据 -> 0.0 (中性, 等价于关闭)。
+    """
+    if not pct_rows or not date_str:
+        return 0.0
+    try:
+        cutoff = (datetime.date.fromisoformat(date_str[:10])
+                  - datetime.timedelta(days=lag_days)).isoformat()
+    except ValueError:
+        return 0.0
+    lo, hi, idx = 0, len(pct_rows) - 1, -1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if pct_rows[mid][0] <= cutoff:
+            idx = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    if idx < 0:
+        return 0.0
+    parts = [p for p in (pct_rows[idx][1], pct_rows[idx][2]) if p is not None]
+    if not parts:
+        return 0.0
+    return max(-1.0, min(1.0, 1.0 - 2.0 * (sum(parts) / len(parts))))
+
+
+def macro_score_at(macro_rows, date_str, hist_n=24):
+    """计算 date_str 当日可用的宏观景气分, 范围约 [-1, +1]。
+
+    三个分项 (缺失项自动跳过, 按有效项数平均):
+      pmi_s  : (PMI - 50) / 2, clip[-1,1]。荣枯线为锚, 52 记满分, 48 记满负。
+      m2_s   : M2 同比相对过去 hist_n 月均值的偏离 / 2pp, clip[-1,1] (信用松紧的方向)。
+      shrz_s : 社融增量同比 / 20%, clip[-1,1] (实体融资需求)。
+
+    只取 available_date <= date_str 的最新一行, 历史均值也只用该行及之前的数据,
+    因此本函数在任何时点都不会用到未来信息。
+    无可用数据 -> 返回 0.0 (中性, 等价于关闭叠加)。
+    """
+    if not macro_rows or not date_str:
+        return 0.0
+    # 二分找最后一个 avail <= date_str
+    lo, hi = 0, len(macro_rows) - 1
+    idx = -1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if macro_rows[mid]["avail"] <= date_str:
+            idx = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    if idx < 0:
+        return 0.0
+    cur = macro_rows[idx]
+
+    def _clip(x):
+        return max(-1.0, min(1.0, x))
+
+    parts = []
+    if cur["pmi"] is not None:
+        parts.append(_clip((cur["pmi"] - 50.0) / 2.0))
+    if cur["m2_yoy"] is not None:
+        hist = [macro_rows[k]["m2_yoy"] for k in range(max(0, idx - hist_n + 1), idx + 1)
+                if macro_rows[k]["m2_yoy"] is not None]
+        if len(hist) >= 6:
+            parts.append(_clip((cur["m2_yoy"] - sum(hist) / len(hist)) / 2.0))
+    if cur["shrz_yoy"] is not None:
+        parts.append(_clip(cur["shrz_yoy"] / 20.0))
+    if not parts:
+        return 0.0
+    return sum(parts) / len(parts)
+
+
+def volume_confirmed(vol_series, code, i, short_n=4, long_n=26, ratio=1.0):
+    """量能确认: 近 short_n 周均量 >= ratio × 近 long_n 周均量。
+
+    意图: 过滤"缩量假突破"。价格创新高但成交量萎缩, 说明没有资金真正接力,
+    这类突破的失败率显著高于放量突破。
+    数据不足 / 缺列 -> 返回 True (不因数据缺失而误杀候选)。
+    """
+    if not vol_series:
+        return True
+    v = vol_series.get(code)
+    if not v or i < long_n:
+        return True
+    s = [x for x in v[i - short_n + 1:i + 1] if x]
+    l = [x for x in v[i - long_n + 1:i + 1] if x]
+    if len(s) < max(2, short_n // 2) or len(l) < long_n // 2:
+        return True
+    return (sum(s) / len(s)) >= ratio * (sum(l) / len(l))
 
 
 def extract(dates, series, codes_needed):
@@ -254,7 +537,9 @@ def _realized_vol(vals, i, n):
 
 def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
                     score_mode="plain", trend_filter=False, industry_diversify=False,
-                    rel_strength=False, hs_vals=None):
+                    rel_strength=False, hs_vals=None,
+                    volume_confirm=False, vol_series=None, volume_ratio=1.0,
+                    tech_mode="static", ind_phases=None, tech_strength=1.0):
     """从候选池选 Top2。score_mode 决定打分方式:
       plain    : 动量 * 相位乘子 (原版)
       blend    : 多周期融合(13w*0.35 + 26w*0.40 + 52w*0.25) * 相位, 平滑信号减少 whipsaw
@@ -264,6 +549,8 @@ def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
       trend_filter      : 要求 MA5 > MA20 (上升通道, 拒绝死猫跳)
       industry_diversify: Top2 来自不同行业 (避免同行业集中)
       rel_strength      : 个股动量 > HS300 同期动量 (真 alpha 非 beta)
+      volume_confirm    : 近4周均量 >= volume_ratio × 近26周均量 (放量突破,
+                          拒绝缩量假突破)。需 vol_series, 缺数据自动放行。
     要求主 lookback 动量>0。"""
     year = int(dates[i][:4])
     if score_mode == "blend":
@@ -306,7 +593,19 @@ def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
         if mom <= 0:
             continue
         ind = meta.get("industry", "unknown")
-        mult = tech_mult(ind, year) if use_tech else 1.0
+        if not use_tech:
+            mult = 1.0
+        else:
+            if tech_mode == "data":
+                # 时点推断相位: 只看截至本周的行业指数, 无前视
+                seq = ind_phases.get(ind) if ind_phases else None
+                mult = PHASE_MULT.get(seq[i] if seq else "unknown", 1.0)
+            else:
+                # 手写相位表: 含前视偏差, 保留仅为与历史结果对照
+                mult = tech_mult(ind, year)
+            # 强度缩放: strength=0 等价于完全关闭, 1.0 为原始乘子
+            if tech_strength != 1.0:
+                mult = 1.0 + (mult - 1.0) * tech_strength
         if score_mode == "plain":
             score = mom * mult
         elif score_mode == "blend":
@@ -365,7 +664,13 @@ def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
             rs = [(c, s, m, ind) for c, s, m, ind in filtered if m > hs_mom]
             if len(rs) >= 2:
                 filtered = rs
-    # 3) 行业分散: Top2 来自不同行业 (避免同行业集中)
+    # 3) 量能确认: 放量突破优先 (缩量新高多为假突破)
+    if volume_confirm and vol_series and len(filtered) >= 2:
+        vc = [(c, s, m, ind) for c, s, m, ind in filtered
+              if volume_confirmed(vol_series, c, i, ratio=volume_ratio)]
+        if len(vc) >= 2:
+            filtered = vc
+    # 4) 行业分散: Top2 来自不同行业 (避免同行业集中)
     if industry_diversify and len(filtered) >= 2:
         picked, seen = [], set()
         for item in filtered:
@@ -389,7 +694,10 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         record_plan=False, score_mode="plain", panel_path=None, use_core_sub=False,
         trend_filter=False, industry_diversify=False, rel_strength=False,
         adaptive_lookback=False,
-        costs=True, commission_rate=0.00025, stamp_duty_rate=0.0005, slippage=0.001):
+        costs=True, commission_rate=0.00025, stamp_duty_rate=0.0005, slippage=0.001,
+        volume_confirm=False, volume_ratio=1.0,
+        macro_overlay=False, macro_tilt=0.2, tech_mode="static", tech_strength=1.0,
+        valuation_overlay=False, val_tilt=0.2):
     """A 股周频回测引擎.
 
     交易成本参数 (v6.16+):
@@ -398,8 +706,53 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
       stamp_duty_rate: 卖出印花税率 (默认 0.0005, 2023-08 起减半)
       slippage: 单边滑点 (默认 0.1% = 0.001)
       costs=False: 成本归零, 与旧版可比 (毛收益)
+
+    量能确认 (v6.17+):
+      volume_confirm=True: 动态选股时要求近4周均量 >= volume_ratio × 近26周均量。
+      volume_ratio: 放量门槛 (1.0=持平即可, >1 更严)。
+      需要 <panel>_volume_<tag>.csv 与 close 面板并存(由 tencent_hfq_rebuild.py
+      自动产出); 找不到则该过滤器静默关闭, 结果与关闭时一致。
+
+    宏观周期叠加 (v6.17+):
+      macro_overlay=True: 用 PMI/M2/社融合成的景气分微调进攻仓位。
+      macro_tilt: 倾斜幅度, 进攻仓乘数 = 1 + macro_tilt × score(score∈[-1,1])。
+        默认 0.2 -> 乘数 0.8~1.2。
+      加仓从防御仓匀额度、减仓释放到现金, 不产生隐性杠杆。
+      需要 data/macro_monthly.csv (由 macro_fetch.py 产出, 已内建发布滞后)。
+
+    行业相位来源 (v6.18+):
+      tech_mode="static" (默认): 用手写 PHASE_HISTORY。★ 含前视偏差 ——
+        该表是回看历史标注的, 早期年份即已"知道"后续哪个行业会加速。
+        保留为默认仅为与历史结果可比, 不代表它是正确口径。
+      tech_mode="data": 用行业等权指数在每个时点现算相位, 无前视。
+        评估真实可复现能力时应使用此模式; 两者差值即前视偏差的量级。
+      tech_strength: 相位乘子强度缩放, mult' = 1 + (mult-1)×strength。
+        0 等价于关闭, 1.0 为原始乘子。
+
+    市场估值分位叠加 (v6.18+, 默认关闭):
+      valuation_overlay=True: 用全 A 中位数 PE/PB 的**扩展窗口分位**逆向调仓 ——
+        估值处历史高分位则减进攻、低分位则加进攻。
+      val_tilt: 倾斜幅度, 进攻仓乘数 = 1 + val_tilt × score(score∈[-1,1])。
+      分位按时点现算(只用历史), 且数据读数滞后 1 周, 无前视。
+      需要 data/valuation_daily.csv (由 valuation_fetch.py 产出)。
+
+      ★ 实证结论(务必先读, 勿被表面数字误导):
+        全样本 tilt=0.6 看似"倍数 18.185x->16.575x, MDD -33.31%->-24.63%",
+        但逐年拆解显示这是**单点事件**而非稳定风控能力:
+          - 基准全局 MDD 发生于 2015-06-05 -> 2016-01-29 (2015 泡沫破裂);
+            估值层把该次回撤 -30.11% 压到 -21.08% (改善 9.03pp), 削平主峰后
+            全局 MDD 只是"转移"到 2021 年那次 (-24.63%)。
+          - 年内独立回撤对照: 改善 2 年 / 恶化 6 年 / 持平 5 年。
+            2019/2020/2021/2023/2024/2025 全部恶化(最多 -3.4pp)。
+          - walk-forward 1y/2y 窗口配对检验 MDD 差 t≈-1.3~-1.8 (方向为加深),
+            与"逐年多数恶化"一致, 与全样本数字相反。
+        判定: 仅在 2015 型全市场泡沫中有效, 常态年份为负贡献且付出 -8.9% 倍数
+        代价。默认关闭, 定位为"极端泡沫可选保险", 不进主线配置。
     """
     dates, codes, series = load_panel(panel_path)
+    vol_series = load_volume_panel(panel_path) if volume_confirm else None
+    macro_rows = load_macro() if macro_overlay else None
+    val_pct = build_valuation_pct(load_valuation()) if valuation_overlay else None
     if use_core_sub:
         # 核心仓时间扩展: needed 用代理票(更早上市)决定起点, 把窗口前推到 ~2011;
         # 上市后原样使用 OFF4 本尊(first_valid 切换)。需配合干净的后复权面板。
@@ -427,6 +780,10 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
     for p in cfg.get("auto_select", {}).get("candidate_pool", []):
         if p.get("industry") not in OFFENSE_BLACKLIST:
             pool_meta[p["code"]] = p
+
+    # 数据驱动相位: 全样本一次性预计算(每周只回看, 无前视), 之后 O(1) 查表
+    ind_phases = (build_industry_phases(dates, series, pool_meta)
+                  if (use_tech and tech_mode == "data") else None)
 
     hs = aligned[HS300]
     nav = [0.0] * len(dates)
@@ -467,6 +824,32 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
                     d_pct = max(0.0, d_pct - (new_o - o_pct))
                 else:
                     # 减仓进攻: 释放进现金
+                    c_pct = c_pct + (o_pct - new_o)
+                o_pct = new_o
+        # 宏观周期叠加: 景气上行加进攻/下行减进攻 (与 vol_target 同样的额度守恒规则)
+        if macro_rows and o_pct > 0:
+            ms = macro_score_at(macro_rows, dates[i])
+            if ms:
+                scale = 1.0 + macro_tilt * ms
+                new_o = max(0.0, min(80.0, o_pct * scale))
+                if new_o > o_pct:
+                    take = min(new_o - o_pct, d_pct)   # 只能从防御仓匀, 匀不出就不加
+                    new_o = o_pct + take
+                    d_pct = d_pct - take
+                else:
+                    c_pct = c_pct + (o_pct - new_o)
+                o_pct = new_o
+        # 市场估值分位叠加: 便宜加进攻 / 贵减进攻 (同样的额度守恒规则)
+        if val_pct and o_pct > 0:
+            vs = valuation_score_at(val_pct, dates[i])
+            if vs:
+                scale = 1.0 + val_tilt * vs
+                new_o = max(0.0, min(80.0, o_pct * scale))
+                if new_o > o_pct:
+                    take = min(new_o - o_pct, d_pct)
+                    new_o = o_pct + take
+                    d_pct = d_pct - take
+                else:
                     c_pct = c_pct + (o_pct - new_o)
                 o_pct = new_o
         return d_pct, o_pct, c_pct
@@ -564,7 +947,11 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
                 dates, series, pool_meta, i, lb, use_tech,
                 score_mode=score_mode, trend_filter=trend_filter,
                 industry_diversify=industry_diversify,
-                rel_strength=rel_strength, hs_vals=hs)
+                rel_strength=rel_strength, hs_vals=hs,
+                volume_confirm=volume_confirm, vol_series=vol_series,
+                volume_ratio=volume_ratio,
+                tech_mode=tech_mode, ind_phases=ind_phases,
+                tech_strength=tech_strength)
             if not dyn:
                 if use_core_sub and first_valid:
                     dyn = [c for c in OFF4 if first_valid.get(c) is not None and i >= first_valid[c]]
@@ -615,11 +1002,14 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
     excess = mult / hs_ret if hs_ret else mult
     stats = {
         "offense_mode": offense_mode, "grid": grid, "momentum_lookback": momentum_lookback,
-        "use_tech": use_tech, "vol_target": vol_target, "death_cross": death_cross,
+        "use_tech": use_tech, "tech_mode": tech_mode, "tech_strength": tech_strength,
+        "vol_target": vol_target, "death_cross": death_cross,
         "core_satellite": core_satellite, "core_frac": core_frac, "grid_weak": grid_weak,
         "vol_ref": vol_ref, "score_mode": score_mode,
         "trend_filter": trend_filter, "industry_diversify": industry_diversify,
         "rel_strength": rel_strength, "adaptive_lookback": adaptive_lookback,
+        "macro_overlay": macro_overlay, "macro_tilt": macro_tilt,
+        "valuation_overlay": valuation_overlay, "val_tilt": val_tilt,
         "costs": costs, "total_cost_deducted": round(total_cost_deducted),
         "survivorship_bias": SURVIVORSHIP_BIAS_NOTE,
         "start": dates[lo], "end": dates[hi - 1], "weeks": (hi - lo),
