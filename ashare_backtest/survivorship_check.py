@@ -1,0 +1,153 @@
+# -*- coding: utf-8 -*-
+"""
+survivorship_check.py - 幸存者偏差敏感性检查
+=================================================
+移除候选池中历史涨幅最大的 TopN 只股票后重算回测,
+评估"当前赢家"池对回测倍数的向上偏差量级。
+
+用法:
+  python3 survivorship_check.py                  # 移除 Top5 重算
+  python3 survivorship_check.py --top 10         # 移除 Top10
+  python3 survivorship_check.py --compare        # 对比 Top0/5/10/20
+
+原理:
+  如果移除涨幅最大的 5 只股票后倍数大幅下降, 说明回测严重依赖少数幸存者;
+  如果变化不大, 说明收益来源分散, 幸存者偏差影响有限。
+"""
+import os
+import sys
+import json
+import copy
+import argparse
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(BASE)
+sys.path.insert(0, BASE)
+from backtest_engine import run, load_panel, DEF16, OFF4, CORE_SUB, HS300, DC_INDICES
+
+
+def compute_stock_returns(panel_path):
+    """计算面板中每只股票的全周期涨幅, 返回 [(code, return_ratio), ...] 降序。"""
+    dates, codes, series = load_panel(panel_path)
+    returns = []
+    for code in codes:
+        vals = series[code]
+        first = None
+        last = None
+        for v in vals:
+            if v is not None and v > 0:
+                if first is None:
+                    first = v
+                last = v
+        if first and last and first > 0:
+            returns.append((code, last / first - 1.0))
+    returns.sort(key=lambda x: x[1], reverse=True)
+    return returns
+
+
+def run_with_excluded(panel_path, exclude_codes, **run_kwargs):
+    """临时修改 strategy_config.json 排除指定股票后跑回测。"""
+    cfg_path = os.path.join(ROOT, "strategy_config.json")
+    cfg = json.load(open(cfg_path, encoding="utf-8"))
+
+    # 备份原始池
+    orig_pool = copy.deepcopy(cfg.get("auto_select", {}).get("candidate_pool", []))
+
+    # 过滤候选池
+    pool = [p for p in orig_pool if p["code"] not in exclude_codes]
+    cfg["auto_select"]["candidate_pool"] = pool
+
+    # 写临时配置
+    tmp_cfg = os.path.join(BASE, "_tmp_survivorship_config.json")
+    with open(tmp_cfg, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
+
+    # 临时替换配置路径 (engine 读固定路径, 所以用文件替换)
+    real_cfg = cfg_path
+    backup_cfg = cfg_path + ".surv_backup"
+    os.rename(real_cfg, backup_cfg)
+    os.rename(tmp_cfg, real_cfg)
+
+    try:
+        s, _, _, _ = run(panel_path=panel_path, **run_kwargs)
+    finally:
+        # 恢复原始配置
+        os.rename(real_cfg, tmp_cfg)
+        os.rename(backup_cfg, real_cfg)
+        os.remove(tmp_cfg)
+
+    return s
+
+
+def main():
+    ap = argparse.ArgumentParser(description="幸存者偏差敏感性检查")
+    ap.add_argument("--top", type=int, default=5, help="移除涨幅最大的N只 (默认5)")
+    ap.add_argument("--compare", action="store_true", help="对比 Top0/5/10/20")
+    ap.add_argument("--panel", type=str, default=None, help="面板路径")
+    args = ap.parse_args()
+
+    panel = args.panel or os.path.join(BASE, "data", "ashare_panel_close_em.csv")
+    if not os.path.exists(panel):
+        panel = os.path.join(BASE, "data", "ashare_panel_close.csv")
+    if not os.path.exists(panel):
+        print("[ERROR] 无可用面板数据, 请先运行 tencent_hfq_rebuild.py")
+        sys.exit(1)
+
+    # 计算所有股票涨幅排名
+    returns = compute_stock_returns(panel)
+    print(f"面板共 {len(returns)} 只股票")
+    print(f"涨幅 Top10:")
+    for code, ret in returns[:10]:
+        print(f"  {code}: {ret*100:.1f}x")
+
+    run_kw = dict(
+        offense_mode="momentum", momentum_lookback=26, use_tech=True,
+        core_satellite=True, core_frac=0.5, death_cross=True,
+        trend_filter=True, costs=True, panel_path=panel, use_core_sub=True,
+    )
+
+    if args.compare:
+        print(f"\n{'='*70}")
+        print(f"  幸存者偏差敏感性对比")
+        print(f"{'='*70}")
+        print(f"{'排除数':<10}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}{'变化':>10}")
+        print("-" * 50)
+
+        base_s = None
+        for n in [0, 5, 10, 20]:
+            if n == 0:
+                s = run(**run_kw)
+            else:
+                excl = set(c for c, _ in returns[:n])
+                s = run_with_excluded(panel, excl, **run_kw)
+            if base_s is None:
+                base_s = s["final_multiple"]
+            delta = s["final_multiple"] - base_s
+            print(f"Top{n:<7}{s['final_multiple']:>8}{s['mdd']:>8}{s['cagr']:>8}{delta:>+10.3f}")
+    else:
+        excl = set(c for c, _ in returns[:args.top])
+        print(f"\n移除 Top{args.top} 涨幅股: {sorted(excl)}")
+        s_base = run(**run_kw)
+        s_excl = run_with_excluded(panel, excl, **run_kw)
+        print(f"\n{'':<20}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}")
+        print(f"{'原始(全池)':<20}{s_base['final_multiple']:>8}{s_base['mdd']:>8}{s_base['cagr']:>8}")
+        print(f"{'排除Top'+str(args.top):<20}{s_excl['final_multiple']:>8}{s_excl['mdd']:>8}{s_excl['cagr']:>8}")
+        delta = s_excl['final_multiple'] - s_base['final_multiple']
+        pct = delta / s_base['final_multiple'] * 100 if s_base['final_multiple'] else 0
+        print(f"\n变化: {delta:+.3f}x ({pct:+.1f}%)")
+        if abs(pct) > 20:
+            print("⚠ 偏差显著: 移除Top涨幅后倍数变化>20%, 回测严重依赖少数幸存者")
+        elif abs(pct) > 10:
+            print("⚠ 偏差中等: 移除Top涨幅后倍数变化10-20%, 有一定幸存者依赖")
+        else:
+            print("✓ 偏差有限: 移除Top涨幅后倍数变化<10%, 收益来源较分散")
+
+
+if __name__ == "__main__":
+    main()
