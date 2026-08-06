@@ -279,6 +279,16 @@ def augment(candidates, cfg, tag="defensive"):
 
     # shadow: 返回原排序; live: 按 AI 调整分重排
     if shadow:
+        # 记录 shadow A/B 快照供 shadow_eval 评估
+        try:
+            import shadow_eval
+            # augmented 按 ai_adjusted_score 排序得到 AI 视角的 top-N
+            ai_sorted = sorted(augmented,
+                               key=lambda d: d.get("ai_adjusted_score", d.get("final_score", 0)),
+                               reverse=True)
+            shadow_eval.record(tag, candidates, ai_sorted, top_n=3)
+        except Exception as e:
+            print(f"  [ai_score] shadow_eval 记录失败(不影响主流程): {e}")
         print(f"  [ai_score] SHADOW 模式: 保持原排序, AI 乘数仅作参考")
         return candidates  # 原列表, 不改排序
     else:

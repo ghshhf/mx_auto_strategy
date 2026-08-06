@@ -155,12 +155,12 @@ python3 manual_log.py delete --account real2 --confirm
 
 ---
 
-## 当前剧本状态（2026-W29 当周）
+## 当前剧本状态（2026-W32 当周）
 
-- **进攻方向（用户锁定）**：电力 或 医疗（医药）
+- **进攻方向**：待定（AI 层 shadow 评估中，用户可手写 `user_script.md` 或等 AI 积累足够样本后晋升）
 - **防御端（系统自治）**：银行 + 电力 + 红利低波
 - **目标**：正收益即可，赚红包，拿大赛前十
-- **市况背景**：弱势市（沪深300 偏离 MA 约 -6.5%），科技崩后防御为王
+- **市况背景**：以运行时 `user_script.md` 和 `weekly_theme.json` 为准
 
 > ⚠️ 以上为快照，实际以 `user_script.md` 和 `weekly_theme.json` 运行时为准。智能体启动时应先读这两个文件。
 
@@ -183,14 +183,31 @@ python3 manual_log.py delete --account real2 --confirm
 | `manual_log.py mark` | **实时市值估值**：读持仓→拉最新价→算浮动盈亏+总净值（闭市降级成本口径） | `python3 manual_log.py mark` |
 | `manual_log.py curve` | **资金曲线导出**：读 equity 快照→导出"日期→净值"CSV，供回测/画图 | `python3 manual_log.py curve` |
 | `manual_log.py drawdown` | **回撤闸**：算最大/周回撤，超阈（默认-5%）输出降级全防御建议 | `python3 manual_log.py drawdown --threshold 5` |
-| `script_tracker.py` | **剧本命中追踪**：剧本落 JSON（含预期+到期日）→ check 自动比对行情判定命中→积累胜率 | `python3 script_tracker.py add/list/check/stats` |
+| `script_tracker.py` | **剧本命中追踪 v1.1**：剧本落 JSON（含预期+到期日）→ check 自动比对行情判定命中→积累胜率；支持 source=human/ai 区分来源，compare 对比胜率 | `python3 script_tracker.py add/list/check/stats/compare` |
+| `shadow_eval.py` | **AI shadow A/B 评估**：ai_score shadow 模式运行时记录"规则排序 vs AI排序"快照，后续计算前向收益量化 AI 是否真加分 | `python3 shadow_eval.py evaluate --horizon 20` / `report` / `status` |
+| `ai_promotion_gate.py` | **shadow→active 晋升门槛**：5 项量化门槛（样本量/AI胜率/超额收益/剧本样本/剧本胜率），全满足才建议晋升 | `python3 ai_promotion_gate.py check` / `status` |
 | `sync_contest.py` | **大赛只读同步**：调 mx-moni 查远程龙虾账户→追加快照进 `records/sim_*/`，远程清零不影响本地 | `python3 sync_contest.py --account sim_261984600000041416` |
 | `news_feed.py` | **实时新闻参考源**：拉公开快讯→与剧本方向匹配打「共振」标签→落本地。**仅参考·绝不交易** | `python3 news_feed.py fetch` / `news_feed.py latest --resonance` |
 | `crypto_data.py` | **加密数据源**：CoinGecko主·Binance/OKX备，免费全币种+交易所相关数据，仅公开行情不碰私钥 | `python3 crypto_data.py price btc eth sol` / `crypto_data.py exchange binance` |
 
 > 设计闭环：行情(`market_data`) → 选股(`selector`+`weekly_theme`) → 下单/记录(`auto_trader`+`local_records`) →
 > 多账号账本(`manual_log`, 本地永久) → 实时估值/曲线/回撤(`mark`/`curve`/`drawdown`) →
-> 剧本护城河(`script_tracker`) → 远程比对(`sync_contest`) → 新闻共振参考(`news_feed`)。读一切金融数据、记录、宏观剧本、自动筛选、资讯参考全打通。
+> 剧本护城河(`script_tracker` v1.1, human/ai 分源) → AI shadow A/B 评估(`shadow_eval`) →
+> 晋升门槛(`ai_promotion_gate`) → 远程比对(`sync_contest`) → 新闻共振参考(`news_feed`)。
+
+---
+
+## AI 成熟度框架 (v6.15)
+
+AI overlay 当前 `enabled=false`（用户决策：与外部 AI 冗余，shadow 空转边际贡献为零）。
+但代码保留，并已补齐 shadow→active 的量化晋升机制：
+
+1. **shadow_eval.py**：ai_score 每次 shadow 运行自动记录"规则 top3 vs AI top3"快照到 `records/shadow_eval_snapshots.jsonl`。快照满 `horizon` 个交易日后，`evaluate` 计算两组等权前向收益并对比。
+2. **ai_promotion_gate.py**：5 项门槛同时满足才建议晋升 — min_samples(20) / min_ai_win_rate(55%) / min_avg_outperformance(1%) / min_script_samples(5) / min_script_win_rate(50%)。门槛可在 `strategy_config.json` 的 `ai_overlay.promotion_gate` 配置。
+3. **script_tracker v1.1**：新增 `source` 字段区分 human/ai 剧本；`compare` 命令对比两者胜率；`_indicator_hit` 修复区间收益计算 bug（原取"最近60根K线"→现取"写入日→到期日"）。
+4. **script_advisor 自动追踪**：API 模式生成草稿后自动创建 `source=ai` 的 tracker 记录，AI 建议也纳入胜率统计。
+
+晋升路径：`enabled=true` + `shadow_mode=true` → 积累样本 → `shadow_eval evaluate` → `ai_promotion_gate check` → 全 PASS → `shadow_mode=false`（paper trading 验证）→ 稳定后可考虑 live。
 
 ---
 

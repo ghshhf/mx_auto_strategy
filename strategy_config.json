@@ -1296,6 +1296,14 @@
       "max_candidates": 10
     },
     "trend_filter_offensive": true,
-    "_trend_filter_note": "v6.13: 进攻选股趋势持续性过滤(MA25>MA100, 拒绝死猫跳). 回测验证: 全窗口微正(+0.03x), 无负面. 安全阀: 过滤后不足top_n则退回原列表."
+    "_trend_filter_note": "v6.13: 进攻选股趋势持续性过滤(MA25>MA100, 拒绝死猫跳). 回测验证: 全窗口微正(+0.03x), 无负面. 安全阀: 过滤后不足top_n则退回原列表.",
+    "promotion_gate": {
+      "_comment": "v6.15 AI成熟度: shadow->active 晋升门槛. 全部满足才建议晋升. 用 'python ai_promotion_gate.py check' 检查.",
+      "min_samples": 20,
+      "min_ai_win_rate": 55.0,
+      "min_avg_outperformance": 1.0,
+      "min_script_samples": 5,
+      "min_script_win_rate": 50.0
+    }
   }
 }

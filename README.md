@@ -188,7 +188,9 @@ mx_auto_strategy/
 ├── death_cross.py       # 多指数周线死叉去风险信号(v6.10, 进攻转全防御)
 ├── tech_adoption.py     # 科技渗透率倾斜(木头姐框架 v6.11, 时变渗透率表, 进攻题材权重倾斜)
 ├── manual_log.py        # 📒 账号体系手动记账(本地无清零, 永久留存, 仅手动delete)
-├── script_tracker.py    # 📜 剧本书写者命中追踪(剧本JSON→自动判定→胜率)
+├── script_tracker.py    # 📜 剧本书写者命中追踪 v1.1(剧本JSON→自动判定→胜率, human/ai分源)
+├── shadow_eval.py       # 🧪 AI shadow A/B 评估(规则vs AI排序前向收益对比)
+├── ai_promotion_gate.py # 🚪 shadow→active 晋升门槛(5项量化标准)
 ├── sync_contest.py      # 🔄 龙虾大赛远程只读同步(本地永久留存)
 ├── news_feed.py         # 📰 实时新闻参考源(拉快讯→剧本共振标记, 仅参考不交易)
 ├── crypto_data.py       # 🪙 加密数据源(全币种+交易所数据, 公开行情, 并入总资金统计)
@@ -204,7 +206,9 @@ mx_auto_strategy/
 | `manual_log.py mark` | 实时市值估值（持仓×最新价→浮动盈亏+总净值） |
 | `manual_log.py curve` | 资金曲线导出 CSV（日期→净值，供回测/画图） |
 | `manual_log.py drawdown` | 回撤闸（超阈输出降级全防御建议） |
-| `script_tracker.py` | 剧本命中追踪（add/list/check/stats，积累胜率） |
+| `script_tracker.py` | 剧本命中追踪 v1.1（add/list/check/stats/compare, human/ai 分源胜率对比） |
+| `shadow_eval.py` | AI shadow A/B 评估（规则 vs AI 排序前向收益, 量化 AI 是否真加分） |
+| `ai_promotion_gate.py` | shadow→active 晋升门槛（5 项量化标准, 全满足才建议晋升） |
 | `sync_contest.py` | 大赛只读同步（远程快照追加本地，远程清零不影响） |
 | `news_feed.py` | 实时新闻参考源（拉快讯→与剧本方向匹配打共振标签，仅参考不交易） |
 | `crypto_data.py` | 加密数据源（CoinGecko主·Binance/OKX备，免费全币种+交易所数据，仅公开行情） |
@@ -216,6 +220,10 @@ python3 manual_log.py drawdown --threshold 5            # 回撤>5%告警
 python3 script_tracker.py add --title "科技离场" --direction bearish --expiry 2026-08-01 --code sh000300 --expect down
 python3 script_tracker.py check                         # 自动判定到期剧本
 python3 script_tracker.py stats                         # 剧本胜率
+python3 script_tracker.py compare                      # human vs AI 胜率对比
+python3 shadow_eval.py evaluate --horizon 20           # 评估 shadow 快照前向收益
+python3 shadow_eval.py report                          # A/B 对比报告
+python3 ai_promotion_gate.py check                     # 检查 shadow→active 晋升门槛
 python3 sync_contest.py --account sim_261984600000041416   # 同步大赛(需MX_APIKEY)
 python3 news_feed.py fetch                                # 拉快讯+剧本方向共振标记
 python3 news_feed.py latest --resonance                   # 只看与剧本共振的新闻

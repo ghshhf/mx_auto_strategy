@@ -331,6 +331,67 @@ def cmd_api(cfg):
     save_audit(audit)
     print(f"  审计快照: {os.path.join(RECORD_ROOT, 'script_advisor_audit.jsonl')}")
 
+    # 自动创建 script_tracker 追踪记录 (source=ai)
+    _auto_track_ai_script(cfg, ctx, content)
+
+
+def _auto_track_ai_script(cfg, ctx, content):
+    """
+    为 AI 生成的草稿自动创建一条 script_tracker 记录 (source=ai)。
+    这样 AI 建议也能被追踪胜率, 与 human 剧本对比。
+
+    方向从草稿文本推断; 指标用沪深300 (默认基准)。
+    用户可后续手动修改 scripts/<id>.json 补充更精确的指标。
+    """
+    try:
+        import script_tracker
+    except Exception:
+        return None
+
+    # 从草稿文本推断方向
+    text_lower = content.lower() if content else ""
+    if any(k in content for k in ("看涨", "进攻", "加仓", "博弹性", "强势")) or "bullish" in text_lower:
+        direction = "bullish"
+        expect = "up"
+    elif any(k in content for k in ("看跌", "离场", "保守", "降仓", "弱势")) or "bearish" in text_lower:
+        direction = "bearish"
+        expect = "down"
+    else:
+        direction = "range"
+        expect = "range"
+
+    # 到期日: 默认2周后
+    from datetime import timedelta
+    expiry = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+
+    # 用沪深300作为默认验证标的
+    today = datetime.now().strftime("%Y-%m-%d")
+    indicators = [{
+        "code": "sh000300",
+        "metric": "return_pct",
+        "expect": expect,
+        "desc": f"沪深300 {today}->{expiry} 预期{expect}",
+        "written_date": today,
+    }]
+
+    sid = script_tracker._gen_id("AIadvisor")
+    script = {
+        "id": sid,
+        "written_date": today,
+        "title": f"AI建议({direction})",
+        "expiry": expiry,
+        "direction": direction,
+        "source": "ai",
+        "thesis": content[:200] if content else "",
+        "indicators": indicators,
+        "event_markers": [],
+        "status": "open",
+    }
+    script_tracker._save(script)
+    print(f"  [script_advisor] 自动追踪已创建: {sid} (source=ai, direction={direction})")
+    print(f"    可用 'python script_tracker.py list' 查看, 到期后 'check' 自动判定")
+    return sid
+
 
 def cmd_context(cfg):
     """仅打印上下文摘要, 不生成草稿。"""
