@@ -1,0 +1,78 @@
+# CI for mx_auto_strategy
+# Runs unit tests (blocking) + QA scripts (data-dependent ones non-blocking)
+# Data contract tests (test_data_contract.py) run as blocking once data exists.
+
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Project uses only stdlib; install pytest for richer reporting
+          pip install pytest
+
+      - name: Run unit tests (blocking)
+        run: |
+          python -m pytest tests/ -v --tb=short
+        env:
+          PYTHONPATH: .
+
+      - name: Run QA-02 unit tests (blocking)
+        run: |
+          cd ashare_backtest/_qa && python qa_02_unit.py
+
+      - name: Run data-dependent QA scripts (non-blocking)
+        continue-on-error: true
+        run: |
+          for f in ashare_backtest/_qa/qa_01_artifact_scan.py ashare_backtest/_qa/qa_03_before_after.py ashare_backtest/_qa/qa_04_hk_and_perf.py ashare_backtest/_qa/qa_05_datalayer.py; do
+            echo "--- Running $f ---"
+            python "$f" 2>&1 || echo "[WARN] $f failed (expected if data files absent)"
+          done
+
+      - name: Run data contract tests (blocking if data exists)
+        run: |
+          if [ -f tests/test_data_contract.py ]; then
+            python -m pytest tests/test_data_contract.py -v --tb=short
+          else
+            echo "test_data_contract.py not yet present, skipping"
+          fi
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check syntax (py_compile all .py files)
+        run: |
+          find . -name "*.py" -not -path "./.git/*" | while read f; do
+            python -m py_compile "$f" || { echo "SYNTAX ERROR in $f"; exit 1; }
+          done
+          echo "All Python files compile cleanly."
