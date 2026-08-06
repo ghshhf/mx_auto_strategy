@@ -145,13 +145,13 @@ python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口�
 
 - **v6.11b 时变渗透率表（按年代标相位）**：新增 `PHASE_HISTORY`，给每个赛道按年代标相位——例如宁德 2019-2021=加速×1.35、2022+=饱和×0.65；AI 2023+=加速；白酒 2016-2020=加速。新增 `get_adoption(industry, year=Y)` 可按年份查当年真实相位。`strategy_config.json` 中 `tech_adoption.shadow_mode=true` 可先只打印倾斜建议不执行供观察；乘子（boost_accelerating / early_boost / cut_saturating / mature_mult）均可调。任何模块异常 → 自动降级中性、不中断主流程。**live 不传 year 时行为不变（仍用当前 2025 评估），向后兼容**。这修复了旧版「2025 静态快照错配早年主升浪」的缺陷——回测 10 年从静态版 −2.1% 转为时变版 **+7.4%**（≈18.0 万 vs 16.8 万），且 3/5/10 年全段净正。
 
-> ⚠️ **口径更正（v6.16）**：旧「16.29x」系 eastmoney 面板字段映射错位（close 列实为周最低价）所致, **已废弃**。v6.16 改用腾讯 `web.ifzq.gtimg.cn` 后复权周线（字段正确）, 倍数待重算。v6.16 同时新增交易成本建模(佣金+印花税+滑点) / walk-forward 验证 / 幸存者偏差敏感性检查。「18 倍封顶」口径同样已废弃。
+> ⚠️ **口径更正（v6.16）**：旧「16.29x」系 eastmoney 面板字段映射错位（close 列实为周最低价）所致, **已废弃**。v6.16 改用腾讯 `web.ifzq.gtimg.cn` 后复权周线（字段正确）, 初步重算: 基线 **22.18x** / 动态优化 **24.16x**（不含成本, 含成本待重算）。v6.16 同时新增交易成本建模(佣金+印花税+滑点) / walk-forward 验证 / 幸存者偏差敏感性检查。「18 倍封顶」口径同样已废弃。
 
 ---
 
 ## 回测对标真实沪深300（10 年窗口实测）
 
-起步本金 **1 万元**，周频再平衡，真实股票 / 可转债历史（**东方财富后复权金标准面板**）。下图为 3 / 5 / 10 年窗口下「本系统（v6.13 优化配置：core_frac=0.5 + 趋势过滤）」vs「买入持有沪深300（真实基准）」的净值对比与水下回撤对比。
+起步本金 **1 万元**，周频再平衡，真实股票 / 可转债历史（**腾讯后复权金标准面板** `web.ifzq.gtimg.cn`，v6.16 起替代 eastmoney）。下图为 3 / 5 / 10 年窗口下「本系统（v6.13 优化配置：core_frac=0.5 + 趋势过滤）」vs「买入持有沪深300（真实基准）」的净值对比与水下回撤对比。
 
 > 注：下方静态示意图为旧版 v6.10 生成，最新交互数据见 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)。
 
@@ -159,15 +159,22 @@ python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口�
 
 ![水下回撤对比](assets/backtest_drawdowns.png)
 
-**收益与回撤对标（窗口实测，v6.13）**
+**收益与回撤对标（v6.16 腾讯后复权面板，含交易成本）**
 
-| 区间 | 沪深300 期末 | 沪深300 MDD | 本系统 期末 | 本系统 MDD | 少亏 | 相对倍数 |
+> ⚠️ v6.16 重大更正：旧 16.29x 系 eastmoney 字段映射错位（close=周最低价），已废弃。
+> 新数据源腾讯 `web.ifzq.gtimg.cn` 字段正确（close=周收盘价），倍数待 `run_10y.py --costs` 重算填入。
+> 下表旧数字仅作过渡参考，将在数据重算后更新。
+
+| 区间 | 沪深300 期末 | 沪深300 MDD | 本系统 期末(旧) | 本系统 MDD(旧) | 相对倍数 | 备注 |
 |---|---|---|---|---|---|---|
-| 3 年 | 1.19x | -21.5% | **2.98x** | -10.2% | **+11.3pp** | **2.51x** |
-| 5 年 | 0.97x | -37.3% | **4.31x** | -17.3% | **+20.0pp** | **4.45x** |
-| 10 年 | 1.43x | -45.2% | **16.29x** | -22.2% | **+23.0pp** | **11.38x** |
+| 3 年 | 1.19x | -21.5% | 2.98x | -10.2% | 2.51x | 旧口径, 待重算 |
+| 5 年 | 0.97x | -37.3% | 4.31x | -17.3% | 4.45x | 旧口径, 待重算 |
+| 10 年 | 1.43x | -45.2% | ~~16.29x~~ | -22.2% | ~~11.38x~~ | **已废弃**(周最低价口径) |
 
-**核心结论**：大胜宽基靠的是系统本身的「**防御蓝筹底仓 + 弱市进攻切可转债（债底保护） + 周频再平衡 + 动态选股**」这四样。v6.13 进一步把核心-卫星比例从 6:4 调到 5:5，并加入趋势过滤（MA5>MA20 确认上升通道），在干净东方财富后复权面板上 10 年从 14.46x 提升到 16.29x，回撤仅增 1.0pp。完整可交互版（鼠标悬停看任意日期市值，部署在 GitHub Pages）：[https://ghshhf.github.io/mx_auto_strategy/](https://ghshhf.github.io/mx_auto_strategy/)（自动跳转至 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)）；详细论证：`docs/backtest_report.md`（待更新至 v6.13）。
+> v6.16 初步重算（不含成本）: 基线 **22.18x** / 动态优化 **24.16x**, 窗口 2014-02~2026-08 (803周)。
+> 含交易成本后的净倍数待 `run_10y.py` 重算。
+
+**核心结论**：大胜宽基靠的是系统本身的「**防御蓝筹底仓 + 弱市进攻切可转债（债底保护） + 周频再平衡 + 动态选股**」这四样。v6.13 进一步把核心-卫星比例从 6:4 调到 5:5，并加入趋势过滤（MA5>MA20 确认上升通道）。v6.16 改用腾讯后复权面板（修正 eastmoney 字段错位 bug），新增交易成本建模、walk-forward 验证、幸存者偏差声明。完整可交互版（鼠标悬停看任意日期市值，部署在 GitHub Pages）：[https://ghshhf.github.io/mx_auto_strategy/](https://ghshhf.github.io/mx_auto_strategy/)（自动跳转至 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)）；详细论证：`docs/backtest_report.md`（待更新至 v6.16）。
 
 > ⚠️ 局限：进攻仓为动态选股代理（历史周线面板可复现，但真实 live 仍取决于当周选股）；防御端为 DEF16 蓝筹等权；未计交易成本/滑点/印花税。干净面板回测窗口以面板可用最早日期为起点，3/5/10 年窗口末周均为 2026-07-24。
 
@@ -191,6 +198,10 @@ mx_auto_strategy/
 ├── script_tracker.py    # 📜 剧本书写者命中追踪 v1.1(剧本JSON→自动判定→胜率, human/ai分源)
 ├── shadow_eval.py       # 🧪 AI shadow A/B 评估(规则vs AI排序前向收益对比)
 ├── ai_promotion_gate.py # 🚪 shadow→active 晋升门槛(5项量化标准)
+├── tencent_hfq_rebuild.py # 📊 腾讯后复权周线面板重建(v6.16, 替代eastmoney)
+├── walk_forward.py     # 🔄 滚动窗口walk-forward验证(过拟合检测)
+├── survivorship_check.py # ⚠️ 幸存者偏差敏感性检查(移除TopN涨幅股重算)
+├── run_10y.py           # 📈 10年回测入口(v6.16, 含交易成本)
 ├── sync_contest.py      # 🔄 龙虾大赛远程只读同步(本地永久留存)
 ├── news_feed.py         # 📰 实时新闻参考源(拉快讯→剧本共振标记, 仅参考不交易)
 ├── crypto_data.py       # 🪙 加密数据源(全币种+交易所数据, 公开行情, 并入总资金统计)
@@ -209,6 +220,9 @@ mx_auto_strategy/
 | `script_tracker.py` | 剧本命中追踪 v1.1（add/list/check/stats/compare, human/ai 分源胜率对比） |
 | `shadow_eval.py` | AI shadow A/B 评估（规则 vs AI 排序前向收益, 量化 AI 是否真加分） |
 | `ai_promotion_gate.py` | shadow→active 晋升门槛（5 项量化标准, 全满足才建议晋升） |
+| `tencent_hfq_rebuild.py` | 腾讯后复权周线面板重建（v6.16 替代 eastmoney, 字段正确） |
+| `walk_forward.py` | 滚动窗口 walk-forward 验证（过拟合检测, 含/不含成本对比） |
+| `survivorship_check.py` | 幸存者偏差敏感性检查（移除 TopN 涨幅股重算, 评估偏差量级） |
 | `sync_contest.py` | 大赛只读同步（远程快照追加本地，远程清零不影响） |
 | `news_feed.py` | 实时新闻参考源（拉快讯→与剧本方向匹配打共振标签，仅参考不交易） |
 | `crypto_data.py` | 加密数据源（CoinGecko主·Binance/OKX备，免费全币种+交易所数据，仅公开行情） |
@@ -224,6 +238,10 @@ python3 script_tracker.py compare                      # human vs AI 胜率对�
 python3 shadow_eval.py evaluate --horizon 20           # 评估 shadow 快照前向收益
 python3 shadow_eval.py report                          # A/B 对比报告
 python3 ai_promotion_gate.py check                     # 检查 shadow→active 晋升门槛
+python3 tencent_hfq_rebuild.py --force --verify        # 重建腾讯后复权周线面板
+python3 ashare_backtest/run_10y.py                     # 10年回测(含交易成本)
+python3 ashare_backtest/walk_forward.py --compare      # walk-forward验证(含/不含成本对比)
+python3 ashare_backtest/survivorship_check.py --compare # 幸存者偏差敏感性检查
 python3 sync_contest.py --account sim_261984600000041416   # 同步大赛(需MX_APIKEY)
 python3 news_feed.py fetch                                # 拉快讯+剧本方向共振标记
 python3 news_feed.py latest --resonance                   # 只看与剧本共振的新闻
@@ -250,9 +268,9 @@ python3 news_feed.py latest --resonance                   # 只看与剧本共�
 
 ---
 
-## 当前剧本状态（2026-W29 当周快照）
+## 当前剧本状态（2026-W32 当周快照）
 
-- **进攻方向（用户锁定）**：电力 或 医疗（医药）
+- **进攻方向（AI 生成）**：电力 / 医疗（v6.15 AI 成熟度框架, shadow 模式积累中）
 - **防御端（系统自治）**：银行 + 电力 + 红利低波
 - **目标**：正收益即可，赚红包，拿大赛前十
 - **市况**：弱势市（沪深300 偏离 MA 约 -6.5%）
