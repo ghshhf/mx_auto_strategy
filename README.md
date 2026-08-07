@@ -16,8 +16,8 @@
 | 类别 | 路径 | 说明 | 分类标记 |
 |---|---|---|---|
 | **A 股（主系统）** | 仓库根目录 | 龙虾炒股大赛自动交易（剧本书写者 + 防御自治 + 网格），依赖 mx-moni API / T+1 / 限价 | 无（默认根） |
-| **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + 崩盘保护 + AI 选股层（`us_backtest_ai.py`）；真实面板回测结果见 `us_stocks/README.md` | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
-| **加密（第三策略）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + VolTarget。**真实 Binance/OKX 数据权威真值：进攻 Top3 = 100.6x（MDD −63.5%）／防御档 = 40.7x（MDD −45.2%）**（⚠️ 旧 ~42,484x 系**合成数据 · 非实盘口径 · 已废弃推翻**；真值含幸存者偏差，非未来承诺） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
+| **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + 崩盘保护 + AI 选股层（`us_backtest_ai.py`）；真实面板回测结果见 `us_stocks/README.md`。（v6.18 期权审计：真实面板 + 公允 BS 期权定价 = **99.85x** / CAGR 46.8% / MDD −47.2%；无期权基线 22.48x；保守下限 31.7x） | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
+| **加密（第三策略）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + VolTarget + **期权三件套引擎**（`crypto_options_bt.py`）。**权威真值（期权增强，v6.18 审计）**：进攻 Top3 + 期权三件套 + 封顶 4.5x = **448.6x**（CAGR 97.4% / MDD −57.6% / Sharpe 1.40，Binance/OKX 真实周K线 468 周）；无期权基线进攻 Top3 = 100.6x（MDD −63.5%）／防御档 = 40.7x（MDD −45.2%）。**减半周期（opt-in，协议级确定性日期零后视）= 实盘合法 regime 信号；其 in-sample 拟合峰值 ~17000x（10 年面板 619 周，真实数据可复现）为样本内上限非承诺值，真实样本外 Walk-forward = 274.8x（后视镜 69% 保留）/ 切割 B = 3.4x**。（⚠️ 旧 ~42,484x 系**合成数据 · 非实盘口径 · 已废弃推翻**，与上面真实数据的 17000x 不可混淆；真值含幸存者偏差，非未来承诺） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
 
 > 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。
 > 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
