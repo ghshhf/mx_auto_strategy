@@ -7,7 +7,7 @@
 
 ## 这是什么
 
-龙虾炒股大赛（模拟盘）自动交易系统 v6.16，核心模式叫**「剧本书写者」**：
+龙虾炒股大赛（模拟盘）自动交易系统 v6.18，核心模式叫**「剧本书写者」**：
 
 - **防御端**：系统自治。从低 beta 蓝筹白名单自动选 Top3，按三档市况（弱势/平衡/强势）自动调仓位。
 - **进攻端**：用户给方向就锁定用户方向，不给就走自适应主线（行业动量扫描）。
@@ -19,7 +19,7 @@
 
 本仓库按**市场**分**三大类**，请按此归类与隔离：
 
-- **A 股（主系统，默认根目录）**：龙虾炒股大赛模拟盘自动交易。依赖 `mx-moni` API、T+1、限价；含 `auto_trader.py` / `grid_trader.py` / `selector.py` / `weekly_theme.py` / `death_cross.py` / `tech_adoption.py` 等。回测在 `ashare_backtest/`（面板由 `ashare_backtest/tencent_hfq_rebuild.py` 联网重建生成，**面板 CSV 未入库**）。回测引擎含交易成本建模(v6.16)、walk-forward 验证、幸存者偏差声明。
+- **A 股（主系统，默认根目录）**：龙虾炒股大赛模拟盘自动交易。依赖 `mx-moni` API、T+1、限价；含 `auto_trader.py` / `grid_trader.py` / `selector.py` / `weekly_theme.py` / `death_cross.py` / `tech_adoption.py`（⚠️ v6.18 验证含前视偏差, 默认关闭）等。回测在 `ashare_backtest/`（引擎 `backtest_engine.py`，面板由 `tencent_hfq_rebuild.py` 联网重建生成，**面板 CSV 未入库**）。回测框架含交易成本建模(v6.16)、walk-forward 双维度配对检验(v6.18)、ablation 单变量消融(v6.18)、幸存者偏差声明；v6.18 经样本外检验确认所有叠加层均不显著, 基线锁定 动量26+核心卫星+死叉。
 - **美股（对标迁移，目录 `us_stocks/`）**：同一套方法论迁移到美股。US50 篮子（48 进攻 + KO/ABBV 防御）+ 动量轮动 + Walk-forward 样本外验证 + 崩盘保护 + 网格叠加。真实面板回测（含 AI 选股层 `us_backtest_ai.py`）结果见 `us_stocks/README.md`（⚠️ 早期 ~50x 为合成数据未计成本，仅供参照；真实值 22.48x）。权威分类标记为 `us_stocks/README.md` 首行 HTML 注释 `CATEGORY: us_stocks`。
 - **加密（第三策略，目录 `crypto_stocks/`）**：同一套方法论迁移到加密货币，已由「仅额度汇总」升级为**独立第三策略**。Crypto50 池（BTC/ETH/OKB 防御核 + 进攻 TopN 动量）+ 12 赛道木头姐相位 + 四档市况 + CrashGuard + VolTarget。真实数据经 `127.0.0.1:3067` 代理从 Binance/OKX 拉取（`crypto_hist_data.py`）。**权威真值：进攻 Top3 = 100.6x（MDD −63.5%）／防御档 Top3+Crash+VolT = 40.7x（MDD −45.2%）**；旧「42,484x」系合成数据，**已废弃推翻**。权威分类标记为 `crypto_stocks/README.md` 首行 `CATEGORY: crypto`。
 
@@ -218,6 +218,6 @@ AI overlay 当前 `enabled=false`（用户决策：与外部 AI 冗余，shadow 
 - `strategy_power_proof.md` —— 散户-30% vs 用户-2.67% 的实力论证
 - `ashare_backtest/REPORT_10Y_LIMIT.md` —— ⚠️ **已废弃**：westock 面板伪迹踩坑记录（其中 19.5x 为虚增假数，勿引用）
 
-> ⚠️ **收益真值口径（v6.16 重大更正）**：旧「16.29x」系 **eastmoney 字段映射错位**（close 列实为周最低价, 非周收盘价）所致, **已废弃**。v6.16 改用腾讯 `web.ifzq.gtimg.cn` 后复权周线（字段正确: open/close/high/low）, 数据重抓中, 新倍数待 `run_10y.py` 重算后填入。
+> ⚠️ **收益真值口径（v6.18 重大更正）**：旧「16.29x / 22.18x / 24.16x」系 **eastmoney 字段映射错位**或**前视偏差虚增**, **已废弃**。v6.18 改用腾讯 `web.ifzq.gtimg.cn` 后复权周线（字段正确: open/close/high/low）+ 交易成本建模, **全样本真值: 18.185x / CAGR 22.31% / MDD -33.31% / 相对沪深300 超额 +9.55x**（窗口 2014-10-17~2026-08-06, 749 周, 含幸存者偏差, 非未来承诺）。
 > 旧的「18 倍 / 19.5 倍」出自 westock（腾讯）面板伪迹虚增（单周跳变 ±50%~±35000%），**已于 2026-07-30 全面废弃**，任何文档不得再引用。
-> v6.16 新增: 交易成本建模(佣金万2.5+印花税0.05%+滑点0.1%, 默认开启) / walk-forward 滚动窗口验证 / 幸存者偏差声明+敏感性检查(`survivorship_check.py`)。
+> v6.16 新增: 交易成本建模(佣金万2.5+印花税0.05%+滑点0.1%, 默认开启) / walk-forward 滚动窗口验证 / 幸存者偏差声明+敏感性检查(`survivorship_check.py`)。v6.18 新增: walk-forward 升级为**双维度配对检验**(倍数+MDD, |t|≥2 才算显著) + ablation 单变量消融; 经检验趋势过滤/科技相位/量能/宏观/估值分位等叠加层**样本外均不显著**, 基线锁定 动量26+核心卫星+死叉。
