@@ -1,1 +1,2 @@
 {"ts": "2026-07-24 02:03:07", "account": "mx_sim", "action": "deposit", "code": "", "name": "", "price": 0.0, "qty": 0, "amount": 994707.21, "note": "期初本金(从模拟盘快照导入)"}
+{"ts": "2026-08-05 14:50:00", "account": "mx_sim", "action": "buy", "code": "600016", "name": "民生银行", "price": 3.52, "qty": 1000, "amount": 3520.0, "note": "死叉防御模式:加仓银行蓝筹,消耗现金3520元"}
