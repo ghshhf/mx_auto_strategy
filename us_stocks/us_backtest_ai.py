@@ -155,6 +155,46 @@ def sector_short_index(code, options_sim, series, t):
         return cfg_default
     return sector
 
+
+# ========================================================= BS 期权定价 (opt-in: options_sim.bs_pricing=True)
+def _ncdf(x):
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+def bs_call(S, K, T, r, sig):
+    """Black-Scholes 欧式看涨。S/K 为价格, T 为年化期限(年), r 无风险利率, sig 年化波动率。"""
+    if T <= 0 or sig <= 0 or S <= 0 or K <= 0:
+        return max(0.0, S - K)
+    d1 = (math.log(S / K) + (r + 0.5 * sig * sig) * T) / (sig * math.sqrt(T))
+    d2 = d1 - sig * math.sqrt(T)
+    return S * _ncdf(d1) - K * math.exp(-r * T) * _ncdf(d2)
+
+def bs_put(S, K, T, r, sig):
+    """Black-Scholes 欧式看跌。"""
+    if T <= 0 or sig <= 0 or S <= 0 or K <= 0:
+        return max(0.0, K - S)
+    d1 = (math.log(S / K) + (r + 0.5 * sig * sig) * T) / (sig * math.sqrt(T))
+    d2 = d1 - sig * math.sqrt(T)
+    return K * math.exp(-r * T) * _ncdf(-d2) - S * _ncdf(-d1)
+
+def realized_vol(arr, t, win=52):
+    """t 周前 win 周内的对数收益年化波动率; 数据不足返回 None。"""
+    if arr is None or t < 2:
+        return None
+    rets = []
+    for i in range(max(1, t - win), t + 1):
+        if i <= 0 or i >= len(arr):
+            continue
+        a, b = arr[i], arr[i - 1]
+        if not a or not b or b <= 0:
+            continue
+        rets.append(math.log(a / b))
+    if len(rets) < 10:
+        return None
+    m = sum(rets) / len(rets)
+    var = sum((r - m) ** 2 for r in rets) / (len(rets) - 1)
+    return math.sqrt(var * 52.0)
+
+
 BROAD = ["SPY", "QQQ", "DIA", "IWM", "MDY", "VTI"]
 DEF_NEW = ["KO", "NEE", "JPM"]                  # v6.14b 静态防御篮(baseline 用)
 DEF_CANDIDATES = ["KO", "JNJ", "COST", "ABBV", "MCD", "PG", "WMT", "MMM",
@@ -621,7 +661,13 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                     if options_sim and not state.get("call_sold"):
                         # 阶段2: 卖 covered call, 收权利金, 不清仓
                         strike = state["entry_price"] * (1 + us_cfg["take_profit_pct"])
-                        premium = state["entry_price"] * options_sim["call_premium_rate"]
+                        if options_sim.get("bs_pricing"):
+                            # 固定前向 vol(call_vol), 不再用未封顶 trailing vol(那是 2506x 爆炸根)
+                            _sig = options_sim.get("call_vol", 0.30)
+                            premium = bs_call(price, strike, options_sim.get("call_dte_weeks", 52) / 52.0,
+                                              options_sim.get("bs_rate", 0.04), _sig)
+                        else:
+                            premium = state["entry_price"] * options_sim["call_premium_rate"]
                         state["call_sold"] = True
                         state["call_strike"] = strike
                         state["call_premium"] = premium
@@ -676,7 +722,13 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                 strike = price * (1 + otm)
                 base_prem = options_sim["call_premium_rate"]
                 # 高估股波动更大, 权利金×1.5(实证: 高估股IV更高)
-                premium = price * base_prem * options_sim.get("ovl_premium_mult", 1.5)
+                if options_sim.get("bs_pricing"):
+                    # 固定前向 vol(call_vol), 不再用未封顶 trailing vol
+                    _sig = options_sim.get("call_vol", 0.30)
+                    premium = bs_call(price, strike, options_sim.get("call_dte_weeks", 52) / 52.0,
+                                      options_sim.get("bs_rate", 0.04), _sig)
+                else:
+                    premium = price * base_prem * options_sim.get("ovl_premium_mult", 1.5)
                 state["call_sold"] = True
                 state["call_strike"] = strike
                 state["call_premium"] = premium
@@ -706,7 +758,7 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                     # 被行权: 按 strike 卖出, 封顶损失 = (strike-price)/price × w
                     # 用 prev_weights 兜底(再平衡可能已换出但 holdings_state 还在)
                     w_eff = w if w > 0 else prev_weights.get(code, 0)
-                    settle = w_eff * (strike - price) / price
+                    settle = w_eff * (strike - price) / state["entry_price"]
                     nav *= (1 + settle)
                     nav_hist[-1] = nav
                     call_settle_total += settle
@@ -757,19 +809,35 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
         if options_sim:
             eq_w = sum(w for c, w in weights.items() if c != "__cash__")
             if eq_w > 0:
-                put_cost = eq_w * options_sim["put_premium_annual"] / 52
-                nav *= (1 - put_cost)
-                nav_hist[-1] = nav
-                put_cost_total += put_cost
-                # 第一层: 大盘put(QQQ/SPY 周跌>5%)
                 g_arr = series.get(gauge) or series.get("SPY")
-                if g_arr and t > 0 and g_arr[t] and g_arr[t-1] and g_arr[t-1] > 0:
-                    g_ret = g_arr[t] / g_arr[t-1] - 1
-                    if g_ret < -options_sim["put_crash_threshold"]:
-                        put_hedge = eq_w * abs(g_ret) * options_sim["put_hedge_ratio"]
-                        nav *= (1 + put_hedge)
-                        nav_hist[-1] = nav
-                        put_hedge_total += put_hedge
+                bs_p = options_sim.get("bs_pricing", False)
+                put_otm = options_sim.get("put_otm", 0.05)
+                bs_r = options_sim.get("bs_rate", 0.04)
+                if bs_p and g_arr and t > 0 and g_arr[t] and g_arr[t-1] and g_arr[t-1] > 0:
+                    # BS 周度滚动 OTM put: 行权价=上周价×(1-put_otm), 期限1周, 期末内在值赔付
+                    S_prev = g_arr[t - 1]; S_cur = g_arr[t]
+                    K = S_prev * (1 - put_otm)
+                    # 固定前向 vol(put_vol), 不再用未封顶 trailing vol
+                    _sig = options_sim.get("put_vol", 0.20)
+                    prem = bs_put(S_prev, K, 1.0 / 52.0, bs_r, _sig)
+                    cost = eq_w * prem / S_prev
+                    nav *= (1 - cost); nav_hist[-1] = nav; put_cost_total += cost
+                    payoff = eq_w * max(0.0, (K - S_cur) / S_prev)
+                    if payoff > 0:
+                        nav *= (1 + payoff); nav_hist[-1] = nav; put_hedge_total += payoff
+                else:
+                    put_cost = eq_w * options_sim["put_premium_annual"] / 52
+                    nav *= (1 - put_cost)
+                    nav_hist[-1] = nav
+                    put_cost_total += put_cost
+                    # 第一层: 大盘put(QQQ/SPY 周跌>5%)
+                    if g_arr and t > 0 and g_arr[t] and g_arr[t-1] and g_arr[t-1] > 0:
+                        g_ret = g_arr[t] / g_arr[t-1] - 1
+                        if g_ret < -options_sim["put_crash_threshold"]:
+                            put_hedge = eq_w * abs(g_ret) * options_sim["put_hedge_ratio"]
+                            nav *= (1 + put_hedge)
+                            nav_hist[-1] = nav
+                            put_hedge_total += put_hedge
                 # 第二层: 个股put(个股周跌>15%, 比大盘更精准, 替代行业ETF)
                 if options_sim.get("stock_put_enabled"):
                     stock_thresh = options_sim.get("stock_put_crash_threshold", 0.15)
@@ -914,7 +982,7 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                             price = arr[t]; strike = state["call_strike"]
                             w = prev_weights.get(c, 0)
                             if price >= strike:
-                                settle = w * (strike - price) / price
+                                settle = w * (strike - price) / state["entry_price"]
                                 nav *= (1 + settle)
                                 nav_hist[-1] = nav
                                 call_settle_total += settle
@@ -959,7 +1027,7 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
             price = arr[-1]; strike = state["call_strike"]
             if price >= strike:
                 w = weights.get(code, 0) or state.get("weight", 0)
-                settle = w * (strike - price) / price
+                settle = w * (strike - price) / state["entry_price"]
                 nav *= (1 + settle)
                 nav_hist[-1] = nav
                 call_settle_total += settle
@@ -1095,7 +1163,7 @@ def _mini_window_bt(dates, series, cfg, sim, start_w, end_w, *,
             w = weights.get(code, 0)
             if price >= strike:
                 w_eff = w
-                settle = w_eff * (strike - price) / price if price > 0 else 0
+                settle = w_eff * (strike - price) / state["entry_price"] if price > 0 else 0
                 nav *= (1 + settle)
                 if w > 0:
                     weights["__cash__"] = weights.get("__cash__", 0) + w
