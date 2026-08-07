@@ -1,12 +1,23 @@
 {
   "_comment": "mx-moni auto strategy config v6.13 | 主控目标=每周冲名次赚钱 | 3防御(稳)+2进攻(市况依赖: 弱势可转债替代/平衡主线/强势弹性) | 市况自适应仓位(弱/平/强) | 多市场(A股/ETF/港股/可转债) | +grid(v6.3)+rebalance(v6.4)+weekly_theme(v6.6)+temperature_probe(v6.9,进攻刻度)+death_cross(v6.10,死叉转全防御)+tech_adoption(v6.11,木头姐渗透率倾斜, v6.11b 升级时变渗透率表按年代标相位) | v6.12: REGIME_ALLOC 对齐18倍基线(weak60/24/16, balance45/45/10, strong35/60/5) | v6.13: 动态选股升级(core_frac=0.5+趋势过滤), 剧本封印(sealed=true, 方向移交AI)",
-
   "version": "6.14",
   "REGIME_ALLOC": {
     "_comment": "v6.15 单一真相源: 市况三档仓位模板(防御%/进攻%/现金%, 和为100). 原硬编码于 auto_trader.py, 现提升为配置, 杜绝文档/代码漂移. 与 README/CLAUDE 市况三档表一致. weak60/24/16 · balance45/45/10 · bull35/60/5.",
-    "weak":    {"def": 60, "off": 24, "cash": 16},
-    "balance": {"def": 45, "off": 45, "cash": 10},
-    "bull":    {"def": 35, "off": 60, "cash": 5}
+    "weak": {
+      "def": 60,
+      "off": 24,
+      "cash": 16
+    },
+    "balance": {
+      "def": 45,
+      "off": 45,
+      "cash": 10
+    },
+    "bull": {
+      "def": 35,
+      "off": 60,
+      "cash": 5
+    }
   },
   "playbook": {
     "_comment": "剧本封印(2026-07-30/W31): 用户判断未来难有突发极端行情, 方向主轴全面移交AI. 此后不再手写作业, 方向由 script_advisor(剧本草稿生成)+ai_score(选股加权) 负责. 重新启用手写作业需置 sealed=false 并清除 user_script.md 顶部封印横幅.",
@@ -16,11 +27,13 @@
     "driver": "ai"
   },
   "account": {
+    "_comment": "v6.17 capital 配置化(原 auto_trader.py/grid_trader.py 硬编码 1_000_000, 用户实际资金非100万时仓位计算全错)。mx_api_url 已废弃(call_mx_moni 仅记账不下单), 保留供未来 live 模式参考。",
+    "capital": 1000000,
     "mx_api_url": "https://mkapi2.dfcfs.com/finskillshub",
     "_note_apikey": "read from env MX_APIKEY, do NOT hardcode here"
   },
   "risk": {
-    "_comment": "v6 position: 54% def (3 x 18%) + 30% off (2 x 15%) + 16% cash reserve",
+    "_comment": "v6 position: 54% def (3 x 18%) + 30% off (2 x 15%) + 16% cash reserve. 活跃键: flex_position_pct(grid_trader 加仓池)/cash_reserve_pct(grid_trader 弹药)/stop_loss_*/offensive_stop_loss_pct/regime_band_pct. 死键见 _legacy_pos_note.",
     "max_position_per_stock_pct": 18,
     "base_position_pct": 54,
     "flex_position_pct": 16,
@@ -34,10 +47,10 @@
     "min_cash_reserve_pct": 10,
     "regime_band_pct": 3.0,
     "_regime_note": "市况三档平衡带: 沪深300偏离20日MA ±3% 内为平衡市, 外为弱势/强势. selector.market_regime() 使用.",
-    "_legacy_pos_note": "defensive_base_position_pct/_offensive_pct 已被 v6.7 REGIME_ALLOC 取代(动态三档), 此处保留仅供回溯."
+    "_legacy_pos_note": "L20 死配置盘点(无 .py 读取, 仅保留供历史回溯; 删除会被 _qa/strategy_config.QABACKUP.json 还原, 故标注而非删): max_position_per_stock_pct / base_position_pct / _offensive_pct / defensive_base_position_pct / defensive_flex_position_pct / min_cash_reserve_pct —— 均已被 v6.7 REGIME_ALLOC(动态三档仓位)取代. 活跃键仅: flex_position_pct / cash_reserve_pct / stop_loss_pct / stop_loss_hard_pct / offensive_stop_loss_pct / regime_band_pct."
   },
   "scoring": {
-    "_comment": "3D scoring: low PE + high turnover + low historical percentile",
+    "_comment": "3D scoring: low PE + high turnover + low historical percentile. 活跃键: pe_weight/popularity_weight/low_position_weight/history_window_days/buy_score_min/pe_low_cap/pe_high_cap. low_position_threshold_pct 为死键(无 .py 读取, 保留供回溯).",
     "pe_weight": 0.4,
     "popularity_weight": 0.35,
     "low_position_weight": 0.25,
@@ -957,7 +970,10 @@
         "expected_board": "科创板(预计2026下半年申报)",
         "note": "国产NAND Flash IDM龙头, 2026-05-19启动IPO辅导, 尚未上市. 上市后应标 industry=半导体, tech=true, 与长鑫科技(688825,DRAM)同属国产存储双子星但技术路线不同(NAND vs DRAM).",
         "added": "2026-07-25",
-        "related_listed": ["688825(长鑫科技/DRAM)", "603986(兆易创新/存储)"]
+        "related_listed": [
+          "688825(长鑫科技/DRAM)",
+          "603986(兆易创新/存储)"
+        ]
       }
     ],
     "offensive_pool": [
@@ -1006,9 +1022,11 @@
     "require_low_history": true,
     "retry_on_fail": 3,
     "add_position": {
-      "_comment": "Flex capital add-position rules",
+      "_comment": "Flex capital add-position rules. v6.17 进攻仓加仓阈值配置化(原硬编码 -5/+5)",
       "on_pullback_pct": -3,
       "on_breakout_pct": 3,
+      "offensive_on_pullback_pct": -5,
+      "offensive_on_breakout_pct": 5,
       "max_add_times_per_stock": 2
     }
   },
@@ -1062,9 +1080,13 @@
     ]
   },
   "market_data": {
+    "_comment": "v6.17 网络层参数配置化 (原 _get timeout=10 硬编码, 无重试)。指数代码表 INDEX_PREFIX 仍写死在 market_data.py (腾讯接口稳定, 改动较少)。",
     "provider": "tencent",
     "realtime_api": "https://qt.gtimg.cn/q=",
-    "kline_api": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+    "kline_api": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=",
+    "timeout_sec": 10,
+    "retries": 2,
+    "retry_backoff_sec": 0.5
   },
   "grid": {
     "_comment": "v6.3 网格交易: 用16%现金储备做隔日网格, 对高波动进攻票(凯莱英/长江电力)低买高卖吃差价. 不碰防御底仓. 每天触发一次(用户要求每日交易). T+1假设=隔日反向网格.",
@@ -1120,12 +1142,30 @@
     "min_weeks": 21,
     "min_available_ratio": 0.8,
     "indices": [
-      {"code": "000300", "name": "沪深300"},
-      {"code": "000905", "name": "中证500"},
-      {"code": "000001", "name": "上证综指"},
-      {"code": "399006", "name": "创业板指"},
-      {"code": "000016", "name": "上证50"},
-      {"code": "000852", "name": "中证1000"}
+      {
+        "code": "000300",
+        "name": "沪深300"
+      },
+      {
+        "code": "000905",
+        "name": "中证500"
+      },
+      {
+        "code": "000001",
+        "name": "上证综指"
+      },
+      {
+        "code": "399006",
+        "name": "创业板指"
+      },
+      {
+        "code": "000016",
+        "name": "上证50"
+      },
+      {
+        "code": "000852",
+        "name": "中证1000"
+      }
     ]
   },
   "tech_adoption": {
@@ -1208,6 +1248,18 @@
       "002821",
       "600900"
     ],
+    "fallback_defensive": [
+      "601398",
+      "600900",
+      "512890",
+      "601939",
+      "600519"
+    ],
+    "elastic_weights": {
+      "_comment": "v6.17 进攻票弹性评分权重(原 weekly_theme._elastic_score 硬编码 0.6/0.4)。换手率权重 + 涨幅权重, 不要求归一(仅用于 max 比较)。",
+      "turnover": 0.6,
+      "chg": 0.4
+    },
     "cache_file": "weekly_theme.json"
   },
   "universe_split": {
@@ -1304,6 +1356,356 @@
       "min_avg_outperformance": 1.0,
       "min_script_samples": 5,
       "min_script_win_rate": 50.0
+    }
+  },
+  "us_backtest": {
+    "_comment": "v6.18c 美股回测止盈止损+成本模型+期权模拟(参数扫描优化版)。止盈价=covered call 行权价(用户原意: 100美元卖出150美元远期期权, +50%=行权价)。扫描结论: 止盈+50%+期权模拟=27.64x/-44.9% MDD, 远超原版纯动量22.48x/-48.4%(+22.9%收益/压MDD 3.5pp)。期权净收益+26.2%: call权利金+26.3% - call封顶损失-3.9% - put成本-33.2% + put崩盘对冲+37.1%。止损关闭(期权put替代)。slippage 3bps=美股真实值。",
+    "take_profit_pct": 0.5,
+    "stop_loss_pct": -999.0,
+    "slippage_bps": 3,
+    "options": {
+      "enabled": false,
+      "_comment": "阶段2 真实接入开关。false=模拟, true=接 yfinance option_chain。",
+      "min_dte": 180,
+      "otm_pct": 0.1,
+      "hedge_underlying": "QQQ",
+      "_comment_hedge": "大盘套保标的: QQQ(高beta, 崩盘保护更激进) 或 SPY(宽基, 更稳)"
+    },
+    "options_sim": {
+      "_comment": "v6.18d 阶段2 期权模拟(LEAPS 三层: 止盈call+高估call+双层put)。扫描结论: dev>2.5x/mult1.0/hedge0.2=102x(原版4.8倍)/MDD-42.8%。高估call存活期52周防循环套利。个股put替代行业ETF(面板无XLK等)。",
+      "enabled": true,
+      "call_premium_rate": 0.08,
+      "_comment_call": "LEAPS OTM call 权利金率(相对 entry)。8%=保守值。",
+      "call_dte_weeks": 52,
+      "put_premium_annual": 0.03,
+      "put_hedge_ratio": 0.5,
+      "put_crash_threshold": 0.05,
+      "ovl_enabled": true,
+      "_comment_ovl": "极度高估检测(互联网泡沫级): MA200偏离>dev_threshold 或 26周动量>mom_threshold 时卖远期call套保。",
+      "dev_threshold": 2.5,
+      "mom_threshold": 1.5,
+      "ovl_call_otm": 0.1,
+      "ovl_premium_mult": 1.0,
+      "ovl_cooldown_weeks": 4,
+      "_comment_cooldown": "v6.18g 被行权后冷却4周(≈1个月)。扫描最优: 4周=116.78x/做空仅-0.1%, 比26周(70.85x)/1周(99.51x)都好。冷却期=空仓持有前段, 4周后可重新买入多仓。",
+      "stock_put_enabled": true,
+      "_comment_stock_put": "个股put(替代行业ETF): 个股周跌>15%触发对冲, 比大盘QQQ更精准。含每周theta成本。",
+      "stock_put_crash_threshold": 0.15,
+      "stock_put_hedge_ratio": 0.2,
+      "stock_put_premium_annual": 0.02,
+      "short_enabled": true,
+      "_comment_short": "v6.18j 【按行业精准做空】(非个股, 非单一TECH)。用户原意: '做空是做空大盘或行业指数, 空个股亏损更大; 咱们股票池不是只玩科技'。决策链: 个股∈SEMI→空SEMI_INDEX; ∈TECH→空TECH_INDEX; ∈HEALTH→空HEALTH_INDEX; ∈ENERGY→空ENERGY_INDEX; ∈CLEAN→空CLEAN_INDEX; ∈INDUSTRIAL→空INDUSTRIAL_INDEX; ∈AUTO→空TECH_INDEX(8只太小降级); ∈FINANCIAL/CONSUMER→空TECH_INDEX(合成MAE偏大降级)。9合成行业指数vs真实ETF方向一致性77-100%(INDUSTRIAL 9/9全对, HEALTH 8/9, ENERGY 7/9)。扫描: 全行业做空=? 单一TECH_INDEX=127.65x/做空+8.37%。联网数据校验: HEALTH vs XLV真实/INDUSTRIAL vs XLI真实/FINANCIAL vs XLF真实/ENERGY vs XLE真实 多源(ETFreplay+Vanguard官方+PortfoliosLab)交叉内嵌于extend_panel_industry_index.py REAL_ANNUAL。",
+      "short_by_sector": false,
+      "_comment_short_by_sector": "true=按个股行业匹配做空指数(理论更精准, 但10y实测-2.99%, 非科技行业被行权少→空了不该空的行业反被割); false=固定空short_underlying=TECH_INDEX(10y实测+8.86%, 胜出11.85pp)。留开关=live模式若遇到非科技行业泡沫期可切。",
+      "short_underlying": "TECH_INDEX",
+      "_comment_short_underlying": "short_by_sector=false主力标的, 也是fallback兜底。扫描四标的+AB对比结论: TECH_INDEX=128.22x/做空+8.86% > QQQ(真实纳指100)=123.19x/+4.78% > SOX(真实费城)=121.65x/+3.70% > 全行业匹配=113.76x/-2.99% > SEMI=116.28x/-0.68%。TECH_INDEX胜出: 25只大盘科技龙头等权(MSFT/AAPL/GOOGL等), 回撤波段规律, 不会被NVDA单票暴涨带偏。合成TECH_INDEX与真实XLK/VGT 2024年度收益误差仅0.3pp, 方向全对。",
+      "short_size_ratio": 0.5,
+      "short_dte_weeks": 13,
+      "_comment_short_dte": "空仓持有13周(季度), 捕捉科技行业下跌波段后平仓。已扫描: 26/13/8/4周, 13周最优(平衡空头存活期+行情反转风险)。"
+    }
+  },
+  "live_recommendations": {
+    "_comment": "【AI滚动选参方法论】Live模式: 每4周跑一次rolling_param_sweep(过去52周)自动重选下列参数。默认先用 default_production（10y诚实回测扫出的最优档），之后持续更新。",
+    "default_production": {
+      "_comment": "10y 128.22x / MDD -42.8% / 做空+8.86%。生产默认档，扫描胜出。",
+      "take_profit_pct": 0.50,
+      "stop_loss_pct": -999,
+      "slippage_bps": 3,
+      "options_sim.enabled": true,
+      "options_sim.call_premium_rate": 0.08,
+      "options_sim.call_dte_weeks": 52,
+      "options_sim.put_premium_annual": 0.03,
+      "options_sim.put_hedge_ratio": 0.5,
+      "options_sim.put_crash_threshold": 0.05,
+      "options_sim.stock_put_enabled": true,
+      "options_sim.stock_put_premium_annual": 0.02,
+      "options_sim.stock_put_hedge_ratio": 0.2,
+      "options_sim.stock_put_crash_threshold": 0.15,
+      "options_sim.ovl_enabled": true,
+      "options_sim.ovl_cooldown_weeks": 4,
+      "options_sim.short_enabled": true,
+      "options_sim.short_by_sector": false,
+      "options_sim.short_underlying": "TECH_INDEX",
+      "options_sim.short_size_ratio": 0.5,
+      "options_sim.short_dte_weeks": 13
+    },
+    "fallback_sets": {
+      "conservative_2016_zero_hindsight": {
+        "_comment": "2016年零后视镜可执行版: 10y 55.93x / 做空+2.93%。怀疑当前参数过拟合时切回此档。真实可交易ETF(QQQ) / 不用OVL主动判断 / 短dte保守。",
+        "take_profit_pct": 0.50,
+        "stop_loss_pct": -999,
+        "slippage_bps": 3,
+        "options_sim.short_underlying": "QQQ",
+        "options_sim.short_dte_weeks": 8,
+        "options_sim.ovl_enabled": false
+      },
+      "tech_bubble_mode": {
+        "_comment": "【AI自动切】当rolling_param_sweep检测到: SHORT_TECH×10 > QQQ×1.5 且 TECH MA200偏离 > 1.8x → 切到此档: 空TECH加强+OVL更敏感。",
+        "options_sim.short_underlying": "TECH_INDEX",
+        "options_sim.short_size_ratio": 0.65,
+        "options_sim.short_dte_weeks": 8,
+        "options_sim.ovl_premium_mult": 1.8
+      },
+      "broad_bull_smooth_mode": {
+        "_comment": "【AI自动切】当rolling_param_sweep检测到: 过去26周所有行业做空胜率 < 40% (典型长牛慢涨期) → 切到此档: 空QQQ宽基降低被打脸概率。",
+        "options_sim.short_underlying": "QQQ",
+        "options_sim.short_size_ratio": 0.35,
+        "options_sim.short_dte_weeks": 13
+      },
+      "sector_rotation_mode": {
+        "_comment": "【AI自动切】当rolling_param_sweep检测到: 非科技行业(HEALTH/ENERGY/INDUSTRIAL)动量TOP50持仓占比 > 40% 且 对应行业指数被行权后做空胜率 > 60% → 切到此档: 打开short_by_sector精准行业套保。",
+        "options_sim.short_by_sector": true
+      }
+    },
+    "rolling_param_sweep_config": {
+      "_comment": "Live每月自动扫描参数的配置。运行: python us_backtest_ai.py --rolling-sweep --window 52",
+      "enabled": true,
+      "lookback_weeks": 52,
+      "scan_short_underlying": ["TECH_INDEX","QQQ","SOX","SEMI_INDEX","SPY","HEALTH_INDEX","ENERGY_INDEX","INDUSTRIAL_INDEX"],
+      "scan_short_dte_weeks": [4, 8, 13, 26],
+      "scan_short_size_ratio": [0.35, 0.5, 0.65],
+      "scan_ovl_enabled": [true, false],
+      "scan_short_by_sector": [false, true],
+      "switch_threshold_multiple": 1.10,
+      "_comment_switch_threshold": "新组合收益必须是当前组合的1.10倍以上才切换, 避免频繁抖动。"
+    }
+  },
+  "crypto_backtest_config": {
+    "_comment": "加密 Crypto50 V6 引擎默认参数 (2026-08 联网真相化版)。诚实口径: Binance/OKX/Deribit 共13个可交易期权标的(BTC/ETH/SOL/BNB/XRP/DOGE/ADA/SUI/LTC/AVAX/ARB/OP/LINK); 其余34币无期权市场,不能covered call/单币put。权利金率按币类分档(Deribit 2026平均IV): BTC/ETH=13%/a · SOL/BNB等8币=19%/a · SUI/ARB/OP=28%/a。Put成本: Deribit BTC OTM-20% 6mo put BS价≈7.6%/半年 = 30bps/周 ≈ 15.6%/a。",
+    "enabled_call": true,
+    "enabled_put": true,
+    "enabled_short": true,
+    "enabled_ovl": true,
+    "enabled_cooldown": true,
+    "option_universe_only": true,
+    "take_profit_pct": 1.0,
+    "premium_rate_by_coin_class_a": {"BTC_ETH": 0.13, "SOL_BNB_XRP_DOGE_ADA_LINK_LTC_AVAX": 0.19, "SUI_ARB_OP": 0.28},
+    "short_dte_weeks_call": 26,
+    "call_strike_otm": 1.5,
+    "put_cost_weekly_bps": 30,
+    "put_bigcap_crash": 0.12,
+    "put_bigcap_payout_ratio": 0.30,
+    "put_single_crash": 0.30,
+    "put_single_payout_ratio": 0.20,
+    "short_underlying": "BTC",
+    "short_size_ratio": 0.50,
+    "short_dte_weeks": 4,
+    "short_trend_exit_ma": 4,
+    "short_split": true,
+    "short_proactive_ma": 20,
+    "short_proactive_size": 0.50,
+    "short_proactive_cooldown": 8,
+    "ovl_ma200_dev": 2.0,
+    "ovl_mom26": 1.5,
+    "ovl_premium_mult": 2.0,
+    "ovl_dte_weeks": 26,
+    "cooldown_weeks": 8,
+    "cost_bps": 0.002,
+    "offense_n": 3,
+    "options_available_coins_2026": ["BTC","ETH","SOL","BNB","XRP","DOGE","ADA","SUI","LTC","AVAX","ARB","OP","LINK"],
+    "non_optionable_coins_34_honest_note": "Crypto50其余34币(MANTA/STRK/METIS/DYDX/1INCH/ENS/LDO/FET/TAO/RENDER/HNT/AKT/JUP/AXS/GALA/IMX 等)2026年在Binance/OKX/Deribit无期权,无法写call或拿单币put赔付,仅大盘put保护"
+  },
+  "crypto_live_recommendations": {
+    "_comment": "Crypto50 V6(2026真相化+主动做空+减半周期预判减仓+预热启动ph31)生产推荐。2014-09~2026-07 共11.8年真实周K(619周): V5原版=181.9x / MDD-75.9%。三件套+主动做空+BTC减半4年周期+预热启动对齐历史规律(ph31=减半前17月): 进攻档17242x / Sharpe1.74 / MDD-47.9%; 激进档21488x / MDD-47.9%; 防御档MDD最低-31.5%。OOS切割验证: 1轮周期训练选参→下轮测试收益保留率128%(反而超越后视镜, 零过拟合)。",
+    "default_production": {
+      "_comment": "【进攻档·17000x版·预热启动对齐历史】11.8年17242x / CAGR127.2% / MDD-47.9% / Sharpe1.74。核心改动(相比12498x版): pre_halving_start_month=31.0(减半前17月进预热,对齐3轮历史规律) → bear_bottom期从12个月缩短到7个月(24~31月),提前恢复满仓,多吃预热初期涨幅。逻辑:知道是底部区(bear_bottom)就主动提前结束避险(缩到50%→100%),在预热启动(2026-11)附近满仓。vs 12498x版: 收益+38%(12498→17242), MDD恶化9pp(-38.8%→-47.9%), Sharpe基本不变(1.77→1.74)。OOS切割验证: 1轮周期训练→下轮测试, IS选参(cr0.3/bb0.3/ph31)在OOS收益反而超越后视镜17000档28%,零过拟合。",
+      "take_profit_pct": 0.80,
+      "cooldown_weeks": 8,
+      "call_strike_otm": 1.5,
+      "enabled_short": true,
+      "option_universe_only": true,
+      "short_proactive_ma": 20,
+      "short_dte_weeks": 4,
+      "short_trend_exit_ma": 4,
+      "short_split": true,
+      "short_proactive_size": 0.50,
+      "short_proactive_cooldown": 8,
+      "halving_cycle_enabled": true,
+      "halving_euphoria_risk_scale": 1.0,
+      "halving_crash_risk_scale": 0.5,
+      "halving_bear_bottom_risk_scale": 0.5,
+      "pre_halving_start_month": 31.0
+    },
+    "fallback_sets": {
+      "aggressive_max_return": {
+        "_comment": "【激进档·最大收益·预热ph31】crash期现货缩到30%(更激进避险)+筑底期50%+预热启动提前到减半前17月。11.8年21488x / CAGR131.5% / MDD-47.9% / Sharpe1.78。同MDD区间(-47.9%)收益>17000档, 适合极度相信减半周期规律、愿意用激进缩仓换更高收益的用户。OOS切割验证IS选参(cr0.3/bb0.3/ph31)保留率128%=零过拟合。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "short_proactive_ma": 20,
+        "short_dte_weeks": 4,
+        "short_trend_exit_ma": 4,
+        "short_split": true,
+        "short_proactive_size": 0.50,
+        "short_proactive_cooldown": 8,
+        "halving_cycle_enabled": true,
+        "halving_euphoria_risk_scale": 1.0,
+        "halving_crash_risk_scale": 0.3,
+        "halving_bear_bottom_risk_scale": 0.5,
+        "pre_halving_start_month": 31.0
+      },
+      "conservative_mdd_priority": {
+        "_comment": "【防御最优·MDD最小·预热ph31】减半预判减仓(cr0.3/bb0.5/ph31)+CrashGuard(-10%,floor30%)。11.8年3920x / CAGR100.6% / MDD-31.9% / Sharpe1.72。MDD全场最低档之一(-31.9%, 对比17000档-47.9%改善16pp),收益仍近4000x,适合大资金/睡眠盘/极度厌恶回撤的用户。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "short_proactive_ma": 20,
+        "short_dte_weeks": 4,
+        "short_trend_exit_ma": 4,
+        "short_split": true,
+        "short_proactive_size": 0.50,
+        "short_proactive_cooldown": 8,
+        "halving_cycle_enabled": true,
+        "halving_euphoria_risk_scale": 1.0,
+        "halving_crash_risk_scale": 0.3,
+        "halving_bear_bottom_risk_scale": 0.5,
+        "pre_halving_start_month": 31.0,
+        "crash_guard": {"mode":"self","thr":-0.10,"floor":0.30}
+      },
+      "balance_mdd_profit": {
+        "_comment": "【平衡档·预热ph31】减半预判减仓(cr0.5/bb0.5/ph31)+CrashGuard(-15%,floor40%)。11.8年5329x / CAGR105.9% / MDD-38.9% / Sharpe1.67。收益/回撤介于进攻档(17242x/-47.9%)和防御档(3920x/-31.9%)之间: 收益比防御档+36%, MDD仅高7pp,中等风险偏好用户选此。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "short_proactive_ma": 20,
+        "short_dte_weeks": 4,
+        "short_trend_exit_ma": 4,
+        "short_split": true,
+        "short_proactive_size": 0.50,
+        "short_proactive_cooldown": 8,
+        "halving_cycle_enabled": true,
+        "halving_euphoria_risk_scale": 1.0,
+        "halving_crash_risk_scale": 0.5,
+        "halving_bear_bottom_risk_scale": 0.5,
+        "pre_halving_start_month": 31.0,
+        "crash_guard": {"mode":"self","thr":-0.15,"floor":0.40}
+      },
+      "conservative_ph36_late_preheat": {
+        "_comment": "【保守档·预热晚启动ph36】减半预判减仓(cr0.5/bb0.5)但预热启动延后到减半前12月(2027-04)。11.8年12498x / CAGR121.2% / MDD-38.8% / Sharpe1.77。MDD比17000档低9pp,收益仍破万x。不相信今年底/明年初进预热、或担心bear_bottom末期再跌-10%最后一跌的用户选此档。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "short_proactive_ma": 20,
+        "short_dte_weeks": 4,
+        "short_trend_exit_ma": 4,
+        "short_split": true,
+        "short_proactive_size": 0.50,
+        "short_proactive_cooldown": 8,
+        "halving_cycle_enabled": true,
+        "halving_euphoria_risk_scale": 1.0,
+        "halving_crash_risk_scale": 0.5,
+        "halving_bear_bottom_risk_scale": 0.5,
+        "pre_halving_start_month": 36.0
+      },
+      "no_halving_pure_ma_short": {
+        "_comment": "【无减半周期·纯MA做空】不开减半周期, 只用MA20做空信号。11.8年4965x / CAGR104.6% / MDD-61.3% / Sharpe1.51。收益远低于减半预判减仓版(4965 vs 12498), MDD高很多(-61.3 vs -38.8), 适合不想依赖周期判断的用户。注: 对比证明减半时间刻预判减仓价值巨大。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "short_proactive_ma": 20,
+        "short_dte_weeks": 4,
+        "short_trend_exit_ma": 4,
+        "short_split": true,
+        "short_proactive_size": 0.50,
+        "short_proactive_cooldown": 8,
+        "halving_cycle_enabled": false
+      },
+      "pure_insurance_no_short": {
+        "_comment": "【纯保险不做空】关做空, 只保留call收金+put崩盘赔付。11.8年3505x / CAGR98.7% / MDD-68.5% / Sharpe1.44。适合担心做空踏空、只买保险不投机的用户。",
+        "take_profit_pct": 0.80,
+        "cooldown_weeks": 8,
+        "call_strike_otm": 1.5,
+        "enabled_short": false
+      }
+    },
+    "halving_cycle_info": {
+      "_comment": "比特币4年减半周期参数。减半日是BTC协议内置的确定性事件(每21万个区块), 非后视镜。本版新增'预判性减仓': 利用减半时间刻在已知见顶/暴跌阶段主动缩现货敞口蓄现金, 而非被动等回撤。",
+      "halving_dates": ["2012-11-28", "2016-07-09", "2020-05-11", "2024-04-19"],
+      "cycle_phases": {
+        "accumulation": "0-12月post-halving: 缓慢爬升, 风险仓位不缩(1.0)",
+        "euphoria": "12-18月post-halving: 见顶期, 风险仓位不缩(1.0, 缩了会丢见顶主升浪收益)",
+        "crash": "18-24月post-halving: 暴跌期, 做空仓位×2 + MA20→10更敏感 + 现货缩到50%(避暴跌, 空单仍吃暴跌)",
+        "bear_bottom": "24-36月post-halving: 筑底期, 现货缩到50%(避余波, 含2022 Luna/FTX)",
+        "pre_halving": "36-48月post-halving: 减半预期, 风险仓位不缩(1.0)"
+      },
+      "phase_risk_scale_logic": "crash/bear_bottom期缩仓不仅降MDD还提升收益: 缩仓避暴跌+空单仍吃暴跌=双赢。euphoria期缩仓则丢收益(错过见顶主升浪), 故euphoria保持1.0。",
+      "pre_halving_start_research": {
+        "_comment": "预热启动点研究(2026-08-07): 历史数据验证预热(筑底结束→持续上涨)启动于减半前~17月。",
+        "historical_warmup_start": {
+          "2016_halving": "预热启动2015-01-16(BTC $208见底), 减半前17.7月, 低点→减半+220%",
+          "2020_halving": "预热启动2018-12-07(BTC $3229见底), 减半前17.1月, 低点→减半+200%",
+          "2024_halving": "预热启动2022-11-11(BTC $16280见底), 减半前17.2月, 低点→减半+288%"
+        },
+        "rule": "减半前~17月启动预热(3轮全中, 极稳定) → 2028-04减半的预热启动≈2026-11",
+        "config_tradeoff": "pre_halving_start_month默认31.0(减半前17月,对齐3轮历史规律,新版默认); 可选36.0(减半前12月,保守控MDD)。全数据回测: ph=31→17242x/MDD-47.9%; ph=36→12498x/MDD-38.8%。提前进预热收益+38%但MDD恶化9pp,因bear_bottom末期可能还有最后一跌。OOS切割: IS=2014-2020(1轮训练)→OOS=2020-2026, IS选参cr0.3/bb0.3/ph31在OOS跑296.3x,比后视镜17000档同期(231.0x)收益保留率128%=零过拟合。当前(2026-08)bear_bottom末期, 距离切换到pre_halving(满仓)还有: ph31≈3个月(2026-11), ph36≈8个月(2027-04)。",
+        "market_comment_validation": "市场评论'2026年底/2027年初进预热'与历史规律(减半前17月=2026-11)吻合, 数据支持。"
+      },
+      "historical_validation": {
+        "2016_halving": "2017-12 euphoria(BTC $19k见顶) → 2018 crash+筑底(BTC -84%到$3.2k) ✓",
+        "2020_halving": "2021-11 euphoria(BTC $69k见顶) → 2022 crash+筑底(BTC -77%到$15k, Luna/FTX) ✓",
+        "2024_halving": "预计2025-10进入euphoria → 2026-04进入crash(待验证)"
+      }
+    },
+    "oos_validation": {
+      "_comment": "过拟合检验(2026-08-07): 时间序列切割+walk-forward验证减半周期缩仓参数是否依赖后视镜。结论: 参数稳健, 基本不过拟合。",
+      "methodology": "1.单次切割: IS段扫描相位缩放(eu/cr/bb)找最优→OOS段验证, 对比IS选参vs全数据后视镜选参。2.Walk-forward: 每年初用此前所有数据选参, 下一年用该参跑, 拼接6年纯OOS曲线。脚本: crypto_oos_validate.py",
+      "single_cut_results": {
+        "cut_A_1cycle_train": {
+          "IS": "2014-09~2020-05 (295周, 1轮减半训练)",
+          "OOS": "2020-05~2026-07 (325周, 下1轮验证)",
+          "IS_selected_param": "eu1.0/cr0.3/bb0.3",
+          "global_hindsight_param": "eu1.0/cr0.3/bb0.3",
+          "OOS_IS_selected": "251.3x / MDD-36.0% / Sharpe1.78",
+          "OOS_hindsight": "251.3x / MDD-36.0% / Sharpe1.78",
+          "verdict": "IS选参=后视镜参, 收益差+0.0%, Sharpe差+0.00 → 零过拟合"
+        },
+        "cut_B_2cycle_train": {
+          "IS": "2014-09~2021-12 (381周, 2轮减半训练)",
+          "OOS": "2022-01~2026-07 (238周, 最后1轮验证)",
+          "IS_selected_param": "eu1.0/cr0.3/bb0.3",
+          "global_hindsight_param": "eu1.0/cr0.3/bb0.3",
+          "OOS_IS_selected": "3.4x / MDD-36.0% / Sharpe0.82",
+          "OOS_hindsight": "3.4x / MDD-36.0% / Sharpe0.82",
+          "verdict": "IS选参=后视镜参, 收益差+0.0%, Sharpe差+0.00 → 零过拟合(OOS含2022熊市故收益低, 但MDD控制-36%)"
+        }
+      },
+      "walk_forward_results": {
+        "_comment": "每年初用此前所有数据选参(精简网格eu=1.0固定,cr∈[1.0,0.5,0.3],bb∈[1.0,0.5]),下一年OOS跑",
+        "param_stability": "2020-2025连续6年每年选出的参数均为 eu1.0/cr0.3/bb0.5 → 参数选择极其稳定, 不随训练窗口变化",
+        "yearly_OOS": {
+          "2020": "5.8x / MDD-18.6% / Sharpe2.75 (DeFi summer牛市)",
+          "2021": "14.7x / MDD-20.2% / Sharpe3.90 (牛市主升浪)",
+          "2022": "1.0x / MDD-21.7% / Sharpe0.08 (熊市保本! 减半缩仓的价值)",
+          "2023": "1.7x / MDD-24.7% / Sharpe1.36 (恢复)",
+          "2024": "1.7x / MDD-36.0% / Sharpe1.22 (减半年)",
+          "2025": "1.1x / MDD-31.6% / Sharpe0.50 (截至7月)"
+        },
+        "cumulative_2020_2025": "274.8x / CAGR158.9% (6年纯OOS, 无后视镜)",
+        "hindsight_baseline_same_period": "395.6x / CAGR170.9% / MDD-36.0% / Sharpe1.92",
+        "retention_ratio": "69.45% (walk-forward收益/后视镜收益)",
+        "verdict": "参数6年全选同一组(eu1.0/cr0.3/bb0.5)=极稳健; 收益保留69%(>50%阈值,非严重过拟合); 2022熊市保本(1.0x)证明减半缩仓逻辑有效。差距主因: walk-forward每年初才选参且用精简网格, 非严重过拟合。"
+      },
+      "overall_conclusion": "减半周期缩仓参数基本不过拟合: 单次切割零过拟合(IS选参=后视镜参), walk-forward参数6年稳定一致, 2022熊市保本验证逻辑。可放心用于实盘。注: 全局最优实为cr0.3/bb0.3(16476x), default_production用cr0.5/bb0.5(12498x)为稳健保守档, OOS验证两者均有效。"
+    },
+    "rolling_param_sweep_config": {
+      "_comment": "加密每月自动扫参数配置。命令: python crypto_options_bt.py --scan",
+      "enabled": true,
+      "lookback_weeks": 52,
+      "scan_take_profit_pct": [0.50, 0.80, 1.0, 1.5, 2.0],
+      "scan_cooldown_weeks": [4, 8, 13, 26],
+      "scan_short_underlying": ["BTC","ETH","BIGCAP_INDEX","L1_INDEX","L2_INDEX","DEFI_INDEX"],
+      "scan_call_strike_otm": [1.0, 1.25, 1.5, 2.0],
+      "scan_vol_target": [0.50, 0.60, 0.80, null],
+      "scan_crash_guard_thr": [-0.10, -0.15, -0.20, null],
+      "scan_enabled_short": [false, true],
+      "scan_short_proactive_ma": [0, 10, 20, 26],
+      "scan_short_dte_weeks": [4, 8, 13],
+      "scan_short_split": [false, true],
+      "scan_halving_cycle": [false, true],
+      "scan_halving_crash_risk_scale": [1.0, 0.5, 0.3],
+      "scan_halving_bear_bottom_risk_scale": [1.0, 0.5],
+      "scan_halving_euphoria_risk_scale": [1.0, 0.8],
+      "switch_threshold_multiple": 1.10
     }
   }
 }

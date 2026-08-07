@@ -34,9 +34,13 @@ import os
 import sys
 import json
 import time
+import copy
+import logging
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md  # 复用腾讯行情的 get_kline / 前缀处理
+
+logger = logging.getLogger(__name__)
 
 _CACHE = {"ts": 0.0, "data": None}
 
@@ -49,6 +53,9 @@ _DEFAULT_INDICES = [
     {"code": "000016", "name": "上证50"},
     {"code": "000852", "name": "中证1000"},
 ]
+
+# 默认阈值, 用于 _safe 构造降级返回 (与 strategy_config.death_cross.threshold 默认值一致)
+_DEFAULT_THRESHOLD = 3
 
 
 def _cfg(cfg):
@@ -91,7 +98,7 @@ def _index_bearish(kl, ma_short, ma_long):
 
 def _safe(label, **kw):
     """构造一个安全的返回(不干预原仓位逻辑)。"""
-    base = {"triggered": False, "count": 0, "available": 0, "threshold": 3,
+    base = {"triggered": False, "count": 0, "available": 0, "threshold": _DEFAULT_THRESHOLD,
             "label": label, "enabled": False, "shadow": False, "apply": False,
             "detail": "", "index_states": []}
     base.update(kw)
@@ -109,7 +116,9 @@ def get_death_cross(cfg, force_refresh=False):
     # 命中缓存直接返回(loop 模式避免频繁打接口)
     now = time.time()
     if (not force_refresh) and _CACHE["data"] and (now - _CACHE["ts"] < gc.get("cache_seconds", 1800)):
-        d = dict(_CACHE["data"])
+        # M15: 旧实现 dict(_CACHE["data"]) 浅拷贝, 嵌套 dict 仍是共享引用,
+        #      调用方改 nested key 会污染缓存。改用 deepcopy 隔离。
+        d = copy.deepcopy(_CACHE["data"])
         d["shadow"] = shadow
         d["apply"] = (enabled and not shadow)
         return d
@@ -213,45 +222,46 @@ def _self_test():
         print(f"  {name}: 熊化数={r['count']}/{r['available']} triggered={r['triggered']} "
               f"label={r['label']}  [{r['detail'][:60]}]")
 
-    # HOT: 6 指数全上行 -> 0 死叉 -> 不触发
-    run_case("HOT(全上行)", {c["code"]: "up" for c in _DEFAULT_INDICES})
-    # COLD: 6 指数全下行 -> 6 死叉 -> 触发
-    run_case("COLD(全下行)", {c["code"]: "down" for c in _DEFAULT_INDICES})
-    # MIX: 3 死叉 / 3 上行 -> 刚好达阈值 -> 触发
-    mix = {}
-    for i, c in enumerate(_DEFAULT_INDICES):
-        mix[c["code"]] = "down" if i < 3 else "up"
-    run_case("MIX(3死叉/3上行)", mix)
-    # WATCH: 2 死叉 -> 不触发(低于阈值)
-    mix2 = {}
-    for i, c in enumerate(_DEFAULT_INDICES):
-        mix2[c["code"]] = "down" if i < 2 else "up"
-    run_case("WATCH(2死叉)", mix2)
+    # M16: monkeypatch 必须包 try/finally, 异常时泄漏会污染后续真实 get_kline 调用
+    try:
+        # HOT: 6 指数全上行 -> 0 死叉 -> 不触发
+        run_case("HOT(全上行)", {c["code"]: "up" for c in _DEFAULT_INDICES})
+        # COLD: 6 指数全下行 -> 6 死叉 -> 触发
+        run_case("COLD(全下行)", {c["code"]: "down" for c in _DEFAULT_INDICES})
+        # MIX: 3 死叉 / 3 上行 -> 刚好达阈值 -> 触发
+        mix = {}
+        for i, c in enumerate(_DEFAULT_INDICES):
+            mix[c["code"]] = "down" if i < 3 else "up"
+        run_case("MIX(3死叉/3上行)", mix)
+        # WATCH: 2 死叉 -> 不触发(低于阈值)
+        mix2 = {}
+        for i, c in enumerate(_DEFAULT_INDICES):
+            mix2[c["code"]] = "down" if i < 2 else "up"
+        run_case("WATCH(2死叉)", mix2)
 
-    # 部分失败: 1 指数抓取失败 + 5 指数全下行 -> 可用 5/6=0.83>=0.8, 熊化5>=3 -> 触发
-    md.get_kline = lambda code, ktype="week", count=21: ([] if code == "000001"
-                                                         else gen_closes("down", count))
-    cfg = {"death_cross": {"enabled": True, "threshold": 3,
-                           "min_available_ratio": 0.8, "cache_seconds": 0,
-                           "indices": _DEFAULT_INDICES}}
-    r = get_death_cross(cfg, force_refresh=True)
-    print(f"  PARTIAL_FAIL(1失败+5下行): available={r['available']} count={r['count']} "
-          f"triggered={r['triggered']} (应为 True, 5/6 可用且全死叉)")
+        # 部分失败: 1 指数抓取失败 + 5 指数全下行 -> 可用 5/6=0.83>=0.8, 熊化5>=3 -> 触发
+        md.get_kline = lambda code, ktype="week", count=21: ([] if code == "000001"
+                                                             else gen_closes("down", count))
+        cfg = {"death_cross": {"enabled": True, "threshold": 3,
+                               "min_available_ratio": 0.8, "cache_seconds": 0,
+                               "indices": _DEFAULT_INDICES}}
+        r = get_death_cross(cfg, force_refresh=True)
+        print(f"  PARTIAL_FAIL(1失败+5下行): available={r['available']} count={r['count']} "
+              f"triggered={r['triggered']} (应为 True, 5/6 可用且全死叉)")
 
-    # 严重失败: 2 指数抓取失败 -> 可用 4/6=0.67<0.8 -> 不触发(保守)
-    md.get_kline = lambda code, ktype="week", count=21: ([] if code in ("000001", "000905")
-                                                         else gen_closes("down", count))
-    r = get_death_cross(cfg, force_refresh=True)
-    print(f"  SEVERE_FAIL(2失败+4下行): available={r['available']} triggered={r['triggered']} "
-          f"(应为 False, 可用比例不足)")
-
-    md.get_kline = orig
+        # 严重失败: 2 指数抓取失败 -> 可用 4/6=0.67<0.8 -> 不触发(保守)
+        md.get_kline = lambda code, ktype="week", count=21: ([] if code in ("000001", "000905")
+                                                             else gen_closes("down", count))
+        r = get_death_cross(cfg, force_refresh=True)
+        print(f"  SEVERE_FAIL(2失败+4下行): available={r['available']} triggered={r['triggered']} "
+              f"(应为 False, 可用比例不足)")
+    finally:
+        md.get_kline = orig
     print("\n离线自检完成.")
 
 
 if __name__ == "__main__":
-    import os as _os
-    if _os.environ.get("MOCK"):
+    if os.environ.get("MOCK"):
         _self_test()
     else:
         try:

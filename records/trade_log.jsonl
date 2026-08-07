@@ -23,3 +23,14 @@
 {"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "600995", "name": "南网储能", "side": "HOLD", "price": 0, "qty": 6600, "amount": 0, "resp": "", "note": "成本12.251 仓位8.06%"}
 {"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "601318", "name": "中国平安", "side": "HOLD", "price": 0, "qty": 1900, "amount": 0, "resp": "", "note": "成本51.118 仓位9.68%"}
 {"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "601899", "name": "紫金矿业", "side": "HOLD", "price": 0, "qty": 5000, "amount": 0, "resp": "", "note": "成本33.487 仓位16.68%"}
+{"ts": "2026-08-07 04:19:45", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 04:22:16", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 04:22:44", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 05:25:16", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 05:33:00", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 05:48:33", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 05:59:41", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 06:06:58", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 06:10:27", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 06:12:58", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}
+{"ts": "2026-08-07 06:19:40", "date": "2026-08-07", "mode": "once", "code": "600519", "name": "茅台", "side": "BUY", "price": 1688.0, "qty": 100, "amount": 168800.0, "resp": "resp", "note": "底仓"}

@@ -18,9 +18,13 @@ local_records.py - 本地交易记录与权益曲线留存 (v6.5)
       "我们的策略在真实行情下的表现", 而非模拟盘账户余额.
 """
 import os
+import sys
 import json
 import time
 from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import jsonl_utils as _jsonl
 
 RECORD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "records")
 TRADE_LOG = os.path.join(RECORD_DIR, "trade_log.jsonl")
@@ -38,7 +42,6 @@ def log_trade(mode, code, name, side, price, qty, resp="", note=""):
     mode: once/grid/rebalance/sell/reset
     side: BUY/SELL
     """
-    _ensure_dir()
     rec = {
         "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "date": datetime.now().strftime("%Y-%m-%d"),
@@ -52,14 +55,12 @@ def log_trade(mode, code, name, side, price, qty, resp="", note=""):
         "resp": str(resp)[:200],
         "note": note,
     }
-    with open(TRADE_LOG, "a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    _jsonl.append_jsonl(TRADE_LOG, rec)
     return rec
 
 
 def log_equity(date, est_total, positions_value, cash_value, note=""):
     """记录每日权益估算(基于本地成本基准 + 实时价)."""
-    _ensure_dir()
     rec = {
         "date": date,
         "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -68,8 +69,7 @@ def log_equity(date, est_total, positions_value, cash_value, note=""):
         "cash_value": round(cash_value, 2),
         "note": note,
     }
-    with open(EQUITY_LOG, "a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    _jsonl.append_jsonl(EQUITY_LOG, rec)
     return rec
 
 
@@ -96,34 +96,12 @@ def log_weekly(week_label, start_date, end_date, summary):
 
 def load_equity_curve():
     """读取权益曲线, 返回 list[dict]."""
-    if not os.path.exists(EQUITY_LOG):
-        return []
-    out = []
-    with open(EQUITY_LOG, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    out.append(json.loads(line))
-                except Exception:
-                    pass
-    return out
+    return _jsonl.read_jsonl(EQUITY_LOG)
 
 
 def load_trade_log():
     """读取成交记录, 返回 list[dict]."""
-    if not os.path.exists(TRADE_LOG):
-        return []
-    out = []
-    with open(TRADE_LOG, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    out.append(json.loads(line))
-                except Exception:
-                    pass
-    return out
+    return _jsonl.read_jsonl(TRADE_LOG)
 
 
 def summary_text():

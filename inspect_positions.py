@@ -19,14 +19,14 @@ import sys
 import json
 import glob
 import argparse
-import subprocess
 from datetime import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 COST_CACHE_PATH = os.path.join(BASE, ".cost_basis.json")
 CONFIG_PATH = os.path.join(BASE, "strategy_config.json")
-OUTPUT_DIR = "/root/.openclaw/workspace/mx_data/output"
-MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
+# H7: 旧实现硬编码 "/root/.openclaw/workspace/mx_data/output", 换机即失效。
+#     改为环境变量优先, 缺省保留原路径(向后兼容旧部署)。
+OUTPUT_DIR = os.environ.get("MX_DATA_OUTPUT_DIR", "/root/.openclaw/workspace/mx_data/output")
 
 
 def load_config():

@@ -19,15 +19,15 @@ sync_contest.py - 龙虾大赛远程账户 只读同步 (v1.0)
 import os
 import json
 import glob
-import subprocess
 import argparse
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 RECORD_ROOT = os.path.join(HERE, "records")
+# H7: 旧实现硬编码 "/root/.openclaw/workspace/mx_data/output", 换机即失效。
+#     改为环境变量优先, 缺省保留原路径(向后兼容旧部署)。
 # mx-moni 把每次查询的原始 JSON 落盘到此目录(文件名含查询文本与时间戳)
-OUTPUT_DIR = "/root/.openclaw/workspace/mx_data/output"
+OUTPUT_DIR = os.environ.get("MX_DATA_OUTPUT_DIR", "/root/.openclaw/workspace/mx_data/output")
 
 # 默认龙虾账户
 DEFAULT_SIM = "sim_261984600000041416"

@@ -5,13 +5,23 @@ market_data.py - 免费行情数据获取 (腾讯财经)
 """
 import os
 import sys
-import urllib.request
+import time
 import json
 import re
+import logging
+import urllib.error
+import urllib.request
 from datetime import datetime, time  # noqa: F401  (保留对外符号, 历史调用方可能引用)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import instrument  # noqa: E402  (v6.16 品种元数据单一真相源: 交易时段)
+
+logger = logging.getLogger(__name__)
+
+# 默认网络参数 (可被 strategy_config.market_data 覆盖)
+_DEFAULT_TIMEOUT_SEC = 10
+_DEFAULT_RETRIES = 2
+_DEFAULT_RETRY_BACKOFF = 0.5  # 秒, 指数退避基数
 
 PREFIX = {"6": "sh", "0": "sz", "3": "sz", "9": "sh"}
 # ETF 代码映射: 51xxxx->sh(沪), 15xxxx->sz(深), 其它5位默认sh
@@ -48,12 +58,54 @@ INDEX_PREFIX = {
 }
 
 
-def _get(url, decode="gbk", timeout=10):
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (compatible; mx-auto/1.0)",
-        "Referer": "https://finance.qq.com/"
-    })
-    return urllib.request.urlopen(req, timeout=timeout).read().decode(decode)
+def _net_cfg():
+    """从 strategy_config.market_data 读 timeout/retries/backoff, 失败/缺省用默认值。"""
+    try:
+        mcfg = instrument.load_config().get("market_data") or {}
+        return {
+            "timeout": int(mcfg.get("timeout_sec", _DEFAULT_TIMEOUT_SEC)),
+            "retries": int(mcfg.get("retries", _DEFAULT_RETRIES)),
+            "backoff": float(mcfg.get("retry_backoff_sec", _DEFAULT_RETRY_BACKOFF)),
+        }
+    except Exception:
+        return {"timeout": _DEFAULT_TIMEOUT_SEC,
+                "retries": _DEFAULT_RETRIES,
+                "backoff": _DEFAULT_RETRY_BACKOFF}
+
+
+def _get(url, decode="gbk", timeout=None):
+    """带重试 + 日志的 HTTP GET。
+
+    H5: 旧实现单次 urlopen 失败即抛, 上层 get_realtime/get_kline 用裸 except 静默吞,
+        网络抖动时策略看不到行情会静默跳过买卖/止损。现加 2 次指数退避重试 + warning 日志。
+    timeout 可显式传入, 默认从 config.market_data.timeout_sec 读。
+    """
+    nc = _net_cfg()
+    if timeout is None:
+        timeout = nc["timeout"]
+    retries = nc["retries"]
+    backoff = nc["backoff"]
+    last_err = None
+    for attempt in range(retries + 1):
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; mx-auto/1.0)",
+            "Referer": "https://finance.qq.com/"
+        })
+        try:
+            return urllib.request.urlopen(req, timeout=timeout).read().decode(decode)
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            last_err = e
+            if attempt < retries:
+                # 指数退避: 0.5s, 1.0s, 2.0s ...
+                time.sleep(backoff * (2 ** attempt))
+                continue
+    # 全部重试失败, 记 warning (旧实现静默吞, 现在留痕便于排查)
+    logger.warning("HTTP GET 失败 (重试%d次): %s | url=%s", retries, last_err, url[:120])
+    raise last_err if last_err else RuntimeError("HTTP GET 失败: " + url)
+
+
+class UnknownCodeError(KeyError):
+    """代码格式无法识别 (前缀表里没登记)。"""
 
 
 def _pad(code):
@@ -61,7 +113,14 @@ def _pad(code):
     A股: 6/9->sh, 0/3->sz;  ETF: 51/15开头同A股规则;
     港股(hk前缀或5位): hk+代码;  已有前缀(sh/sz/hk)原样返回。
     指数: 000xxx/399xxx 系列通过 INDEX_PREFIX 映射, 避免与个股冲突。
-    注意: 若需查询冲突个股(如000001平安银行), 请传带前缀的 sz000001。"""
+    注意: 若需查询冲突个股(如000001平安银行), 请传带前缀的 sz000001。
+
+    M10: 旧实现空代码 -> code[0] IndexError, 未知前缀 -> PREFIX[X] KeyError 直接炸穿
+         到调用方。现对空/异常代码明确报错, 让 get_realtime/get_kline 能捕获并跳过。
+    """
+    if not code or not isinstance(code, str) or not code.strip():
+        raise UnknownCodeError("代码为空或非字符串")
+    code = code.strip()
     if code.startswith(("sh", "sz", "hk")):
         return code
     # 常见指数代码优先判断 (避免 000001 等个股/指数冲突)
@@ -69,6 +128,8 @@ def _pad(code):
         return f"{INDEX_PREFIX[code]}{code}"
     if len(code) == 5:  # 港股5位代码
         return f"hk{code}"
+    if not code.isdigit():
+        raise UnknownCodeError(f"代码含非数字字符: {code!r}")
     # 可转债优先判断 (沪市11xxxx→sh, 深市12xxxx→sz) — 必须在ETF分支前
     if code[0] == "1" and code[1] == "1" and len(code) == 6:
         return f"sh{code}"          # 沪市转债 113xxx/110xxx/111xxx
@@ -77,6 +138,8 @@ def _pad(code):
     if code[0] in ("5", "1") and len(code) == 6:
         # ETF: 51xxxx->sh, 15xxxx->sz (此处1开头仅剩15xxxx类)
         return f"{ETF_PREFIX.get(code[0], 'sh')}{code}"
+    if code[0] not in PREFIX:
+        raise UnknownCodeError(f"未知代码前缀: {code!r}")
     return f"{PREFIX[code[0]]}{code}"
 
 
@@ -109,8 +172,17 @@ def _parse_quote(prefixed, parts):
     把腾讯行情单条报文的字段数组解析成统一 dict。
     prefixed: 带前缀的代码(如 hk00700 / sh600519), 用于判定市场分支。
     parts   : 报文按 '~' 切分后的字段数组。
+
+    M11: 字段下标硬编码 (fnum(38)/fnum(44) 等)。腾讯改字段顺序会静默返回错误 PE/换手。
+         这正是 v6.16 eastmoney 字段错位导致 16.29x 假数的同类风险。现加字段数断言。
     """
     is_hk = str(prefixed).lower().startswith("hk")
+    # A股 88 字段, 港股 78 字段。不足则字段下标访问会越界/静默错位
+    min_fields = 47 if is_hk else 47
+    if len(parts) < min_fields:
+        logger.warning("行情字段数不足 (%s): %d < %d, 跳过 (代码=%s)",
+                       "港股" if is_hk else "A股", len(parts), min_fields, prefixed)
+        return None
 
     def g(i):
         return parts[i] if i < len(parts) else ""
@@ -127,9 +199,14 @@ def _parse_quote(prefixed, parts):
     # (fnum 本身也会因 ValueError 返回 None, 此处显式化以表达意图。)
     pb = None if is_hk else fnum(46)
 
+    price = fnum(3)
+    # sanity check: 价格必须为正, 否则字段错位/停牌假数据, 返回 None 让上层跳过
+    if price is None or price <= 0:
+        return None
+
     return {
         "name": g(1),
-        "price": fnum(3),
+        "price": price,
         "prev_close": fnum(4),
         "open": fnum(5),
         "pe_ttm": fnum(39),
@@ -154,7 +231,19 @@ def get_realtime(codes):
     """
     if isinstance(codes, str):
         codes = [codes]
-    q = ",".join(_pad(c) for c in codes)
+    # M10: 跳过无法识别的代码, 不让一只坏代码炸掉整批行情
+    padded = []
+    code_map = {}  # padded -> original code
+    for c in codes:
+        try:
+            p = _pad(c)
+            padded.append(p)
+            code_map[p] = c
+        except UnknownCodeError as e:
+            logger.warning("get_realtime 跳过无效代码 %r: %s", c, e)
+    if not padded:
+        return {}
+    q = ",".join(padded)
     url = f"https://qt.gtimg.cn/q={q}"
     try:
         raw = _get(url, "gbk")
@@ -166,7 +255,11 @@ def get_realtime(codes):
         if code == "pv_none_match":
             continue
         parts = data.split("~")
-        out[code[2:]] = _parse_quote(code, parts)
+        parsed = _parse_quote(code, parts)
+        # M11: _parse_quote 字段不足/价格非正时返回 None, 跳过该条
+        if parsed is None:
+            continue
+        out[code[2:]] = parsed
     return out
 
 
@@ -180,7 +273,11 @@ def get_kline(code, ktype="day", count=260):
     if code[:2] in ("sh", "sz"):
         prefixed = code
     else:
-        prefixed = _pad(code)
+        try:
+            prefixed = _pad(code)
+        except UnknownCodeError as e:
+            logger.warning("get_kline 跳过无效代码 %r: %s", code, e)
+            return []
     q = f"{prefixed},{ktype},,,{count},"
     url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={q}"
     try:
@@ -199,7 +296,8 @@ def get_kline(code, ktype="day", count=260):
                 "high": float(r[3]), "low": float(r[4]), "vol": float(r[5]) if len(r) > 5 else 0
             })
         return result
-    except Exception:
+    except Exception as e:
+        logger.warning("get_kline 解析失败 (%s): %s", code, e)
         return []
 
 

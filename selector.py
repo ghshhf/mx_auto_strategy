@@ -158,7 +158,9 @@ def select(cfg, top_n=None, verbose=True, defensive_only=False):
     batch = asel.get("max_codes_per_batch", 50)
     min_ind = asel.get("min_industries", 4)
     req_tech = asel.get("require_tech", False)        # 硬约束(默认False)
-    prefer_tech = asel.get("prefer_tech", True)        # 软偏好
+    # L1: 旧默认 True 与 config 的 prefer_tech=false 不一致, 缺省时行为反转。
+    #     改为 False 与 config 默认值对齐, 必须显式配置才启用软偏好。
+    prefer_tech = asel.get("prefer_tech", False)       # 软偏好
 
     # v6.6: 防御端行业白名单过滤
     if defensive_only:

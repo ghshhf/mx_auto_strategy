@@ -14,14 +14,16 @@ import os
 import sys
 import json
 import time
+import logging
 import argparse
-import subprocess
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
 import selector
 import instrument  # v6.16 品种元数据单一真相源: 手数/时段/降级开关
+
+logger = logging.getLogger(__name__)
 
 
 def _read_temperature(cfg):
@@ -30,7 +32,7 @@ def _read_temperature(cfg):
         import temperature_probe as tp
         return tp.get_market_temperature(cfg)
     except Exception as e:
-        print(f"  [温度计] 读取失败({e}), 退回原仓位逻辑")
+        logger.warning("温度计读取失败(%s), 退回原仓位逻辑", e)
         return None
 
 
@@ -40,11 +42,11 @@ def _read_death_cross(cfg):
         import death_cross as dc
         return dc.get_death_cross(cfg)
     except Exception as e:
-        print(f"  [死叉] 读取失败({e}), 退回原仓位逻辑")
+        logger.warning("死叉读取失败(%s), 退回原仓位逻辑", e)
         return None
 
+
 CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_config.json")
-MX_MONI_PY = "/root/.codebuddy/skills/mx-moni/mx_moni.py"
 # 成本基准缓存落盘路径(跨进程/重启保留, 真实比赛多日交易必需)
 COST_CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cost_basis.json")
 
@@ -123,6 +125,20 @@ def call_mx_moni(text):
     return f"[纯记账·模拟盘] 已记录指令(不发送真实下单): {text}"
 
 
+def _safe_log_trade(mode, code, name, side, price, qty, resp="", note=""):
+    """统一封装 local_records.log_trade 调用。
+
+    旧实现 7+ 处 `try: import local_records; log_trade(...); except Exception: pass`
+    重复且吞掉所有错误(账本写入失败时静默, 回测数据缺笔不知)。
+    抽出统一入口, 内部 except 仅记 warning 不上抛, 不影响交易主流程。
+    """
+    try:
+        import local_records
+        local_records.log_trade(mode, code, name, side, price, qty, resp, note)
+    except Exception as e:
+        logger.warning("local_records.log_trade 写入失败 (%s %s %s): %s", mode, side, code, e)
+
+
 def buy(detail, cfg, cash_amount, is_add=False):
     """
     触发买入: 限价(当前价)买入。
@@ -168,11 +184,7 @@ def buy(detail, cfg, cash_amount, is_add=False):
         _flex_used += cash_amount
     save_cost_cache()
     # v6.5: 本地成交记录(连续留存, 不依赖模拟盘刷新)
-    try:
-        import local_records
-        local_records.log_trade("once" if not is_add else "add", code, name, "BUY", price, qty, resp, kind)
-    except Exception:
-        pass
+    _safe_log_trade("once" if not is_add else "add", code, name, "BUY", price, qty, resp, kind)
     return f"[{code} {name}] {kind}买入指令: {cmd}\n响应: {resp}"
 
 
@@ -274,11 +286,8 @@ def check_sell(code, cfg):
     base["sold_ratio"] = target_cum
     base["tier_idx"] = idx
     save_cost_cache()
-    try:
-        import local_records
-        local_records.log_trade("sell", code, base.get("name", code), "SELL", price, sell_qty, resp, f"止盈+{triggered['gain_pct']}%档")
-    except Exception:
-        pass
+    _safe_log_trade("sell", code, base.get("name", code), "SELL", price, sell_qty, resp,
+                    f"止盈+{triggered['gain_pct']}%档")
     remain = (1 - base["sold_ratio"]) * 100
     return (f"[{code}] 盈利{gain_pct:.1f}% 触发+{triggered['gain_pct']}%档, "
             f"卖出{sell_qty}股(累计已卖{target_cum*100:.0f}%, 剩余{remain:.0f}%仓位)\n"
@@ -330,23 +339,42 @@ def weekly_reset(cfg):
     print("[周度重置] 成本缓存已清空, 下周重新选股")
 
 
-def run_once(cfg, do_trade=True):
-    print(f"\n[{datetime.now():%H:%M:%S}] 单次策略执行 (v5 路线B: 稳中求进)")
-    load_cost_cache()
+def _regime_alloc(cfg, regime):
+    """读取市况三档仓位模板 (单一真相源: strategy_config.REGIME_ALLOC)。
 
-    # 0) 市况三档识别 (v6.7 自适应仓位)
+    M6: 旧实现 `cfg.get("REGIME_ALLOC") or {硬编码}` 把硬编码 fallback 又写回来,
+        违背"单一真相源"设计, 配置缺失时静默降级。改为缺失即抛错快速失败。
+    """
+    alloc = cfg.get("REGIME_ALLOC")
+    if not alloc:
+        raise ValueError("strategy_config.json 缺少 REGIME_ALLOC 段 (市况三档仓位模板)")
+    return alloc.get(regime, alloc["balance"])
+
+
+def _total_capital(cfg):
+    """读取账户总资金 (M5: 旧实现硬编码 1_000_000, 与 grid_trader.py 重复,
+    用户实际资金非100万时仓位计算全错)。"""
+    acct = cfg.get("account") or {}
+    cap = acct.get("capital")
+    if cap is None:
+        # 向后兼容: 旧 config 无 capital 字段时退回原 100 万默认值, 加日志提醒配置化
+        logger.warning("account.capital 未配置, 退回默认 1_000_000 (请在 strategy_config.json 配置化)")
+        return 1_000_000
+    return float(cap)
+
+
+def _phase_regime(cfg):
+    """阶段 0: 市况识别 + 温度计 + 死叉去风险。返回结构化上下文。"""
     regime, trend_msg = selector.market_regime(cfg)
     defensive = (regime == "weak")
     print(f"  {trend_msg}")
 
-    # v6.9 市场冷热温度计(方案C): 仅作"进攻时机刻度", 不硬砍防御底仓
     _temp = _read_temperature(cfg)
     if _temp:
         print(f"  [温度计] 市场温度: {_temp['label']}({_temp['score']:.0f}/100) "
               f"脆弱={_temp['fragile']} VIX参考={_temp['vix_tag']} "
               f"进攻刻度x{_temp['offense_multiplier']:.2f}  [{'影子' if _temp['shadow'] else '生效'}]")
 
-    # v6.10 多指数周线死叉去风险信号: 触发时进攻转全防御(本回合升级主线)
     _dc = _read_death_cross(cfg)
     defense_only = False
     if _dc:
@@ -358,16 +386,24 @@ def run_once(cfg, do_trade=True):
             print(f"  [死叉] {_dc['label']}: {_dc['detail']}")
         defense_only = bool(_dc.get("apply") and _dc.get("triggered"))
 
-    # 1) 防御选股: 从防御行业白名单选 Top N (低beta跨行业, 排除进攻题材票)
+    return {
+        "regime": regime,
+        "defensive": defensive,
+        "defense_only": defense_only,
+        "temp": _temp,
+        "death_cross": _dc,
+    }
+
+
+def _phase_select(cfg, ctx):
+    """阶段 1+2: 防御选股 + 进攻选股。返回 (chosen_def, chosen_off)。"""
+    regime = ctx["regime"]
+    defense_only = ctx["defense_only"]
+
     chosen_def = selector.select(cfg, verbose=True, defensive_only=True)
     if not chosen_def:
         print("  防御池无达标标的")
 
-    # 2) 进攻选股: 市况依赖 (v6.7)
-    #    weak   -> 优先可转债(债底保护, 弱势类进攻)
-    #    balance-> 本周自适应主线(个股/港股/ETF)
-    #    bull   -> 本周主线 + 高弹性(可转债/港股/ETF弹性标的), 博名次
-    #    v6.10: 死叉去风险(defense_only)时跳过进攻选股, 全防御(不强行卖出已持仓进攻票)
     chosen_off = []
     if not defense_only:
         import weekly_theme
@@ -375,32 +411,46 @@ def run_once(cfg, do_trade=True):
         if theme.get("offensive"):
             pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("candidate_pool", [])}
             off_pool_map = {p["code"]: p for p in cfg.get("auto_select", {}).get("offensive_pool", [])}
-            theme_codes = theme["offensive"][:2]
+            theme_codes = list(theme["offensive"][:2])
 
             # 弱势市: 若主线票含个股(高波动), 用可转债替代1只作为类进攻底仓
+            # H2: 旧表达式 `market=="KZZ" and industry!="可转债" or market=="KZZ"`
+            #     运算符优先级 bug 导致条件恒等于 market=="KZZ", industry 过滤是死代码。
+            #     且池子里转债 industry 字段就是 "可转债", 旧条件意图(取银行转债)与实现相反。
+            #     改为直接用 config.convertible_bond.weak_regime_pick 作为候选。
             if regime == "weak":
-                kzz = [p["code"] for p in cfg.get("auto_select", {}).get("candidate_pool", [])
-                       if p.get("market") == "KZZ" and p.get("industry") != "可转债" or
-                       (p.get("market") == "KZZ")]
-                # 取流动性最好的银行转债(南银/兴业)其一
-                kzz_pick = next((c for c in ["113050", "113052"] if c in kzz), None)
+                cb_cfg = cfg.get("convertible_bond") or {}
+                kzz_picks = cb_cfg.get("weak_regime_pick", ["113050", "113052"])
+                kzz_pick = next((c for c in kzz_picks if c in pool_map), None)
                 if kzz_pick and theme_codes:
-                    theme_codes = [kzz_pick] + theme_codes[:1]  # 可转债 + 1只主线, 降低纯股暴露
+                    theme_codes = [kzz_pick] + theme_codes[:1]  # 可转债 + 1只主线
                     print(f"  🛡️ 弱势市进攻: 可转债替代部分个股暴露 (债底保护)")
 
             for code in theme_codes[:2]:
-                meta = pool_map.get(code) or off_pool_map.get(code) or {"name": code, "industry": "进攻", "tech": True}
+                meta = pool_map.get(code) or off_pool_map.get(code) or {
+                    "name": code, "industry": "进攻", "tech": True}
                 rt = md.get_realtime([code]).get(code, {})
                 cur, pct = md.price_percentile(code, 250)
+                # L21: 旧实现进攻票直接给 final_score=1.0 绕过 selector 评分,
+                #      使 ai_score.augment 的乘数对进攻票失效。改为基于 selector
+                #      真实评分 (无评分时退回 0.5 中性, 不再硬塞满分)
+                off_score = 0.5
+                try:
+                    score_val, _ = selector.score_one(code, cfg, rt=rt, kline=None)
+                    if score_val and score_val > 0:
+                        off_score = score_val
+                except Exception:
+                    pass
                 chosen_off.append({
                     "code": code, "name": meta.get("name", code),
                     "industry": meta.get("industry", "进攻"), "tech": meta.get("tech", True),
                     "market": meta.get("market", "A"),
                     "turnover_pct": rt.get("turnover_pct"), "hist_pct": pct,
-                    "final_score": 1.0, "_offensive": True, "_theme": theme.get("mode", "auto"),
-                    "_regime": regime
+                    "final_score": off_score, "_offensive": True,
+                    "_theme": theme.get("mode", "auto"), "_regime": regime
                 })
-            tag = {"weak": "弱势-可转债替代", "balance": "平衡-主线", "bull": "强势-主线+弹性"}[regime]
+            tag = {"weak": "弱势-可转债替代", "balance": "平衡-主线",
+                   "bull": "强势-主线+弹性"}[regime]
             print(f"  🔥 进攻采用[{tag}]: {[c['name'] for c in chosen_off]}")
         else:
             chosen_off = selector.select_offensive(cfg, top_n=2, verbose=True)
@@ -417,24 +467,20 @@ def run_once(cfg, do_trade=True):
     except Exception as e:
         print(f"  [ai_score] 模块异常({e}), 跳过 AI 打分, 使用纯规则结果")
 
-    all_chosen = (chosen_def or []) + (chosen_off or [])
-    if not all_chosen:
-        print("  本轮无任何标的")
-        return
+    return chosen_def, chosen_off
 
-    # 仓位分配 (v6.7 市况自适应): 弱势收敛进攻/强势加仓博名次
-    total = 1_000_000
-    # 三档仓位模板 (防御% / 进攻% / 现金%): 和为100
-    # v6.15: 提升为 strategy_config.json 的 REGIME_ALLOC 单一真相源(代码不再硬编码, 避免文档漂移)
-    REGIME_ALLOC = cfg.get("REGIME_ALLOC") or {
-        "weak":    {"def": 60, "off": 24, "cash": 16},  # 弱势: 守, 不赌
-        "balance": {"def": 45, "off": 45, "cash": 10},  # 平衡: 进攻加码(45%)贴近18倍基线
-        "bull":    {"def": 35, "off": 60, "cash": 5},   # 强势: 进攻顶满60%(18倍基线, 博名次)
-    }
-    alloc = REGIME_ALLOC.get(regime, REGIME_ALLOC["balance"])
+
+def _phase_allocate(cfg, ctx, chosen_def, chosen_off):
+    """阶段 3: 仓位分配。返回 (base_pct, off_pct, cash_pct)。"""
+    regime = ctx["regime"]
+    defense_only = ctx["defense_only"]
+    _temp = ctx["temp"]
+
+    alloc = _regime_alloc(cfg, regime)
     base_pct = alloc["def"]
     off_pct = alloc["off"]
     cash_pct = alloc["cash"]
+
     # v6.9 温度计调制: 仅削进攻仓, 释放部分转入现金(防御底仓不动)
     if _temp and _temp.get("apply") and _temp["offense_multiplier"] < 1.0:
         freed = off_pct * (1.0 - _temp["offense_multiplier"])
@@ -449,16 +495,111 @@ def run_once(cfg, do_trade=True):
           + (f"  (温度计x{_temp['offense_multiplier']:.2f})" if _temp and _temp.get("apply") else "")
           + ("  🛡️死叉全防御" if defense_only else ""))
 
-    per_def = base_pct / len(chosen_def) if chosen_def else 0   # 每只防御仓金额占比
-    per_off = off_pct / len(chosen_off) if chosen_off else 0   # 每只进攻仓金额占比(v6: 2只均分30%)
-    off_amt_total = off_pct / 100 * total                      # 进攻仓总金额
-
-    if defensive:
+    per_def = base_pct / len(chosen_def) if chosen_def else 0
+    per_off = off_pct / len(chosen_off) if chosen_off else 0
+    if ctx["defensive"]:
         print(f"  \U0001f6e1\ufe0f 防御模式仓位: {len(chosen_def)}只x{per_def:.0f}%={base_pct}%防御 + "
               f"{len(chosen_off)}只x{per_off:.0f}%={off_pct}%进攻 + {cash_pct:.0f}%现金储备(不加仓)")
     else:
         print(f"  \u2694\ufe0f 进攻模式仓位: {len(chosen_def)}只x{per_def:.0f}%={base_pct}%防御 + "
               f"{len(chosen_off)}只x{per_off:.0f}%={off_pct}%进攻 + {cash_pct:.0f}%现金")
+    return base_pct, off_pct, cash_pct
+
+
+def _phase_buy(cfg, chosen_def, chosen_off, base_pct, off_pct):
+    """阶段 4+5: 防御底仓 + 进攻底仓 + 机动加仓。"""
+    total = _total_capital(cfg)
+    # 防御底仓买入
+    for d in chosen_def:
+        if d["code"] not in _cost_basis:
+            amt = base_pct / len(chosen_def) / 100 * total
+            print(buy(d, cfg, amt, is_add=False))
+
+    # 进攻底仓买入 (独立标记为 offensive)
+    for d in chosen_off:
+        if d["code"] not in _cost_basis:
+            off_amt = off_pct / len(chosen_off) / 100 * total
+            print(buy(d, cfg, off_amt, is_add=False))
+            load_cost_cache()
+            if d["code"] in _cost_basis:
+                _cost_basis[d["code"]]["_offensive"] = True
+                save_cost_cache()
+
+
+def _phase_manage_positions(cfg, ctx):
+    """阶段 6: 持仓检查 (止损 + 止盈)。"""
+    defensive = ctx["defensive"]
+    for code in list(_cost_basis.keys()):
+        base = _cost_basis.get(code, {})
+        is_offensive = base.get("_offensive", False)
+        # 止损: 进攻仓用更宽松的止损线(-10%), 防御仓-5%(防御)/-8%(进攻模式)
+        if is_offensive:
+            sl_triggered = check_stop_loss_offensive(code, cfg)
+        else:
+            sl_triggered = check_stop_loss(code, cfg, defensive=defensive)
+        if sl_triggered:
+            continue  # 已止损, 跳过止盈
+        msg = check_sell(code, cfg)
+        if msg:
+            print(msg)
+
+
+def _phase_add_positions(cfg, ctx):
+    """阶段 5: 机动加仓 (仅进攻模式且非防御/非死叉去风险)。
+
+    M7: 进攻仓加仓阈值 -5/+5 旧硬编码, 现可从 config.buy_rules.add_position
+        的 offensive_on_pullback_pct / offensive_on_breakout_pct 配置。
+    """
+    if ctx["defensive"] or ctx["defense_only"]:
+        return
+    total = _total_capital(cfg)
+    add_rule = cfg.get("buy_rules", {}).get("add_position", {})
+    max_add = add_rule.get("max_add_times_per_stock", 2)
+    flex_total = cfg["risk"].get("flex_position_pct", 20) / 100 * total
+    # 进攻仓加仓阈值可配置, 未配置则退回旧默认 (-5/+5)
+    off_pull = add_rule.get("offensive_on_pullback_pct", -5)
+    off_brk = add_rule.get("offensive_on_breakout_pct", 5)
+    for code, base in list(_cost_basis.items()):
+        add_cnt = base.get("add_cnt", 0)
+        is_off = base.get("_offensive", False)
+        if add_cnt >= max_add or _flex_used >= flex_total:
+            continue
+        rt = md.get_realtime([code]).get(code, {})
+        price = rt.get("price")
+        if not price:
+            continue
+        chg = (price - base["price"]) / base["price"] * 100
+        # 进攻仓加仓条件更宽松(给波动空间): 默认回撤-5%或突破+5%
+        pull = off_pull if is_off else add_rule.get("on_pullback_pct", -3)
+        brk = off_brk if is_off else add_rule.get("on_breakout_pct", 3)
+        if chg <= pull or chg >= brk:
+            amt = flex_total * 0.5
+            tag = "[进攻]" if is_off else ""
+            # v6.16: 加仓 detail 必须带 market, 否则 buy() 里手数退化为 100
+            print(buy({"code": code, "name": base.get("name", code),
+                       "market": instrument.market_of(code, base)},
+                      cfg, amt, is_add=True))
+            base["add_cnt"] = add_cnt + 1
+
+
+def run_once(cfg, do_trade=True):
+    """单次策略执行 (v5 路线B: 稳中求进)。
+
+    H6: 旧实现是 ~210 行 God Function 完成市况/温度/死叉/选股/分配/买入/加仓/
+        止损/止盈/网格/再平衡, 圈复杂度极高且零测试。拆成 6 个 _phase_* 函数,
+        run_once 只做编排, 每阶段返回可断言的中间结果, 便于单测。
+    """
+    print(f"\n[{datetime.now():%H:%M:%S}] 单次策略执行 (v5 路线B: 稳中求进)")
+    load_cost_cache()
+
+    ctx = _phase_regime(cfg)
+    chosen_def, chosen_off = _phase_select(cfg, ctx)
+    all_chosen = (chosen_def or []) + (chosen_off or [])
+    if not all_chosen:
+        print("  本轮无任何标的")
+        return
+
+    base_pct, off_pct, _ = _phase_allocate(cfg, ctx, chosen_def, chosen_off)
 
     if not do_trade:
         return
@@ -467,66 +608,9 @@ def run_once(cfg, do_trade=True):
     if not ensure_trade_window():
         return
 
-    # 3) 防御底仓买入
-    for d in chosen_def:
-        if d["code"] not in _cost_basis:
-            amt = per_def / 100 * total
-            print(buy(d, cfg, amt, is_add=False))
-
-    # 4) 进攻底仓买入 (独立标记为 offensive, v6: 多只进攻均分)
-    for d in chosen_off:
-        if d["code"] not in _cost_basis:
-            off_amt = per_off / 100 * total
-            print(buy(d, cfg, off_amt, is_add=False))
-            # 标记为进攻仓
-            load_cost_cache()
-            if d["code"] in _cost_basis:
-                _cost_basis[d["code"]]["_offensive"] = True
-                save_cost_cache()
-
-    # 5) 机动加仓(仅进攻模式且非防御/非死叉去风险): 防御模式不加仓
-    if not defensive and not defense_only:
-        add_rule = cfg.get("buy_rules", {}).get("add_position", {})
-        max_add = add_rule.get("max_add_times_per_stock", 2)
-        flex_total = cfg["risk"].get("flex_position_pct", 20) / 100 * total
-        for code, base in list(_cost_basis.items()):
-            add_cnt = base.get("add_cnt", 0)
-            is_off = base.get("_offensive", False)
-            if add_cnt >= max_add or _flex_used >= flex_total:
-                continue
-            rt = md.get_realtime([code]).get(code, {})
-            price = rt.get("price")
-            if not price:
-                continue
-            chg = (price - base["price"]) / base["price"] * 100
-            # 进攻仓加仓条件更宽松(给波动空间): 回撤-5%或突破+5%
-            pull = add_rule.get("on_pullback_pct", -3) if not is_off else -5
-            brk = add_rule.get("on_breakout_pct", 3) if not is_off else 5
-            if chg <= pull or chg >= brk:
-                amt = flex_total * 0.5
-                tag = "[进攻]" if is_off else ""
-                # v6.16: 加仓 detail 必须带 market, 否则 buy() 里手数退化为 100(原字面量无 market)
-                print(buy({"code": code, "name": base.get("name", code),
-                           "market": instrument.market_of(code, base)},
-                          cfg, amt, is_add=True))
-                base["add_cnt"] = add_cnt + 1
-
-    # 6) 持仓检查: 止损(区分防御/进攻) + 止盈(阶梯)
-    for code in list(_cost_basis.keys()):
-        base = _cost_basis.get(code, {})
-        is_offensive = base.get("_offensive", False)
-
-        # 止损: 进攻仓用更宽松的止损线(-10%), 防御仓-5%(防御)/-8%(进攻模式)
-        if is_offensive:
-            sl_triggered = check_stop_loss_offensive(code, cfg)
-        else:
-            sl_triggered = check_stop_loss(code, cfg, defensive=defensive)
-
-        if sl_triggered:
-            continue  # 已止损, 跳过止盈
-        msg = check_sell(code, cfg)
-        if msg:
-            print(msg)
+    _phase_buy(cfg, chosen_def, chosen_off, base_pct, off_pct)
+    _phase_add_positions(cfg, ctx)
+    _phase_manage_positions(cfg, ctx)
 
     # 7) 网格交易(v6.3): 用16%现金储备对高波动进攻票做隔日网格, 每天触发一次
     if cfg.get("grid", {}).get("enable", False):
@@ -618,11 +702,15 @@ def main():
         for rl in rebalance.rebalance_once(cfg, do_trade=True):
             print(rl)
     elif args.mode == "loop":
-        print("进入盘中循环(交易时段每%d秒检查) Ctrl+C退出" % cfg["polling"]["quote_interval_sec"])
+        print(f"进入盘中循环(交易时段每{cfg['polling']['quote_interval_sec']}秒检查) Ctrl+C退出")
         iv = cfg["polling"]["quote_interval_sec"]
         while True:
             if md.is_trade_time():
-                run_once(cfg, do_trade=True)
+                # M26: 单轮异常隔离, 避免某轮行情炸裂/选股异常杀死整个 loop
+                try:
+                    run_once(cfg, do_trade=True)
+                except Exception as e:
+                    logger.exception("loop run_once 单轮异常, 跳过本轮: %s", e)
             else:
                 print(f"[{datetime.now():%H:%M:%S}] 非交易时段, 等待...")
             time.sleep(iv)
