@@ -3,7 +3,7 @@ crypto_options_bt.py - 加密货币 Crypto50 回测引擎 V6（三件套迁移�
 ====================================================================
 对标 us_backtest_ai.py（美股128x版本）将三件套完整迁移到加密：
 
-  ① 止盈 covered call：进攻币相对 entry 涨 take_profit_pct（默认+100%，加密翻倍是常态）
+  ① 止盈 covered call：进攻币相对 entry 涨 take_profit_pct（默认+200%，加密赢家常10-100x；3x-entry封顶会漏算上行，4.5x为诚实下限）
      → 卖远期 call（short_dte_weeks 周期，默认26周，premium_rate_annual 默认18%/年保守值）
   ② 双层保护性 put：BTC大盘周跌>10%（put_bigcap_crash）赔付大盘仓位60%；
      进攻币单币周跌>25%（put_single_crash）赔付该币仓位25%。
@@ -97,7 +97,7 @@ class CryptoOptionsConfig:
     option_universe_only: bool = True  # 只选入有期权市场的13个币当进攻币 (实盘能写call/put的必要条件)
 
     # ---- 止盈 covered call ----
-    take_profit_pct: float = 1.0       # 默认+100%止盈（加密翻倍是常态）
+    take_profit_pct: float = 2.0       # 默认+200%止盈（加密赢家常10-100x, 3x封顶会漏算上行; 4.5x-entry封顶已验证为诚实下限）
     # premium_rate_annual 已废弃, 统一按 PREMIUM_RATE_ANNUAL_BY_COIN_CLASS 分币类给真实权利金率
     premium_rate_annual_deprecated_do_not_use: float = 0.18
     short_dte_weeks: int = 26          # 默认26周（加密牛市半年）
