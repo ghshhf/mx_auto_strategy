@@ -204,9 +204,10 @@ def load_us_cfg(path=None):
         "slippage_bps": 3,
         "options": {"enabled": False, "min_dte": 180, "otm_pct": 0.10,
                     "hedge_underlying": "QQQ"},
-        "options_sim": {"enabled": True, "call_premium_rate": 0.08,
-                        "call_dte_weeks": 52, "put_premium_annual": 0.03,
-                        "put_hedge_ratio": 0.5, "put_crash_threshold": 0.05},
+        "options_sim": {"enabled": True, "call_premium_rate": 0.045,
+                        "call_dte_weeks": 52, "put_premium_annual": 0.061,
+                        "put_hedge_ratio": 0.5, "put_crash_threshold": 0.05,
+                        "stock_put_premium_annual": 0.064},
     }
     if path is None:
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -1002,10 +1003,15 @@ series_proxy = {}
 
 # ========================================================= AI滚动选参（Live模式核心）
 def _mini_window_bt(dates, series, cfg, sim, start_w, end_w, *,
-                    short_underlying, short_by_sector, short_dte, short_size, ovl_enabled):
-    """【轻量mini回测】滚动扫描用，和主引擎决策逻辑一致，只求参数相对排名正确。"""
+                    short_underlying, short_by_sector, short_dte, short_size, ovl_enabled,
+                    track_nav: bool = False):
+    """【轻量mini回测】滚动扫描用，和主引擎决策逻辑一致，只求参数相对排名正确。
+
+    track_nav=True 时额外返回每周 NAV 序列(用于OOS盲测算MDD)，向后兼容。
+    """
     import copy as _copy
     weights = {"__cash__": 1.0}
+    nav_hist = [1.0]
     holdings_state = {}
     ovl_cooldown = {}
     ovl_call_last = {}
@@ -1197,7 +1203,9 @@ def _mini_window_bt(dates, series, cfg, sim, start_w, end_w, *,
                 # 滑点
                 turnover = 0.25  # 近似
                 nav *= (1 - turnover * cfg["slippage_bps"] / 10000.0)
-    return nav, short_count
+        if track_nav:
+            nav_hist.append(nav)
+    return (nav, short_count, nav_hist) if track_nav else (nav, short_count)
 
 
 def rolling_param_sweep(dates, series, us_cfg, window_weeks=52):
