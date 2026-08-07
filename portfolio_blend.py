@@ -6,8 +6,8 @@ portfolio_blend.py — 跨市场组合层 (mx_auto_strategy)  ·  v6.18 真值�
 
 输入 (v6.18 审计后刷新, 均为真实引擎产出):
   - A股 : docs/data/nav.json  windows['full']['optimized']['mult']
-          (引擎 export 配置, 端点 ~33x; v6.18 权威头条口径 = 18.185x / CAGR22.31% / MDD-33.31%,
-           见 A 股回测章节。nav.json 该序列来自不同 export 配置, 此处如实使用并标注。)
+          (v6.18 权威口径: 腾讯后复权 + momentum26 + 核心卫星0.5 + 死叉 + use_tech=False + trend_filter=False
+           = 18.185x / CAGR22.31% / MDD-33.31%; export_nav.py 已对齐此配置, nav.json 与头条自洽。)
   - 美股 : us_stocks/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权定价, 头条)
   - 加密 : crypto_stocks/crypto_options_bt.py  run_bt(默认)  (448.6x, 期权三件套 + 封顶4.5x + 减半关, 头条)
 
@@ -77,6 +77,34 @@ def blend_volparity(df, cols, warmup=52):
     return (1.0 + (rets * w).sum(axis=1)).cumprod()
 
 
+def blend_rebalanced(df, cols, rebal_weeks=13, warmup=52, cap=0.60):
+    """真分配器 (区别于每日漂移的 volparity):
+    用回看波动算目标权重 = 逆波动, 单市场封顶 cap (防单市场独大),
+    每 rebal_weeks 周(默认13=季度)再平衡回目标权重; 区间内含息持有, 权重恒定。
+    返回 (nav序列, 再平衡日志[(日期, 权重dict)])。
+    """
+    rets = df[cols].pct_change().fillna(0.0)
+    n = len(cols)
+    idx = df.index
+    w = pd.Series(1.0 / n, index=cols)
+    nav = [1.0]
+    rebal_log = []
+    for t in range(1, len(idx)):
+        r = (rets.iloc[t] * w).sum()
+        nav.append(nav[-1] * (1.0 + r))
+        if t >= warmup and (t % rebal_weeks) == 0:
+            vol = rets.iloc[max(0, t - warmup):t].std().replace(0, np.nan)
+            inv = 1.0 / vol
+            wt = (inv / inv.sum()).clip(upper=cap).fillna(1.0 / n)
+            wt = wt / wt.sum()
+            rebal_log.append((str(idx[t].date()),
+                              {c: round(float(wt[c]), 3) for c in cols}))
+            w = wt
+    out = pd.Series(nav, index=idx,
+                    name=f'波动平价(季再平衡·封顶{int(cap*100)}%)')
+    return out, rebal_log
+
+
 def main():
     df = load_series()
     print(f"共同周网格: {df.index[0].date()} ~ {df.index[-1].date()}  共 {len(df)} 周")
@@ -90,11 +118,14 @@ def main():
               f"MDD {m['mdd']*100:6.1f}%  Sharpe {m['sharpe']:.2f}")
     print("-" * 78)
 
+    # ---- 真分配器: 季度再平衡 + 逆波动目标权重 + 单市场封顶 ----
+    rebal_nav, rebal_log = blend_rebalanced(df, list(df.columns))
     schemes = {
         '等权(1/3)':        blend_equal(df, list(df.columns)),
         '波动平价(逆波动)':  blend_volparity(df, list(df.columns)),
         '稳健倾斜(.4/.4/.2 加密)': blend_equal(df, list(df.columns),
                                    w=pd.Series({df.columns[0]: .4, df.columns[1]: .4, df.columns[2]: .2})),
+        '波动平价(季再平衡·封顶60%)': rebal_nav,
     }
     print("【组合层 · 跨市场分散 (v6.18 真值刷新)】")
     blends = {}
@@ -109,7 +140,11 @@ def main():
         'n_weeks': len(df),
         'single': {k: {kk: round(vv, 4) for kk, vv in v.items()} for k, v in single.items()},
         'blends': {k: {kk: round(vv, 4) for kk, vv in v.items()} for k, v in blends.items()},
+        'rebal_log': rebal_log,
     }
+    print("\n【再平衡日志 (季度 · 逆波动目标权重 · 单市场封顶60%)】")
+    for d, w in rebal_log:
+        print("  " + d + ": " + "  ".join(f"{k} {v:.2f}" for k, v in w.items()))
     os.makedirs(os.path.join(ROOT, 'docs/data'), exist_ok=True)
     with open(os.path.join(ROOT, 'docs/data/portfolio_blend.json'), 'w') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
@@ -166,7 +201,8 @@ td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
 <div class="card"><h3 style="margin-top:0">跨市场组合方案</h3>
 <table><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_blend}</table>
 <p class="note">组合层的核心论点: 三市场低相关, 等权/波动平价能在不牺牲太多倍数的前提下显著压低 MDD。
-本图仅作方法论演示; A股序列取自 nav.json (引擎 export 配置, 端点与 v6.18 头条 18.185x 因配置不同而有差异, 如实标注)。</p></div>
+「波动平价(季再平衡·封顶60%)」为真正可执行分配器: 每13周按回看波动重算逆波动目标权重(单市场≤60%), 区间内含息持有。
+A股序列来自 nav.json (v6.18 权威配置, 已与头条 18.185x 对齐)。本图仅作方法论演示, 非业绩承诺。</p></div>
 
 <script>
 const D = {{dates:D.dates, series:{series}, bnav:{bnav}}};

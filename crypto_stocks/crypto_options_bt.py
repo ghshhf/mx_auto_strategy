@@ -72,6 +72,13 @@ OPTIONS_AVAILABLE_COINS = {
 }
 # 分类权利金率 (基于 Deribit 2026 平均 IV: BTC 68% / ETH 82% / SOL 145%  + VRP=IV-RV)
 # BS 定价验证: BTC spot 65k, 6mo +50% OTM call, IV=68% → 权利金≈7.2%/半年 → **14.4%/年** (取13%保守)
+# ===== 期权权利金假设 (v6.18 真相化 · 经联网核实 Deribit/crypto 期权费率) =====
+# 选的是 ≥1 年 DTE 的远期期权: 卖 call 收租 / 买 put 保险。非杠杆暴露。
+# 权利金 = 名义的几个百分点/年, 量级等同手续费:
+#   - 卖 covered call: 净现金流入≈0 (已持标的, 是收入流非杠杆)
+#   - 买 protective put: 成本封顶 (像费用), 非杠杆
+# 加密 IV 远高于美股, 故权利金率更高(见各档真实率); 只有「买 call 作股票替代」
+# 才是真杠杆(名义 10-30%), 本引擎不做。
 PREMIUM_RATE_ANNUAL_BY_COIN_CLASS = {
     'bigcap':   0.13,   # BTC / ETH → 13%/年 权利金
     'largecap': 0.19,   # SOL / BNB / XRP / DOGE / ADA / LINK / LTC / AVAX → 19%/年 (IV≈90%)

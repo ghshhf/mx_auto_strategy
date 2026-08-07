@@ -8,8 +8,10 @@ export_nav.py — 把回测结果导出为 docs/data/nav.json (数据层)
   2. 运行 python export_nav.py  ->  重算并重写 docs/data/nav.json
   3. docs/curves.html 通过 fetch 自动读取新数据, 页面逻辑不变, 无需重生成整页
 
-基线:   cf=0.6, lb=26, plain, core_satellite, 死叉 (当前实盘)
-优化:   cf=0.5, lb=26, plain, core_satellite, 死叉, trend_filter (动态选股升级 v6.13)
+基线:   cf=0.6, lb=26, plain, core_satellite, 死叉 (v6.18 权威口径)
+优化:   cf=0.5, lb=26, plain, core_satellite, 死叉, use_tech=False, trend_filter=False
+       (v6.18 权威真值 = 18.185x / CAGR 22.31% / MDD -33.31%; 趋势过滤被证为损害已移除)
+面板:   腾讯后复权周线 ashare_panel_close_em.csv (tencent_hfq_rebuild.py)
 """
 import os, sys, json, datetime as dt
 
@@ -21,17 +23,18 @@ PANEL = os.path.join(E.DATA, "ashare_panel_close_em.csv")
 if not os.path.exists(PANEL):
     print(f"[错误] 找不到面板 {PANEL}"); sys.exit(1)
 
+# v6.18 权威口径: use_tech=False + trend_filter=False (趋势过滤经 v6.18 实证为损害, 已移除)
 COMMON = dict(
-    offense_mode="momentum", momentum_lookback=26, use_tech=True,
+    offense_mode="momentum", momentum_lookback=26, use_tech=False,
     core_satellite=True, death_cross=True, grid=False,
     score_mode="plain", start_capital=1_000_000,
     panel_path=PANEL, use_core_sub=True,
 )
 CONFIGS = [
-    ("baseline", "基线(cf=0.6)", {**COMMON, "core_frac": 0.6,
+    ("baseline", "基线(cf=0.6, v6.18)", {**COMMON, "core_frac": 0.6,
         "trend_filter": False, "industry_diversify": False, "rel_strength": False}),
-    ("optimized", "优化(cf=0.5+趋势)", {**COMMON, "core_frac": 0.5,
-        "trend_filter": True, "industry_diversify": False, "rel_strength": False}),
+    ("optimized", "优化(cf=0.5, v6.18权威18.185x)", {**COMMON, "core_frac": 0.5,
+        "trend_filter": False, "industry_diversify": False, "rel_strength": False}),
 ]
 
 dates, codes, series = E.load_panel(PANEL)

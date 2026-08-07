@@ -244,6 +244,12 @@ def load_us_cfg(path=None):
         "slippage_bps": 3,
         "options": {"enabled": False, "min_dte": 180, "otm_pct": 0.10,
                     "hedge_underlying": "QQQ"},
+        # ===== 期权层权利金假设 (v6.18 真相化 · 经联网核实 LEAPS 真实费率) =====
+        # 选的是 ≥1 年 DTE 的远期期权(LEAPS, call_dte_weeks=52): 非杠杆暴露。
+        # 权利金 = 名义的几个百分点/年, 量级等同手续费:
+        #   - 卖 covered call(OTM): 收租 ~4.5%/年  → 净现金流入≈0 (已持标的, 是收入流非杠杆)
+        #   - 买 protective put:    付保费 ~6%/年  → 成本封顶, 像费用, 非杠杆
+        # 只有「买 call 作股票替代(deep ITM)」才是真杠杆(名义 10-30%), 本引擎不做。
         "options_sim": {"enabled": True, "call_premium_rate": 0.045,
                         "call_dte_weeks": 52, "put_premium_annual": 0.061,
                         "put_hedge_ratio": 0.5, "put_crash_threshold": 0.05,
