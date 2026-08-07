@@ -31,6 +31,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import llm_client  # 统一 LLM 调用: env(LLM_BASE_URL/LLM_API_KEY/LLM_MODEL) 优先, 优雅降级
+import jsonl_utils as _jsonl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(HERE, "strategy_config.json")
@@ -162,9 +163,8 @@ def _parse_multipliers(content, candidates):
 
 def _save_audit(record):
     """追加审计快照到 records/ai_score_snapshot.jsonl"""
-    os.makedirs(RECORD_ROOT, exist_ok=True)
-    with open(AUDIT_LOG, "a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    # M21: 复用 jsonl_utils.append_jsonl (自动建目录 + 统一序列化)
+    _jsonl.append_jsonl(AUDIT_LOG, record)
 
 
 def augment(candidates, cfg, tag="defensive"):

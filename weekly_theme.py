@@ -19,6 +19,7 @@ weekly_theme.py - 每周自动选题材 (进攻主线识别)
 import sys
 import os
 import json
+import logging
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,15 +27,6 @@ import market_data as md
 
 THEME_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "weekly_theme.json")
 EVENT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "event_override.json")
-
-# 防御/避险/价值行业黑名单: 这些板块即使上周涨了也不作为"进攻主线"
-# 原因: 石油(地缘避险,不可能一直涨)、银行/电力/家电/食品/白酒/建筑/建材/保险/化工
-#       本质是低beta价值或避险资产, 放进进攻端逻辑错位, 且弹性不足以冲名次。
-# 进攻主线只从真正的"题材弹性行业"里挑 (科技/半导体/军工/稀土/券商/地产链/消费电子/有色/医药创新等)
-DEFENSIVE_INDUSTRY_BLACKLIST = {
-    "石油", "银行", "电力", "家电", "食品", "白酒", "建筑", "建材",
-    "保险", "化工", "石化", "公用事业", "电信", "铁路", "公路", "港口",
-}
 
 # 事件注入层 (非主要路径, 用户手动提示才生效):
 # event_override.json 格式:
@@ -49,6 +41,16 @@ EVENT_BOOST_WEIGHT = 1.5   # 受益行业动量得分乘子
 EVENT_AVOID_DROP = -999     # 利空行业动量置为极负, 实质排除
 
 
+def _week_label(dt):
+    """ISO 周标签 (格式 YYYY-Www, 与 event_override.json 用户手写格式一致)。
+
+    旧实现用 strftime("%Y-W%W") 非标准, 1月1日非周一时返回 W00,
+    跨年边界与 event_override 的 ISO 周标签不匹配, 事件注入永远不生效。
+    """
+    iso = dt.isocalendar()
+    return f"{iso.year}-W{iso.week:02d}"
+
+
 def load_event_override():
     """读取事件注入 (不存在/格式错/周不匹配 -> 返回 None)。"""
     if not os.path.exists(EVENT_FILE):
@@ -59,7 +61,7 @@ def load_event_override():
         return None
     wl = ev.get("week_label")
     if wl:
-        cur = datetime.now().strftime("%Y-W%W")
+        cur = _week_label(datetime.now())
         if wl != cur:
             return None  # 非本周事件, 忽略
     return ev
@@ -82,13 +84,16 @@ def scan_industry_momentum(cfg):
     返回: {industry: {"chg": avg_chg, "tickers": [{code,name,chg,turnover}]}}"""
     asel = cfg.get("auto_select", {})
     pool = asel.get("candidate_pool", [])
-    n = 5  # 上周约5个交易日
+    n = int((cfg.get("weekly_theme") or {}).get("lookback_days", 5))  # 上周约5个交易日
     # 往前推一天避免使用今天未收盘数据
     days = _last_n_trading_days(n + 1)[1:]  # 跳过今天, 取真正"上周"5天
     if not days:
         days = _last_n_trading_days(n)
 
     industry_data = {}
+    # 一次性批量取全部候选池实时行情, 避免逐只 HTTP 请求 (90 只 -> 1 次)
+    all_codes = [p["code"] for p in pool]
+    rt_map = md.get_realtime(all_codes) if all_codes else {}
     for p in pool:
         code = p["code"]
         ind = p.get("industry", "未知")
@@ -100,7 +105,7 @@ def scan_industry_momentum(cfg):
         last_close = kl[-1]["close"]
         chg = (last_close / ref_close - 1) * 100
         # 实时换手
-        rt = md.get_realtime([code]).get(code, {})
+        rt = rt_map.get(code, {})
         to = rt.get("turnover_pct") or 0
         industry_data.setdefault(ind, {"chg_sum": 0.0, "count": 0, "tickers": []})
         industry_data[ind]["chg_sum"] += chg
@@ -122,11 +127,19 @@ def scan_industry_momentum(cfg):
             "tickers": sorted(d["tickers"], key=lambda t: t["chg"], reverse=True)
         }
     # v6.11 科技渗透率倾斜 (木头姐框架): 给行业动量叠加采用相位权重
-    # 仅影响进攻侧排序; 任何异常 -> 中性不干预
+    # 仅影响进攻侧排序; 任何异常 -> 中性不干预 + 日志告警
     try:
         import tech_adoption as ta
         ta.apply_tilt(result, cfg)
-    except Exception:
+    except ImportError:
+        # 模块缺失 (运行环境异常), 走中性降级不刷屏
+        for d in result.values():
+            d.setdefault("adoption_phase", "unknown")
+            d.setdefault("adoption_mult", 1.0)
+            d.setdefault("adj_chg", d.get("avg_chg", 0.0))
+    except Exception as e:
+        # 模块存在但运行时 bug, 日志告警便于排查
+        logging.getLogger(__name__).warning("tech_adoption 倾斜异常, 降级中性: %s", e)
         for d in result.values():
             d.setdefault("adoption_phase", "unknown")
             d.setdefault("adoption_mult", 1.0)
@@ -173,6 +186,45 @@ def _resolve_industry(ind):
     return INDUSTRY_ALIAS.get(ind, ind)
 
 
+def _resolve_defensive(overlay, pool, cfg):
+    """解析防御3只: 用户指定优先, 不足则按 fallback 列表补齐。
+
+    fallback 列表从 strategy_config.weekly_theme.fallback_defensive 读取,
+    未配置则退回默认蓝筹(银行/电力/红利ETF)。"""
+    fallback = (cfg.get("weekly_theme") or {}).get(
+        "fallback_defensive", ["601398", "600900", "512890", "601939", "600519"]
+    )
+    defensive = [c for c in overlay.get("defensive_3", []) if c in pool][:3]
+    if len(defensive) < 3:
+        for fb in fallback:
+            if fb in pool and fb not in defensive:
+                defensive.append(fb)
+            if len(defensive) >= 3:
+                break
+    return defensive
+
+
+def _elastic_score(t, turnover_w=0.6, chg_w=0.4):
+    """进攻票弹性评分: 换手率 × turnover_w + max(0, 涨幅) × chg_w。
+    权重可从 strategy_config.weekly_theme.elastic_weights 覆盖。"""
+    to = (t.get("turnover") or 0) * turnover_w
+    chg = max(0, t.get("chg", 0)) * chg_w
+    return to + chg
+
+
+def _make_elastic_scorer(cfg):
+    """构造绑定 config 权重的弹性评分函数(供 max(key=) 单参调用)。
+
+    M3: 旧 _elastic_score 硬编码 0.6/0.4, docstring 声称可配但从未接线。
+        现从 strategy_config.weekly_theme.elastic_weights 读取 {turnover, chg},
+        缺省退回 0.6/0.4 (行为与改造前一致)。
+    """
+    ew = (cfg.get("weekly_theme") or {}).get("elastic_weights") or {}
+    tw = float(ew.get("turnover", 0.6))
+    cw = float(ew.get("chg", 0.4))
+    return lambda t: _elastic_score(t, tw, cw)
+
+
 def _overlay_pick(cfg, overlay, verbose=True):
     """用户方向叠加模式: 用户给方向(电力/医疗), AI叠加动量验证挑具体票。
     防御端3只强制采用用户指定的 defensive_3 (若提供), 否则退回默认蓝筹。
@@ -180,21 +232,16 @@ def _overlay_pick(cfg, overlay, verbose=True):
     ind_mom = scan_industry_momentum(cfg)
     asel = cfg.get("auto_select", {})
     pool = {p["code"]: p for p in asel.get("candidate_pool", [])}
-    week_label = datetime.now().strftime("%Y-W%W")
+    week_label = _week_label(datetime.now())
 
-    # 防御3只(用户指定优先)
-    defensive = [c for c in overlay.get("defensive_3", []) if c in pool][:3]
-    if len(defensive) < 3:
-        for fb in ["601398", "600900", "512890", "601939", "600519"]:
-            if fb in pool and fb not in defensive:
-                defensive.append(fb)
-            if len(defensive) >= 3:
-                break
+    # 防御3只: 解析一次, used 集合基于其结果, 进攻端不再重复挑选
+    defensive = _resolve_defensive(overlay, pool, cfg)
+    used = set(defensive)
 
-    # 1. 进攻端: 从用户方向(解析别名)里, 排除防御占用的票, 挑动量最强
+    # 进攻端: 从用户方向(解析别名)里, 排除防御占用的票, 挑动量最强
     offensive = []
-    used = set(defensive)  # 防御占用的票进攻端不再选
     matched_dirs = []
+    scorer = _make_elastic_scorer(cfg)
     for ind in overlay["directions"]:
         real_ind = _resolve_industry(ind)
         matched_dirs.append(real_ind)
@@ -207,19 +254,9 @@ def _overlay_pick(cfg, overlay, verbose=True):
                      for p in pool.values()
                      if p.get("industry") == real_ind and p["code"] not in used]
         if cands:
-            best = max(cands, key=lambda t: (t.get("turnover") or 0) * 0.6 + max(0, t.get("chg", 0)) * 0.4)
+            best = max(cands, key=scorer)
             offensive.append(best["code"])
             used.add(best["code"])
-
-    # 2. 防御端3只: 优先用用户指定的 defensive_3, 校验在池子里
-    defensive = [c for c in overlay.get("defensive_3", []) if c in pool][:3]
-    if len(defensive) < 3:
-        # 不足3只则补默认蓝筹(银行/电力/红利ETF)
-        for fb in ["601398", "600900", "512890", "601939", "600519"]:
-            if fb in pool and fb not in defensive:
-                defensive.append(fb)
-            if len(defensive) >= 3:
-                break
 
     # 3. 若用户方向没产出进攻票, 退回稳健组合
     if not offensive:
@@ -294,11 +331,12 @@ def pick_theme(cfg, verbose=True):
         sorted_inds = sorted(ind_mom.items(), key=_sort_key, reverse=True)
 
     # 强势主线: 调整后涨幅 Top2 行业 (且真实平均涨幅>0 才算真主线, 避免纯靠相位抬升的伪主线)
-    # 过滤掉防御/避险/价值行业(黑名单) — 石油等避险板块不进进攻主线
+    # 进攻主线只从 config.universe_split.offensive_industries 白名单里挑 (替代旧硬编码黑名单)
+    offensive_whitelist = set((cfg.get("universe_split") or {}).get("offensive_industries") or [])
     main_lines = []
     for ind, d in sorted_inds:
-        if ind in DEFENSIVE_INDUSTRY_BLACKLIST:
-            continue  # 跳过避险板块, 不当进攻主线
+        if offensive_whitelist and ind not in offensive_whitelist:
+            continue  # 不在进攻行业白名单, 跳过 (如银行/电力/白酒等防御价值板块)
         if d.get("avg_chg", 0.0) <= 0:
             continue  # 真实动量必须为正, 排除事件利空置负的行业
         if len(main_lines) < 2:
@@ -307,24 +345,22 @@ def pick_theme(cfg, verbose=True):
     if not main_lines:
         # 所有进攻型行业都在跌, 或无主线 -> 退回稳健组合(不硬冲)
         if verbose:
-            skipped = [i for i, _ in sorted_inds if i in DEFENSIVE_INDUSTRY_BLACKLIST]
-            print(f"  ⚠️ 上周进攻型行业无明确主线(避险板块 {skipped} 上涨但不计入进攻), "
+            skipped = [i for i, _ in sorted_inds
+                       if not offensive_whitelist or i not in offensive_whitelist]
+            print(f"  ⚠️ 上周进攻型行业无明确主线(防御/避险板块 {skipped} 上涨但不计入进攻), "
                   f"进攻退回稳健医疗/电力")
         return _fallback_theme(cfg, verbose)
 
     # 从主线行业挑 2 只高弹性票(换手率优先, 兼顾涨幅)
     offensive = []
     used_codes = set()
+    scorer = _make_elastic_scorer(cfg)
     for ind, d in main_lines:
         # 该行业里挑换手最高或涨幅最高的 1 只(保证不重叠)
         tickers = [t for t in d["tickers"] if t["code"] not in used_codes]
         if not tickers:
             continue
-        # 弹性评分: 换手率*0.6 + 涨幅*0.4
-        def elastic(t):
-            to = t["turnover"] or 0
-            return to * 0.6 + max(0, t["chg"]) * 0.4
-        best = max(tickers, key=elastic)
+        best = max(tickers, key=scorer)
         offensive.append(best["code"])
         used_codes.add(best["code"])
 
@@ -335,13 +371,13 @@ def pick_theme(cfg, verbose=True):
                 continue
             tickers = [t for t in d["tickers"] if t["code"] not in used_codes]
             if tickers:
-                best = max(tickers, key=lambda t: (t["turnover"] or 0) * 0.6 + max(0, t["chg"]) * 0.4)
+                best = max(tickers, key=scorer)
                 offensive.append(best["code"])
                 used_codes.add(best["code"])
                 if len(offensive) >= 2:
                     break
 
-    week_label = datetime.now().strftime("%Y-W%W")
+    week_label = _week_label(datetime.now())
     theme = {
         "week_label": week_label,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -374,12 +410,16 @@ def pick_theme(cfg, verbose=True):
 
 
 def _fallback_theme(cfg, verbose):
-    """无主线时, 进攻退回医疗(凯莱英)+ 电力(长江电力) 稳健组合"""
+    """无主线时, 进攻退回医疗(凯莱英)+ 电力(长江电力) 稳健组合。
+
+    fallback 票列表从 strategy_config.weekly_theme.fallback_offensive 读取。"""
     asel = cfg.get("auto_select", {})
     off_pool = {p["code"]: p for p in asel.get("offensive_pool", [])}
-    fb = ["002821", "600900"]  # 凯莱英, 长江电力
-    fb = [c for c in fb if c in off_pool][:2]
-    week_label = datetime.now().strftime("%Y-W%W")
+    fb = (cfg.get("weekly_theme") or {}).get("fallback_offensive", ["002821", "600900"])
+    fb = [c for c in fb if c in off_pool or c in asel.get("candidate_pool", [])][:2]
+    if not fb:  # 兜底: 都不在池子里时至少返回原列表
+        fb = list((cfg.get("weekly_theme") or {}).get("fallback_offensive", ["002821", "600900"]))
+    week_label = _week_label(datetime.now())
     theme = {
         "week_label": week_label,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -398,8 +438,9 @@ def _save(theme):
     try:
         with open(THEME_FILE, "w", encoding="utf-8") as f:
             json.dump(theme, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    except Exception as e:
+        # 旧实现 except Exception: pass 静默吞掉, 磁盘满/权限错时下周读不到主题
+        logging.getLogger(__name__).warning("weekly_theme 落盘失败: %s", e)
 
 
 def load_last():

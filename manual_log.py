@@ -41,10 +41,14 @@ manual_log.py - 手动交易记账系统 (v7.2, 账号体系·本地永久留存
 """
 
 import os
+import sys
 import json
 import argparse
 import shutil
 from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import jsonl_utils as _jsonl
 
 RECORD_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "records")
 
@@ -95,18 +99,8 @@ def list_accounts() -> list:
 # ---------------------------------------------------------------- 读写
 
 def _read_jsonl(path):
-    if not os.path.exists(path):
-        return []
-    out = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    out.append(json.loads(line))
-                except Exception:
-                    pass
-    return out
+    # M21: 复用 jsonl_utils.read_jsonl (与 local_records 同源, 消除重复实现)
+    return _jsonl.read_jsonl(path)
 
 
 def _cash_balance(account_id):

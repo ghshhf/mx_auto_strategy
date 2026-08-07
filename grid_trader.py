@@ -20,6 +20,7 @@ import market_data as md
 import instrument  # v6.16 手数取整单一入口
 from auto_trader import (
     call_mx_moni, ensure_trade_window, load_cost_cache, resolve_qty, _cost_basis,
+    _total_capital,
 )
 
 GRID_CACHE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".grid_state.json")
@@ -80,7 +81,8 @@ def grid_once(cfg, do_trade=True):
     logs = []
 
     # 弹药池: 配置里 cash_reserve_pct 的资金, 减去已用于网格的部分
-    total = 1_000_000
+    # M5: 旧实现硬编码 total=1_000_000, 与 auto_trader 重复, 改用统一入口
+    total = _total_capital(cfg)
     cash_pct = cfg["risk"].get("cash_reserve_pct", 16)
     ammo_total = cash_pct / 100 * total
     # 已占用弹药 = 各网格票当前持仓市值(约等于)

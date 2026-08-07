@@ -25,6 +25,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import market_data as md
 import llm_client  # 统一 LLM 调用: env(LLM_BASE_URL/LLM_API_KEY/LLM_MODEL) 优先, 优雅降级
+import jsonl_utils as _jsonl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(HERE, "strategy_config.json")
@@ -94,8 +95,10 @@ def gather_context(cfg):
             }
             for ind, d in sorted_inds[:max_ind]
         ]
-        # 标注防御黑名单
-        ctx["defensive_blacklist"] = list(weekly_theme.DEFENSIVE_INDUSTRY_BLACKLIST)
+        # 标注"非进攻行业"(旧 weekly_theme.DEFENSIVE_INDUSTRY_BLACKLIST 已删除,
+        # 改为从 config.universe_split.offensive_industries 白名单反推: 不在白名单=防御/避险板块)
+        off_wl = set((cfg.get("universe_split") or {}).get("offensive_industries") or [])
+        ctx["defensive_blacklist"] = [ind for ind in ind_mom if ind not in off_wl]
     except Exception as e:
         ctx["industry_rank"] = []
         ctx["industry_rank_error"] = str(e)
@@ -402,10 +405,8 @@ def cmd_context(cfg):
 
 def save_audit(record):
     """追加审计记录到 records/script_advisor_audit.jsonl"""
-    os.makedirs(RECORD_ROOT, exist_ok=True)
-    path = os.path.join(RECORD_ROOT, "script_advisor_audit.jsonl")
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    # M21: 复用 jsonl_utils.append_jsonl (自动建目录 + 统一序列化)
+    _jsonl.append_jsonl(os.path.join(RECORD_ROOT, "script_advisor_audit.jsonl"), record)
 
 
 def main():

@@ -29,6 +29,7 @@ import os
 import sys
 import json
 import time
+import logging
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -116,7 +117,11 @@ def fetch_trend_dev(cfg):
 
 
 def fetch_margin_debt():
-    """沪深融资余额最新值 + 环比变化% -> (latest, pct_change)。东方财富数据中心。"""
+    """沪深融资余额最新值 + 环比变化% -> (latest, pct_change)。东方财富数据中心。
+
+    字段兜底: 东财 RPTA_WEB_RZRQ_GDMX 主字段 RZYE, 同时支持历史可能的 RZRQ 别名。
+    旧实现 `rows[0].get("RZYE") or rows[0].get("RZYE")` 两侧同名, 兜底完全失效。
+    """
     vals = {}
     pct = None
     for scode in ("SH", "SZ"):
@@ -127,18 +132,31 @@ def fetch_margin_debt():
             j = _get_json(url)
             rows = (j.get("result") or {}).get("data") or []
             if len(rows) >= 1:
-                cur = float(rows[0].get("RZYE") or rows[0].get("RZYE") or 0)
+                cur = _pick_float(rows[0], ("RZYE", "RZRQ", "rzye"))
                 vals[scode] = cur
                 if len(rows) >= 2:
-                    prev = float(rows[1].get("RZYE") or rows[1].get("RZYE") or 0)
+                    prev = _pick_float(rows[1], ("RZYE", "RZRQ", "rzye"))
                     if prev:
                         pct = (cur - prev) / prev * 100
-        except Exception:
+        except Exception as e:
+            logging.getLogger(__name__).warning("fetch_margin_debt(%s) 失败: %s", scode, e)
             continue
     if not vals:
         return None
     latest = sum(vals.values())
     return latest, (pct or 0.0)
+
+
+def _pick_float(row, keys, default=0.0):
+    """从 row 按 keys 顺序取第一个非空字段转 float。多字段名兜底, 替代旧 `get(k) or get(k)` 死代码。"""
+    for k in keys:
+        v = row.get(k)
+        if v not in (None, "", 0, "0"):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                continue
+    return default
 
 
 def fetch_vix():

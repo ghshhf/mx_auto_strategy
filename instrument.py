@@ -52,6 +52,7 @@ DEFAULT_INSTRUMENT_CFG: Dict[str, object] = {
 DEFAULT_TRADABLE_MARKETS: Tuple[str, ...] = VALID_MARKETS
 
 _CFG_CACHE: Optional[dict] = None
+_CFG_CACHE_MTIME: Optional[float] = None
 
 
 class UnknownLotError(ValueError):
@@ -62,11 +63,22 @@ class UnknownLotError(ValueError):
 # 配置读取
 # ---------------------------------------------------------------------------
 def load_config(path: Optional[str] = None, force: bool = False) -> dict:
-    """读取 strategy_config.json(带进程内缓存)。读取失败返回空 dict, 由调用方走兜底。"""
-    global _CFG_CACHE
+    """读取 strategy_config.json(带进程内缓存)。读取失败返回空 dict, 由调用方走兜底。
+
+    M22: 旧实现只在 force=True 时重读, loop 模式下用户改 config 不会生效需重启。
+         现加 mtime 检查: 文件 mtime 变了自动失效缓存, 无需 force。
+    """
+    global _CFG_CACHE, _CFG_CACHE_MTIME
     target = path or CONFIG_PATH
-    if not force and path is None and _CFG_CACHE is not None:
-        return _CFG_CACHE
+    # 显式 force 或文件 mtime 变了都触发重读
+    if path is None:
+        try:
+            cur_mtime = os.path.getmtime(target)
+        except OSError:
+            cur_mtime = None
+        if not force and _CFG_CACHE is not None:
+            if cur_mtime is None or _CFG_CACHE_MTIME == cur_mtime:
+                return _CFG_CACHE
     data: dict = {}
     try:
         with open(target, "r", encoding="utf-8") as f:
@@ -75,6 +87,7 @@ def load_config(path: Optional[str] = None, force: bool = False) -> dict:
         data = {}
     if path is None:
         _CFG_CACHE = data
+        _CFG_CACHE_MTIME = cur_mtime
     return data
 
 
