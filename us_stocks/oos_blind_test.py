@@ -10,6 +10,7 @@
   如果TEST期倍数 期权增强 / 现货原版 > 1.5x 且 且 MDD 不恶化 → 无后视镜。
 """
 import os, sys, csv, json, argparse, statistics
+import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -18,7 +19,35 @@ from us_backtest_ai import (load_panel, load_us_cfg, check_take_profit,
     check_stop_loss, check_extreme_overvaluation, _ma, regime_of, death_cross_count,
     select_baseline, select_optimized, pick_defense_lowvol, eligible_universe,
     ai_mult_deterministic, BROAD, EXCLUDE, WARMUP, DEF_CANDIDATES,
-    STOCK_SECTOR, SECTOR_FALLBACK, sector_short_index)
+    STOCK_SECTOR, SECTOR_FALLBACK, sector_short_index, _mini_window_bt)
+
+
+def real_window(dates, series, us_cfg, options_sim, start_w, end_w,
+                short_underlying_override=None, short_by_sector_override=None):
+    """用【真实引擎】_mini_window_bt 跑 [start_w, end_w) 窗口。
+
+    替换原 backtest_window(自实现复刻, 与真实引擎对不上 ~18x)。
+    mini引擎已含: 动量选股/regime分配/covered call/put保险/做空, 与主引擎决策一致。
+    """
+    sim = dict(options_sim)
+    su = short_underlying_override
+    sbs = bool(short_by_sector_override) if short_underlying_override is None else bool(short_by_sector_override)
+    ovl_enabled = bool(sim.get("ovl_enabled", False)) and bool(sim.get("enabled", True))
+    nav, short_count, nav_hist = _mini_window_bt(
+        dates, series, us_cfg, sim, start_w, end_w,
+        short_underlying=su if su else "TECH_INDEX",
+        short_by_sector=sbs,
+        short_dte=sim.get("short_dte_weeks", 13),
+        short_size=sim.get("short_size_ratio", 0.5),
+        ovl_enabled=ovl_enabled,
+        track_nav=True,
+    )
+    nav_arr = np.array(nav_hist, dtype=float)
+    peak = np.maximum.accumulate(nav_arr)
+    mdd = float((nav_arr / peak - 1.0).min())
+    return {"nav_final": float(nav), "mdd": mdd, "short_count": int(short_count),
+            "short_pnl": 0.0, "call_premium": 0.0, "call_settle": 0.0,
+            "put_cost": 0.0, "put_hedge": 0.0, "cost": 0.0, "ovl_call_count": 0}
 
 DATA = os.path.join(HERE, "data")
 PANEL = os.path.join(DATA, "weekly_adjclose_full_ext.csv")
@@ -363,12 +392,12 @@ def main():
     results_train = []
     for su, sbs in candidates:
         label = "全行业匹配" if sbs else su
-        r = backtest_window(dates, series, cfg, options_sim, TRAIN_START, TRAIN_END,
-                           short_underlying_override=su, short_by_sector_override=sbs if su == None else False)
+        r = real_window(dates, series, cfg, options_sim, TRAIN_START, TRAIN_END,
+                        short_underlying_override=su, short_by_sector_override=sbs if su == None else False)
         mult = r["nav_final"]
         short_pnl = r["short_pnl"]
         results_train.append((mult, short_pnl, label, su, sbs))
-        print(f"  {label:<12}: 倍数 {mult:.2f}x | 做空 {short_pnl*100:+.2f}% | MDD {r['mdd']*100:.1f}% | 开仓{r['short_count']}次")
+        print(f"  {label:<12}: 倍数 {mult:.2f}x | MDD {r['mdd']*100:.1f}% | 开仓{r['short_count']}次")
     results_train.sort(reverse=True)
     best_mult, best_short, best_label, best_su, best_sbs = results_train[0]
     print(f"  → TRAIN最优: {best_label} 倍数{best_mult:.2f}x")
@@ -376,18 +405,18 @@ def main():
     # 盲测TEST期
     print("=== TEST 2021-2026 盲跑 (参数完全照搬TRAIN期, 不偷看任何未来信息)")
     # 方案A: TRAIN最优
-    rA = backtest_window(dates, series, cfg, options_sim, TEST_START, len(dates),
+    rA = real_window(dates, series, cfg, options_sim, TEST_START, len(dates),
         short_underlying_override=best_su, short_by_sector_override=best_sbs)
     # 方案B: 当前生产版 (TECH_INDEX + short_by_sector=False)
-    rB = backtest_window(dates, series, cfg, options_sim, TEST_START, len(dates),
+    rB = real_window(dates, series, cfg, options_sim, TEST_START, len(dates),
         short_underlying_override="TECH_INDEX", short_by_sector_override=False)
     # 原版纯动量现货对照(停止盈止损期权)
-    rC = backtest_window(dates, series, cfg, {**options_sim, "enabled": False, "short_enabled": False, "stock_put_enabled": False}, TEST_START, len(dates),
+    rC = real_window(dates, series, cfg, {**options_sim, "enabled": False, "short_enabled": False, "stock_put_enabled": False}, TEST_START, len(dates),
         short_underlying_override="TECH_INDEX", short_by_sector_override=False)
 
     def row(label, r, note=""):
         mult = r["nav_final"]
-        print(f"  {label:<20}: {mult:>7.2f}x |  MDD {r['mdd']*100:>5.1f}% | 做空{r['short_pnl']*100:>+7.2f}% | call金+call结:净 {(r['call_premium']+r['call_settle'])*100:>+6.1f}% (金{r['call_premium']*100:.1f}% 结{r['call_settle']*100:.1f}%) | 个股put净 {(r['put_hedge']-r['put_cost'])*100:>+5.1f}%{note}")
+        print(f"  {label:<20}: {mult:>7.2f}x |  MDD {r['mdd']*100:>5.1f}% | 开仓{r['short_count']}次{note}")
     row("A: TRAIN最优盲跑("+best_label+")", rA)
     row("B: 生产版TECH_INDEX盲跑", rB, " ← 我们最终方案")
     row("C: 纯动量现货对照(无期权)", rC, " ← 你说的过去现货极限~20x 全期 原版")
