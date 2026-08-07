@@ -14,3 +14,12 @@
 {"ts": "2026-07-24 02:04:04", "date": "2026-07-24", "mode": "snapshot", "code": "600995", "name": "南网储能", "side": "HOLD", "price": 13.01, "qty": 6600, "amount": 85866.0, "resp": "", "note": "成本12.251 盈亏5007.45 仓位8.64%"}
 {"ts": "2026-07-24 02:04:04", "date": "2026-07-24", "mode": "snapshot", "code": "601318", "name": "中国平安", "side": "HOLD", "price": 53.93, "qty": 1900, "amount": 102467.0, "resp": "", "note": "成本51.118 盈亏5342.61 仓位10.31%"}
 {"ts": "2026-07-24 02:04:04", "date": "2026-07-24", "mode": "snapshot", "code": "601899", "name": "紫金矿业", "side": "HOLD", "price": 31.76, "qty": 5000, "amount": 158800.0, "resp": "", "note": "成本33.487 盈亏-8633.94 仓位15.98%"}
+{"ts": "2026-08-05 14:50:00", "date": "2026-08-05", "mode": "rebalance", "code": "600016", "name": "民生银行", "side": "BUY", "price": 3.52, "qty": 1000, "amount": 3520.0, "resp": "[纯记账·模拟盘] 已记录指令(不发送真实下单): buy 600016 1000@3.52", "note": "死叉防御模式:加仓银行蓝筹"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "159188", "name": "红利100ETF景顺", "side": "HOLD", "price": 0, "qty": 79900, "amount": 0, "resp": "", "note": "成本0.930 仓位7.40%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "300760", "name": "迈瑞医疗", "side": "HOLD", "price": 0, "qty": 800, "amount": 0, "resp": "", "note": "成本152.211 仓位12.13%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "512690", "name": "酒ETF鹏华", "side": "HOLD", "price": 0, "qty": 466200, "amount": 0, "resp": "", "note": "成本0.429 仓位19.93%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "600016", "name": "民生银行", "side": "HOLD", "price": 0, "qty": 57600, "amount": 0, "resp": "", "note": "成本3.534 仓位20.28%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "600877", "name": "电科芯片", "side": "HOLD", "price": 0, "qty": 4200, "amount": 0, "resp": "", "note": "成本11.522 仓位4.82%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "600995", "name": "南网储能", "side": "HOLD", "price": 0, "qty": 6600, "amount": 0, "resp": "", "note": "成本12.251 仓位8.06%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "601318", "name": "中国平安", "side": "HOLD", "price": 0, "qty": 1900, "amount": 0, "resp": "", "note": "成本51.118 仓位9.68%"}
+{"ts": "2026-08-07 15:00:00", "date": "2026-08-07", "mode": "snapshot", "code": "601899", "name": "紫金矿业", "side": "HOLD", "price": 0, "qty": 5000, "amount": 0, "resp": "", "note": "成本33.487 仓位16.68%"}

@@ -1,62 +1,75 @@
 {
-  "week_label": "2026-W29",
-  "generated_at": "2026-07-20 11:13:47",
-  "mode": "user_direction_overlay",
-  "strategy": "用户预判叠加模式 (用户给方向, AI叠加动量挑票)",
-  "user_direction": "下一周(7/20-7/24)主方向: 电力 或 医疗(池内标签=医药) (防御端3个照常: 银行+电力+红利低波)",
+  "week_label": "2026-W31",
+  "generated_at": "2026-08-07 03:10:03",
   "main_lines": [
     {
-      "industry": "电力",
-      "avg_chg": 2.58,
-      "top_ticker": "南网储能"
+      "industry": "稀土",
+      "avg_chg": 13.26,
+      "adj_chg": 13.26,
+      "adoption_phase": "policy",
+      "top_ticker": "盛和资源"
     },
     {
-      "industry": "医药",
-      "avg_chg": 3.02,
-      "top_ticker": "迈瑞医疗"
+      "industry": "计算机",
+      "avg_chg": 8.13,
+      "adj_chg": 10.98,
+      "adoption_phase": "accelerating",
+      "top_ticker": "浪潮信息"
     }
   ],
-  "defensive_3": [
-    "601398",
-    "600900",
-    "512890"
-  ],
   "offensive": [
-    "600995",
-    "300760"
+    "600392",
+    "000977"
   ],
   "all_industry_rank": [
     {
-      "industry": "港股消费",
-      "avg_chg": 11.8
+      "industry": "稀土",
+      "avg_chg": 13.26,
+      "adj_chg": 13.26,
+      "adoption_phase": "policy"
     },
     {
-      "industry": "石油",
-      "avg_chg": 8.46
+      "industry": "计算机",
+      "avg_chg": 8.13,
+      "adj_chg": 10.98,
+      "adoption_phase": "accelerating"
     },
     {
-      "industry": "化工",
-      "avg_chg": 7.82
+      "industry": "通信",
+      "avg_chg": 13.35,
+      "adj_chg": 10.68,
+      "adoption_phase": "mature"
     },
     {
-      "industry": "白酒",
-      "avg_chg": 7.22
+      "industry": "半导体设备",
+      "avg_chg": 7.74,
+      "adj_chg": 10.45,
+      "adoption_phase": "accelerating"
     },
     {
-      "industry": "电网",
-      "avg_chg": 6.91
+      "industry": "面板",
+      "avg_chg": 10.16,
+      "adj_chg": 8.13,
+      "adoption_phase": "mature"
     },
     {
-      "industry": "免税",
-      "avg_chg": 6.87
+      "industry": "机器人",
+      "avg_chg": 6.38,
+      "adj_chg": 7.34,
+      "adoption_phase": "early"
     },
     {
-      "industry": "食品",
-      "avg_chg": 6.36
+      "industry": "医药",
+      "avg_chg": 6.14,
+      "adj_chg": 7.06,
+      "adoption_phase": "early"
     },
     {
-      "industry": "汽车",
-      "avg_chg": 5.65
+      "industry": "科技宽基",
+      "avg_chg": 5.15,
+      "adj_chg": 6.95,
+      "adoption_phase": "accelerating"
     }
-  ]
+  ],
+  "mode": "auto_theme"
 }

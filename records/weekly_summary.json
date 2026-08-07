@@ -9,5 +9,38 @@
     "snapshots": 2,
     "positions": 8,
     "note": "从mx-moni持仓快照导入"
+  },
+  "第20260807期": {
+    "start_date": "2026-08-03",
+    "end_date": "2026-08-07",
+    "ts": "2026-08-07 03:32:00",
+    "start_assets": 994707.21,
+    "end_assets": 1003617.0,
+    "return_pct": 0.89,
+    "snapshots": 5,
+    "positions": 8,
+    "note": "死叉防御模式维持,加仓民生银行1000股,周收益+0.9%"
+  },
+  "第20260807期_us": {
+    "start_date": "2026-08-03",
+    "end_date": "2026-08-07",
+    "ts": "2026-08-07 03:32:00",
+    "start_assets": 998524.03,
+    "end_assets": 1033183.0,
+    "return_pct": 3.48,
+    "snapshots": 3,
+    "positions": 6,
+    "note": "美股持仓不动,NVDA+LLY领涨,周收益+3.5%"
+  },
+  "第20260807期_lobster": {
+    "start_date": "2026-08-03",
+    "end_date": "2026-08-07",
+    "ts": "2026-08-07 03:32:00",
+    "start_assets": 1031499.5,
+    "end_assets": 1040200.0,
+    "return_pct": 0.84,
+    "snapshots": 2,
+    "positions": 5,
+    "note": "龙虾大赛持仓不动,红利+黄金稳健,周收益+0.8%"
   }
 }
