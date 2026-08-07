@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-survivorship_check.py - 幸存者偏差敏感性检查
-=================================================
+survivorship_check.py - 幸存者偏差 / 赢家集中度 敏感性检查 (v6.18 诚实基线)
+================================================================================
 移除候选池中历史涨幅最大的 TopN 只股票后重算回测,
 评估"当前赢家"池对回测倍数的向上偏差量级。
 
@@ -10,9 +10,16 @@ survivorship_check.py - 幸存者偏差敏感性检查
   python3 survivorship_check.py --top 10         # 移除 Top10
   python3 survivorship_check.py --compare        # 对比 Top0/5/10/20
 
-原理:
-  如果移除涨幅最大的 5 只股票后倍数大幅下降, 说明回测严重依赖少数幸存者;
-  如果变化不大, 说明收益来源分散, 幸存者偏差影响有限。
+⚠️ 重要解释 (v6.18):
+  本脚本测的是"赢家集中度敏感性", 是幸存者偏差的**上界代理**而非精确修正:
+    1. 严格幸存者偏差 = 候选池只含"未退市幸存者", 而这些幸存者 disproportionally
+       是赢家; 本脚本通过"移除最大涨幅者"近似这一效应。
+    2. 精确修正需 point-in-time 含退市全样本池, akshare 经本代理无法干净获取
+       (szse.cn 连接被拦, stock_zh_a_st_em 仅当前 ST 股), 故不做虚假精确值。
+  结论判读: 若移除 TopN 后倍数大幅下降 -> 头条 18.185x 是被系统性高估的**上界**,
+  真实值应更低; 本脚本给出偏差幅度的保守下界。
+
+基线: v6.18 诚实配置 use_tech=False + trend_filter=False + 核心卫星 + 死叉 + 成本。
 """
 import os
 import sys
@@ -111,9 +118,9 @@ def main():
         print(f"  {code}: {ret + 1.0:.1f}x ({ret*100:+.0f}%)")
 
     run_kw = dict(
-        offense_mode="momentum", momentum_lookback=26, use_tech=True,
+        offense_mode="momentum", momentum_lookback=26, use_tech=False,
         core_satellite=True, core_frac=0.5, death_cross=True,
-        trend_filter=True, costs=True, panel_path=panel, use_core_sub=True,
+        trend_filter=False, costs=True, panel_path=panel, use_core_sub=True,
     )
 
     if args.compare:
@@ -148,11 +155,12 @@ def main():
         pct = delta / s_base['final_multiple'] * 100 if s_base['final_multiple'] else 0
         print(f"\n变化: {delta:+.3f}x ({pct:+.1f}%)")
         if abs(pct) > 20:
-            print("⚠ 偏差显著: 移除Top涨幅后倍数变化>20%, 回测严重依赖少数幸存者")
+            print("⚠ 偏差显著: 移除Top涨幅后倍数变化>20% -> 头条 18.185x 是被系统性高估的上界, 真实值应明显更低")
         elif abs(pct) > 10:
-            print("⚠ 偏差中等: 移除Top涨幅后倍数变化10-20%, 有一定幸存者依赖")
+            print("⚠ 偏差中等: 移除Top涨幅后倍数变化10-20% -> 头条倍数含可观幸存者/赢家集中度溢价")
         else:
-            print("✓ 偏差有限: 移除Top涨幅后倍数变化<10%, 收益来源较分散")
+            print("✓ 偏差有限: 移除Top涨幅后倍数变化<10% -> 收益来源较分散")
+        print("注: 此为赢家集中度敏感性(幸存者偏差上界代理); 精确修正需含退市 point-in-time 池(akshare 经本代理不可得)。")
 
 
 if __name__ == "__main__":

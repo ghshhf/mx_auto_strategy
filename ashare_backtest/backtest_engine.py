@@ -688,7 +688,7 @@ def momentum_select(dates, series, pool_meta, i, lookback, use_tech=True,
 
 # ------------------------- 回测主循环 -------------------------
 def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
-        momentum_lookback=13, use_tech=True, vol_target=False, death_cross=True,
+        momentum_lookback=26, use_tech=False, vol_target=False, death_cross=True,
         core_satellite=False, core_frac=0.6, grid_weak=False, vol_ref=0.05,
         start_capital=1_000_000, verbose=False, eval_lo=None, eval_hi=None,
         record_plan=False, score_mode="plain", panel_path=None, use_core_sub=False,
