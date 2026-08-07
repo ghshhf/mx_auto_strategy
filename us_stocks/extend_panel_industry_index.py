@@ -10,8 +10,8 @@
           AUTO_INDEX 电动车/智能驾驶6只(对标DRIV/IDRV)
           INDUSTRIAL_INDEX 工业13只(对标XLI)
 
-合成方法: 每t周取成分股有效均价 → 首有效周归一=100。
-          None成分自动跳过(新股上市前/退市后剔除, 无前视)。
+合成方法(已修): 每周取成分股有效简单收益等权平均 → 复利累乘(基期=100)。
+          收益对价格水平/成员数不变 -> 无均价法假跳; None成分自动跳过。
 
 联网真实ETF年度收益锚点(多源交叉一致, 2016-2024):
   XLV医疗  / XLF金融  / XLI工业   = ETFreplay.com + Vanguard 官方季报 + PortfoliosLab 三源一致
@@ -74,20 +74,38 @@ REAL_ANNUAL = {
 }
 
 def synth_index(series, dates, constituents, name):
-    out = [None] * len(dates)
-    base = None
-    for i in range(len(dates)):
-        vals = []
+    """等权收益率合成指数(修复旧版'价格均价法'假跳)。
+
+    旧版: 每周取成分股价格算术平均 -> 首周归一=100。缺陷:
+      (1) 平均的是'价格'而非'收益' -> 高价股主导, 非等权;
+      (2) 成员数浮动(IPO/退市/None) -> 平均价格水平突变 -> 假跳(如CONSUMER_INDEX 13倍)。
+    新版: 每周取成分股当周有效简单收益, 等权平均, 复利累乘(基期=100)。
+      - 收益对价格水平与成员数不变 -> 无假跳;
+      - 某周无有效收益(全None)则沿用上周值(0收益), 序列连续;
+      - 仅用于'做空对标物'的周收益, 绝对水位无关紧要。
+    """
+    n = len(dates)
+    out = [None] * n
+    idx = None
+    for i in range(1, n):
+        rets = []
         for c in constituents:
             arr = series.get(c)
-            if arr and i < len(arr) and arr[i] is not None and arr[i] > 0:
-                vals.append(arr[i])
-        if not vals:
+            if not arr or i >= len(arr):
+                continue
+            a, b = arr[i], arr[i - 1]
+            if a is None or b is None or b <= 0 or a <= 0:
+                continue
+            rets.append(a / b - 1)
+        if not rets:
+            if idx is not None:
+                out[i] = idx  # 沿用上周, 视为0收益
             continue
-        avg = sum(vals) / len(vals)
-        if base is None:
-            base = avg
-        out[i] = round(avg / base * 100.0, 4)
+        r = sum(rets) / len(rets)
+        if idx is None:
+            idx = 100.0
+        idx = idx * (1 + r)
+        out[i] = round(idx, 4)
     return out
 
 
