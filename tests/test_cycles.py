@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-test_cycles.py - 多周期框架测试 (v6.19)
+test_cycles.py - 12 层金融周期叠加框架测试 (v6.20)
 
 重点保护的正确性属性(与 test_macro_overlay.py 同级):
   1. 前视偏差防护: cycle_phase_at 在 T 日只能看到 available_date <= T 的周期数据。
@@ -24,7 +24,7 @@ from cycles.phases import (  # noqa: E402
 from cycles import specs  # noqa: E402
 
 RAW_COLS = ["fed_funds", "t10y2y", "dtwexbgs", "hy_oas", "walcl",
-            "vix", "cp", "cpi", "cs"]
+            "vix", "cp", "wti", "cs"]
 
 
 def _write_raw(path, rows):
@@ -64,7 +64,7 @@ class TestCyclesLookahead(unittest.TestCase):
             rows.append({"month": ym, "avail": f"{y:04d}-{mo:02d}-01",
                          "fed_funds": 2.0, "t10y2y": 0.2, "dtwexbgs": 100.0,
                          "hy_oas": 350.0, "walcl": 4000.0, "vix": 15.0,
-                         "cp": 0.0, "cpi": 2.0, "cs": 5.0})
+                         "cp": 0.0, "wti": 60.0, "cs": 5.0})
         return rows
 
     def test_future_row_is_invisible(self):
@@ -74,7 +74,7 @@ class TestCyclesLookahead(unittest.TestCase):
         rows.append({"month": "2020-01", "avail": "2020-03-01",
                      "fed_funds": 8.0, "t10y2y": -1.5, "dtwexbgs": 130.0,
                      "hy_oas": 1200.0, "walcl": 2000.0, "vix": 60.0,
-                     "cp": -10.0, "cpi": 9.0, "cs": 2.0})
+                     "cp": -10.0, "wti": 120.0, "cs": 2.0})
         _write_raw(self.raw, rows)
         st = load_cycles(self.raw, None)
         # 查询日 2020-02-15: 只能看到 2019 全年(avail 最晚 2020-02-01), 看不到 2020-03-01
@@ -84,7 +84,7 @@ class TestCyclesLookahead(unittest.TestCase):
         # 把"未来"行改成完全相反极端, 再查同一日 —— 结果必须不变(证明未偷看)
         rows[-1].update({"fed_funds": 0.0, "t10y2y": 2.0, "dtwexbgs": 70.0,
                          "hy_oas": 200.0, "walcl": 9000.0, "vix": 10.0,
-                         "cp": 20.0, "cpi": 0.5, "cs": 15.0})
+                         "cp": 20.0, "wti": 30.0, "cs": 15.0})
         _write_raw(self.raw, rows)
         st2 = load_cycles(self.raw, None)
         ph_after = cycle_phase_at(st2, "2020-02-15")
@@ -114,11 +114,11 @@ class TestCyclesBounds(unittest.TestCase):
         rows = [{"month": "2020-01", "avail": "2020-03-01",
                  "fed_funds": 99.0, "t10y2y": -9.0, "dtwexbgs": 999.0,
                  "hy_oas": 99999.0, "walcl": 1.0, "vix": 999.0,
-                 "cp": -999.0, "cpi": 999.0, "cs": -999.0},
+                 "cp": -999.0, "wti": 999.0, "cs": -999.0},
                 {"month": "2020-02", "avail": "2020-04-01",
                  "fed_funds": 0.0, "t10y2y": 3.0, "dtwexbgs": 50.0,
                  "hy_oas": 100.0, "walcl": 9000.0, "vix": 9.0,
-                 "cp": 30.0, "cpi": 0.1, "cs": 20.0}]
+                 "cp": 30.0, "wti": 0.1, "cs": 20.0}]
         _write_raw(self.raw, rows)
         st = load_cycles(self.raw, None)
         ph = cycle_phase_at(st, "2020-04-01")
@@ -134,15 +134,19 @@ class TestCyclesBounds(unittest.TestCase):
         _write_raw(self.raw, [{"month": "2020-01", "avail": "2020-03-01",
                                "fed_funds": 2.0, "t10y2y": 0.2, "dtwexbgs": 100.0,
                                "hy_oas": 350.0, "walcl": 4000.0, "vix": 15.0,
-                               "cp": 0.0, "cpi": 2.0, "cs": 5.0}])
+                               "cp": 0.0, "wti": 60.0, "cs": 5.0}])
         _write_qual(self.qual, [
             {"cycle_id": "semiconductor", "avail": "2020-02-01", "phase": 0.4},
             {"cycle_id": "ai_innovation", "avail": "2020-02-01", "phase": -0.3},
+            {"cycle_id": "geopolitics", "avail": "2020-02-01", "phase": -0.2},
+            {"cycle_id": "valuation", "avail": "2020-02-01", "phase": -0.3},
         ])
         st = load_cycles(self.raw, self.qual)
         ph = cycle_phase_at(st, "2020-03-01")
         self.assertAlmostEqual(ph["semiconductor"], 0.4, places=4)
         self.assertAlmostEqual(ph["ai_innovation"], -0.3, places=4)
+        self.assertAlmostEqual(ph["geopolitics"], -0.2, places=4)
+        self.assertAlmostEqual(ph["valuation"], -0.3, places=4)
 
 
 class TestCyclesGracefulDegradation(unittest.TestCase):
@@ -162,13 +166,13 @@ class TestCyclesGracefulDegradation(unittest.TestCase):
         _write_raw(self.raw, [
             {"month": "2020-01", "avail": "2020-03-01", "fed_funds": 1.0,
              "t10y2y": 0.2, "dtwexbgs": "", "hy_oas": "", "walcl": "",
-             "vix": "", "cp": "", "cpi": "", "cs": ""},
+             "vix": "", "cp": "", "wti": "", "cs": ""},
             {"month": "2020-02", "avail": "2020-04-01", "fed_funds": 2.0,
              "t10y2y": 0.2, "dtwexbgs": "", "hy_oas": "", "walcl": "",
-             "vix": "", "cp": "", "cpi": "", "cs": ""},
+             "vix": "", "cp": "", "wti": "", "cs": ""},
             {"month": "2020-03", "avail": "2020-05-01", "fed_funds": 3.0,
              "t10y2y": 0.2, "dtwexbgs": "", "hy_oas": "", "walcl": "",
-             "vix": "", "cp": "", "cpi": "", "cs": ""},
+             "vix": "", "cp": "", "wti": "", "cs": ""},
         ])
         st = load_cycles(self.raw, None)
         ph = cycle_phase_at(st, "2020-06-01")

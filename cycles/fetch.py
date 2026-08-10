@@ -101,7 +101,7 @@ def fetch_all(proxy=None):
         proxy = get_proxy()
     series_cols: dict[str, dict] = {}
     for c in specs.QUANT_CYCLES:
-        for sid, col, transform in c["fred"]:
+        for sid, col, transform, _sign in c["fred"]:
             if col in series_cols:
                 continue
             raw = fetch_fred_series(sid, proxy, transform)

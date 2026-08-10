@@ -21,7 +21,7 @@ import csv
 from . import specs
 
 # 各列 z 分数窗口(月)
-Z_WINDOW = {"vix": 36}
+Z_WINDOW = {"vix": 36, "mcap_gdp": 120}
 DEFAULT_WINDOW = 60
 
 
