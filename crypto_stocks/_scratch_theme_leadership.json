@@ -1,0 +1,68 @@
+{
+  "cycle_upwindow_rets": {
+    "2017(partial)": {
+      "L1_INDEX": NaN,
+      "L2_INDEX": NaN,
+      "DEFI_INDEX": NaN,
+      "AI_INDEX": NaN,
+      "WE3_INDEX": NaN,
+      "RWA_INDEX": NaN
+    },
+    "2021": {
+      "L1_INDEX": 2007.6261330074353,
+      "L2_INDEX": 88.6730669434354,
+      "DEFI_INDEX": 100.77614262731754,
+      "AI_INDEX": 1866.0215107553777,
+      "WE3_INDEX": 3.894084426159253,
+      "RWA_INDEX": NaN
+    },
+    "2024": {
+      "L1_INDEX": 0.27403797320256085,
+      "L2_INDEX": -0.7525265037126273,
+      "DEFI_INDEX": -0.8715998880173852,
+      "AI_INDEX": -0.24372413256431202,
+      "WE3_INDEX": 0.33738730816744833,
+      "RWA_INDEX": 0.3133722405480843
+    }
+  },
+  "current_snapshot": {
+    "L1_INDEX": [
+      0.12011259103991156,
+      0.015954512846822255
+    ],
+    "L2_INDEX": [
+      -0.09976547572764571,
+      -0.2609408201586635
+    ],
+    "DEFI_INDEX": [
+      0.11756237376994616,
+      -0.1878616737933233
+    ],
+    "AI_INDEX": [
+      0.05638632733234139,
+      0.32001093175372364
+    ],
+    "WE3_INDEX": [
+      0.08566182236687903,
+      0.6292299248227031
+    ],
+    "RWA_INDEX": [
+      0.11220479744956202,
+      -0.13166521049995727
+    ]
+  },
+  "leading_theme_now": "WE3_INDEX",
+  "rotation": {
+    "2017": "ICO + \u516c\u94fe\u5e73\u53f0(ETH/NEO/\u5e73\u53f0\u5e01) \u2014 \u53d9\u4e8b: \"\u533a\u5757\u94fe+\u4e07\u7269\u4ee3\u5e01\u5316\"",
+    "2021": "DeFi(UNI/AAVE) + NFT + memecoin(DOGE/SHIB) + \u9ad8\u6027\u80fdL1(SOL/AVAX) \u2014 \u53d9\u4e8b: \"\u53bb\u4e2d\u5fc3\u5316\u91d1\u878d/\u94fe\u4e0a\u4e50\u9ad8\"",
+    "2024": "AI(FET/RENDER/TAO) + RWA(ONDO) + \u4f4e\u8d39L1/L2(SOL/TON/SUI) + \u6a21\u5757\u5316 \u2014 \u53d9\u4e8b: \"AI\u00d7\u52a0\u5bc6/\u73b0\u5b9e\u8d44\u4ea7\u4e0a\u94fe\""
+  },
+  "next_round_prediction": [
+    "DePIN(\u53bb\u4e2d\u5fc3\u5316\u7269\u7406\u57fa\u5efa: HNT/AKT/PEAQ) \u2014 \u672c\u8f6e early, \u4e0b\u8f6e\u6700\u53ef\u80fd\"AI\u57fa\u5efa\"\u627f\u63a5",
+    "RWA \u6269\u5708(\u9664ONDO\u5916: \u56fd\u503a/\u80a1\u7968/\u4fe1\u7528\u4e0a\u94fe) \u2014 \u76d1\u7ba1\u843d\u5730\u540e\u52a0\u901f",
+    "\u6a21\u5757\u5316/\u610f\u56fe/\u94fe\u62bd\u8c61(CEL/TIA/DYM) \u2014 \u672c\u8f6e early, \u4e0b\u8f6e\u57fa\u7840\u8bbe\u65bd\u4e3b\u7ebf",
+    "AI-Agent \u81ea\u4e3b\u7ecf\u6d4e(\u672c\u8f6eAI\u7092\u4f5c\u7684\u5b50\u5c42, \u4e0b\u8f6e\u5206\u5316\u51fa\u771f\u6b63\u73b0\u91d1\u6d41\u8005)",
+    "BTC L2 / \u7a33\u5b9a\u5e01\u5408\u89c4(\u653f\u7b56\u9a71\u52a8, \u7f8e\u56fdGENIUS\u6cd5\u6848\u540e\u673a\u6784\u7a33\u5b9a\u5e01)",
+    "wildcard: \u65b0\u4e00\u8f6e memecoin \u8d85\u7ea7\u5468\u671f(\u6bcf\u8f6e\u5fc5\u6709, \u96be\u9884\u57cb\u4f46\u9700\u7559\u53e3)"
+  ]
+}

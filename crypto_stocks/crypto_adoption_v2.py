@@ -130,9 +130,12 @@ def defense_weights():
 THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'SEI', 'TON', 'TRX'],
     "L2扩容":  ['ARB', 'OP', 'MATIC', 'MANTA', 'STRK', 'METIS'],
-    "DeFi":    ['UNI', 'LINK', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', 'DYDX', '1INCH', 'ENS', 'LDO'],
+    "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'CRV', '1INCH', 'DYDX', 'JUP'],
+    "DEX":     ['UNI', 'CRV', '1INCH', 'JUP'],
+    "平台币":  ['BNB'],
+    "永续交易所": ['DYDX', 'GMX'],
+    "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
     "AI+加密": ['FET', 'RENDER', 'TAO', 'RNDR', 'AKT', 'PHB'],
     "模块化":  ['TIA', 'DYM', 'PAS'],
     "DePIN":   ['HNT', 'RNDR', 'AKT', 'PEAQ'],
@@ -398,6 +401,11 @@ COIN_META = {
     'MANTRA': {'name': 'MANTRA', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'POLYX': {'name': 'Polymesh', 'role': 'offense', 'theme': 'RWA', 'launch': 2022},
     'RIO': {'name': 'Realio', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
+    # 平台币 / 永续交易所 / 基础设施 (2026-08-11 扩充)
+    'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
+    'GMX': {'name': 'GMX', 'role': 'offense', 'theme': '永续交易所', 'launch': 2021},
+    'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
+    'GRT': {'name': 'The Graph', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
 }
 
 

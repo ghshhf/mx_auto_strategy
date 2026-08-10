@@ -1,0 +1,60 @@
+<!doctype html><html lang='zh'><head><meta charset='utf-8'>
+<style>
+body{font-family:-apple-system,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;background:#0f1115;color:#e6e6e6;margin:0;padding:32px;}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;margin:28px 0 10px;color:#7fd1ff;border-left:3px solid #7fd1ff;padding-left:10px}
+.sub{color:#9aa;font-size:13px;margin-bottom:18px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+th,td{border:1px solid #2a2f3a;padding:6px 9px;text-align:right}
+th{background:#1a1f29;color:#cdd} td:first-child,th:first-child{text-align:left}
+tr.warn td{background:rgba(255,80,80,.10)} tr.ok td{background:rgba(80,200,120,.08)}
+.pos{color:#5fd38a} .neg{color:#ff7a7a} .warn2{color:#ffcf5f}
+.card{background:#151a22;border:1px solid #2a2f3a;border-radius:10px;padding:18px 22px;margin:14px 0}
+.chart{margin:10px 0} .chart h4{margin:0 0 8px;font-size:14px;color:#cdd}
+.bar{display:flex;align-items:center;margin:5px 0;font-size:12px}
+.lab{width:200px;color:#bcd;text-align:right;padding-right:10px}
+.track{height:14px;border-radius:3px;background:#3a86ff}
+.track.pos{background:#3a86ff} .track.neg{background:#ff5d5d}
+.val{margin-left:8px;width:80px;color:#ddd}
+.kpi{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+.kpi div{background:#1a2230;border:1px solid #2a3645;border-radius:8px;padding:12px 16px;flex:1;min-width:160px}
+.kpi b{font-size:20px;color:#7fd1ff;display:block} .kpi span{font-size:12px;color:#9aa}
+.take{background:#1c2a1c;border:1px solid #2f5a2f;border-radius:8px;padding:14px 18px;margin:14px 0;font-size:14px;line-height:1.7}
+</style></head><body>
+<h1>山寨盲点修正 · 时间刻作为系统底层 (FULL 56 币面板)</h1>
+<div class='sub'>用户第10轮追问: "你这一轮只看比特币了, 其他代币跌得比上一轮还猛" → 在全面板上用减半时间刻做真底层回测</div>
+
+<div class='kpi'>
+  <div><b>+61.7pp</b><span>本轮下行段(2025-10~2026-08): 时间刻把组合从 -40.7% 翻成 +21.0%</span></div>
+  <div><b>6,266x → 45,644x</b><span>10y 倍数: 关闭→开启减半时间刻</span></div>
+  <div><b>-9.9 月</b><span>2024轮 山寨等权见顶比 BTC 早 (7.4 vs 17.2 月 post-halving)</span></div>
+  <div><b>-21.0pp</b><span>本轮 crash 相位 山寨-BTC 跌幅差 (持平历史最差 -20.7pp)</span></div>
+</div>
+
+<div class='take'>
+<b>结论:</b> 用户的直觉<b class='warn2'>方向完全正确, 但幅度需修正</b>。<br>
+① <b>比特币单视角是盲点 — 确认。</b> 只看 BTC 会漏掉: 本轮山寨在 BTC"accumulation"相位就已 -32.7%, 且见顶比 BTC 早 9.9 个月。BTC 跌幅远不能代表仓位真实风险。<br>
+② <b>时间刻作为系统底层 — 验证有效。</b> 在全面板上开启后, 本轮下行段从亏 -40.7% 变为赚 +21.0% (+61.7pp), 10y 倍数 6,266x→45,644x, 全局 MDD -61.3%→-43.5%。"高位减仓+做空" 已被编码且实证显著 (OOS 倍数 t=+3.45 / MDD t=+2.91)。<br>
+③ <b>"其他代币跌得比上一轮还猛" — 相对成立、绝对不成立。</b> 相对 BTC: 本轮 crash 山寨-BTC 差 -21.0pp, 持平历史最差; 绝对: 本轮下行段山寨等权 -57.9%, 上轮(2021-11~2022-12) -81.5% —— 振幅衰减使本轮整体更浅。即"山寨相对 BTC 更惨"是真,"比上轮更惨"是假(更浅)。<br>
+④ <b>时间刻对山寨"迟到", 故需双保险。</b> 山寨早 9.9 月见顶 → 仅用 BTC 相位会在早期山寨阴跌段仍满仓。项目已用 <b>山寨相对强度门控(alt_rs_gate, 默认开)</b> 补此漏洞: 全局 MDD 进一步 -43.5%→-32.4%。
+</div>
+
+<h2>① 三轮减半 × 各相位: BTC vs 山寨等权 (红=山寨显著跑输BTC)</h2>
+<table><tr><th>相位</th><th>区间</th><th>周</th><th>BTC</th><th>山寨等权</th><th>山寨中位</th><th>山寨-BTC差</th><th>币数</th></tr>
+<tr class='ok'><td>pre_halving</td><td>2015-07-03~2016-07-08</td><td>54</td><td>+160.0%</td><td>+311.0%</td><td>+311.0%</td><td>+151.0pp</td><td>1</td></tr><tr class='ok'><td>accumulation</td><td>2016-07-15~2017-07-07</td><td>52</td><td>+279.7%</td><td>+1958.2%</td><td>+1958.2%</td><td>+1678.5pp</td><td>1</td></tr><tr class='ok'><td>euphoria</td><td>2017-07-14~2018-01-05</td><td>26</td><td>+503.4%</td><td>+574.6%</td><td>+574.6%</td><td>+71.3pp</td><td>1</td></tr><tr class='warn'><td>crash</td><td>2018-01-12~2018-07-06</td><td>26</td><td>-44.9%</td><td>-57.1%</td><td>-57.1%</td><td>-12.2pp</td><td>1</td></tr><tr class='warn'><td>bear_bottom</td><td>2018-07-13~2019-02-01</td><td>30</td><td>-50.2%</td><td>-64.2%</td><td>-73.6%</td><td>-14.0pp</td><td>4</td></tr><tr class='ok'><td>pre_halving</td><td>2019-02-08~2020-05-08</td><td>66</td><td>+163.9%</td><td>+187.3%</td><td>+23.4%</td><td>+23.4pp</td><td>9</td></tr><tr class='ok'><td>accumulation</td><td>2020-05-15~2021-05-07</td><td>52</td><td>+432.5%</td><td>+1814.2%</td><td>+756.7%</td><td>+1381.7pp</td><td>12</td></tr><tr class='ok'><td>euphoria</td><td>2021-05-14~2021-11-05</td><td>26</td><td>+89.1%</td><td>+319.7%</td><td>+84.7%</td><td>+230.6pp</td><td>26</td></tr><tr class='warn'><td>crash</td><td>2021-11-12~2022-05-06</td><td>26</td><td>-46.6%</td><td>-67.3%</td><td>-71.8%</td><td>-20.7pp</td><td>31</td></tr><tr class=''><td>bear_bottom</td><td>2022-05-13~2022-12-09</td><td>31</td><td>-44.7%</td><td>-41.2%</td><td>-50.2%</td><td>+3.5pp</td><td>33</td></tr><tr class='ok'><td>pre_halving</td><td>2022-12-16~2024-04-12</td><td>70</td><td>+285.8%</td><td>+300.1%</td><td>+129.3%</td><td>+14.3pp</td><td>36</td></tr><tr class='warn'><td>accumulation</td><td>2024-04-19~2025-04-18</td><td>53</td><td>+48.5%</td><td>-32.7%</td><td>-53.9%</td><td>-81.2pp</td><td>42</td></tr><tr class=''><td>euphoria</td><td>2025-04-25~2025-10-17</td><td>26</td><td>+21.5%</td><td>+21.2%</td><td>-4.2%</td><td>-0.3pp</td><td>45</td></tr><tr class='warn'><td>crash</td><td>2025-10-24~2026-04-17</td><td>26</td><td>-28.8%</td><td>-49.8%</td><td>-53.2%</td><td>-21.0pp</td><td>44</td></tr><tr class=''><td>bear_bottom</td><td>2026-04-24~2026-08-07</td><td>16</td><td>-18.6%</td><td>-18.4%</td><td>-24.3%</td><td>+0.2pp</td><td>43</td></tr></table>
+<div class='sub'>读图: 2025-10-24~2026-04-17 (crash) 山寨等权 -49.8% vs BTC -28.8% → 差 -21.0pp; 而 2024-04~2025-04 (accumulation) BTC +48.5% 时山寨已 -32.7% (时间刻未触发减仓的窗口)。</div>
+
+<h2>② 全面板集成回测: 时间刻作为底层的三大配置</h2>
+<table><tr><th>配置</th><th>10y倍数</th><th>全局MDD</th><th>本轮下行段收益</th><th>本轮下行段MDD</th></tr>
+<tr><td>A 基线(无时间刻/无山寨门控)</td><td>6,266x</td><td>-61.3%</td><td class='neg'>-40.7%</td><td>-41.6%</td></tr><tr><td>B 时间刻底层(仅减半时间刻)</td><td>45,644x</td><td>-43.5%</td><td class='pos'>+21.0%</td><td>-17.9%</td></tr><tr><td>C 默认(时间刻+山寨RS门控)</td><td>37,815x</td><td>-32.4%</td><td class='pos'>+21.0%</td><td>-17.9%</td></tr></table>
+<div class='chart'><h4>本轮下行段收益 (时间刻开启即由亏转赚)</h4><div class='bar'><span class='lab'>A 基线</span><div class='track neg' style='width:42.0%'></div><span class='val'>-40.7%</span></div><div class='bar'><span class='lab'>B 时间刻</span><div class='track pos' style='width:21.7%'></div><span class='val'>+21.0%</span></div><div class='bar'><span class='lab'>C 默认</span><div class='track pos' style='width:21.7%'></div><span class='val'>+21.0%</span></div></div>
+
+<h2>③ 核心机制: 山寨见顶比 BTC 早 ~10 个月 (时间刻对山寨"迟到")</h2>
+<div class='card'>
+2024 减半轮: BTC 见顶 @ post-halving <b>17.2 月</b> (2025-09-26) ｜ 山寨等权见顶 @ <b>7.4 月</b> (2024-11-29) ｜ 错位 <b class='warn2'>-9.9 月</b><br><br>
+含义: 若只用 BTC 时间刻, 山寨主跌段的前 9.9 个月 (accumulation/euphoria, 时间刻=满仓) 完全暴露在阴跌中。<br>
+补救: <b>alt_rs_gate</b> 在 ALT/BTC 比值跌破 20 周 MA 时即砍进攻仓转 BTC, 不依赖 BTC 相位 → 全局 MDD 再降 11pp 至 -32.4%。
+</div>
+
+<h2>④ 逐月轨迹 (本轮下行段): 时间刻相位 vs 实际跌幅</h2>
+<table><tr><th>月</th><th>时间刻相位</th><th>BTC累计</th><th>山寨等权累计</th></tr>
+<tr><td>2025-10-24</td><td>crash</td><td>+0.0%</td><td>+0.0%</td></tr><tr><td>2025-11-21</td><td>crash</td><td>-18.3%</td><td>-22.0%</td></tr><tr><td>2025-12-19</td><td>crash</td><td>-20.4%</td><td>-32.9%</td></tr><tr><td>2026-01-16</td><td>crash</td><td>-21.6%</td><td>-36.2%</td></tr><tr><td>2026-02-13</td><td>crash</td><td>-38.8%</td><td>-54.1%</td></tr><tr><td>2026-03-13</td><td>crash</td><td>-38.6%</td><td>-55.0%</td></tr><tr><td>2026-04-10</td><td>crash</td><td>-33.2%</td><td>-52.6%</td></tr><tr><td>2026-05-08</td><td>bear_bottom</td><td>-29.9%</td><td>-48.8%</td></tr><tr><td>2026-06-05</td><td>bear_bottom</td><td>-40.5%</td><td>-53.4%</td></tr><tr><td>2026-07-03</td><td>bear_bottom</td><td>-42.3%</td><td>-56.0%</td></tr><tr><td>2026-07-31</td><td>bear_bottom</td><td>-41.3%</td><td>-58.4%</td></tr><tr><td>结束</td><td>bear_bottom</td><td>-42.2%</td><td>-57.9%</td></tr></table><div class='sub'>时间刻 crash 相位(2025-10-24 起)完整覆盖了山寨主跌段; 而更早的山寨阴跌(2024-11~2025-04)发生在 accumulation/euphoria, 由 alt_rs_gate 覆盖。</div></body></html>

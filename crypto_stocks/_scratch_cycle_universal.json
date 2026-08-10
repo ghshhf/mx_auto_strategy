@@ -1,0 +1,162 @@
+{
+  "2017(partial)": {
+    "A": [
+      {
+        "phase": "euphoria",
+        "weeks": 22,
+        "btc_ret": 2.297609812323648,
+        "alt_mean": 3.5035105315947837,
+        "alt_med": 3.5035105315947837,
+        "n_alts": 1,
+        "same_sign_pct": 1.0,
+        "alts_up_pct": 1.0
+      },
+      {
+        "phase": "crash",
+        "weeks": 26,
+        "btc_ret": -0.4490017346053773,
+        "alt_mean": 0.2532840001411074,
+        "alt_med": -0.34150895114495217,
+        "n_alts": 4,
+        "same_sign_pct": 0.75,
+        "alts_up_pct": 0.25
+      },
+      {
+        "phase": "bear_bottom",
+        "weeks": 30,
+        "btc_ret": -0.5023442180237707,
+        "alt_mean": -0.5276239204354383,
+        "alt_med": -0.7264957264957266,
+        "n_alts": 5,
+        "same_sign_pct": 1.0,
+        "alts_up_pct": 0.0
+      },
+      {
+        "phase": "pre_halving",
+        "weeks": 66,
+        "btc_ret": 1.6393534701356214,
+        "alt_mean": 1.8729273753409548,
+        "alt_med": 0.23382246812605234,
+        "n_alts": 9,
+        "same_sign_pct": 0.5555555555555556,
+        "alts_up_pct": 0.5555555555555556
+      }
+    ],
+    "btc_peak": "2017-12-08",
+    "alt_peak": "2018-01-05",
+    "btc_peak_m": 16.98423127463863,
+    "alt_peak_m": 17.904073587385017,
+    "offset_wk": 4.0,
+    "crash_bear_coins_in_drawdown_pct": 1.0
+  },
+  "2021": {
+    "A": [
+      {
+        "phase": "accumulation",
+        "weeks": 52,
+        "btc_ret": 4.32450569587883,
+        "alt_mean": 13.272543525402781,
+        "alt_med": 7.146549952853558,
+        "n_alts": 24,
+        "same_sign_pct": 0.9583333333333334,
+        "alts_up_pct": 0.9583333333333334
+      },
+      {
+        "phase": "euphoria",
+        "weeks": 26,
+        "btc_ret": 0.890596662843292,
+        "alt_mean": 2.912957694572356,
+        "alt_med": 0.8321558552772423,
+        "n_alts": 29,
+        "same_sign_pct": 0.896551724137931,
+        "alts_up_pct": 0.896551724137931
+      },
+      {
+        "phase": "crash",
+        "weeks": 26,
+        "btc_ret": -0.4655781223506116,
+        "alt_mean": -0.6760942341209623,
+        "alt_med": -0.7218675303672505,
+        "n_alts": 32,
+        "same_sign_pct": 1.0,
+        "alts_up_pct": 0.0
+      },
+      {
+        "phase": "bear_bottom",
+        "weeks": 31,
+        "btc_ret": -0.4474733230474477,
+        "alt_mean": -0.4045993372309729,
+        "alt_med": -0.49394812680115263,
+        "n_alts": 37,
+        "same_sign_pct": 0.9459459459459459,
+        "alts_up_pct": 0.05405405405405406
+      },
+      {
+        "phase": "pre_halving",
+        "weeks": 70,
+        "btc_ret": 2.8581704848649396,
+        "alt_mean": 2.481726089662708,
+        "alt_med": 1.1071528014645995,
+        "n_alts": 46,
+        "same_sign_pct": 0.7608695652173914,
+        "alts_up_pct": 0.7608695652173914
+      }
+    ],
+    "btc_peak": "2021-11-05",
+    "alt_peak": "2021-10-29",
+    "btc_peak_m": 17.83837056504599,
+    "alt_peak_m": 17.608409986859396,
+    "offset_wk": -1.0,
+    "crash_bear_coins_in_drawdown_pct": 1.0
+  },
+  "2024": {
+    "A": [
+      {
+        "phase": "accumulation",
+        "weeks": 53,
+        "btc_ret": 0.4852875427251102,
+        "alt_mean": -0.32984610516471086,
+        "alt_med": -0.5245844552639493,
+        "n_alts": 48,
+        "same_sign_pct": 0.20833333333333334,
+        "alts_up_pct": 0.20833333333333334
+      },
+      {
+        "phase": "euphoria",
+        "weeks": 26,
+        "btc_ret": 0.21512825631364052,
+        "alt_mean": 0.21233803140616486,
+        "alt_med": -0.041888804265041935,
+        "n_alts": 45,
+        "same_sign_pct": 0.4666666666666667,
+        "alts_up_pct": 0.4666666666666667
+      },
+      {
+        "phase": "crash",
+        "weeks": 26,
+        "btc_ret": -0.2884289295126462,
+        "alt_mean": -0.49631145795196124,
+        "alt_med": -0.5306893295561851,
+        "n_alts": 45,
+        "same_sign_pct": 0.9777777777777777,
+        "alts_up_pct": 0.022222222222222223
+      },
+      {
+        "phase": "bear_bottom",
+        "weeks": 16,
+        "btc_ret": -0.18627397698596282,
+        "alt_mean": -0.19417811644644162,
+        "alt_med": -0.24383116883116884,
+        "n_alts": 45,
+        "same_sign_pct": 0.8222222222222222,
+        "alts_up_pct": 0.17777777777777778
+      }
+    ],
+    "btc_peak": "2025-09-26",
+    "alt_peak": "2024-11-29",
+    "btc_peak_m": 17.24704336399474,
+    "alt_peak_m": 7.35873850197109,
+    "offset_wk": -43.0,
+    "crash_bear_coins_in_drawdown_pct": 1.0
+  }
+}

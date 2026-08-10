@@ -43,6 +43,26 @@ import crypto_adoption_v2 as ca2
 
 WARMUP = 52
 STABLE = 'STABLE'
+DEFENSE_CORE = ('BTC', 'ETH', 'OKB')   # 防御核(ca2.defense_weights 口径), 差别减仓时区别对待
+
+_ALT_RS_CACHE = {}
+
+
+def _alt_rs_ratio(px):
+    """山寨等权指数 / BTC 的相对强度序列。每周等权收益累乘, 只用当周有数据的币 → 无前视。"""
+    key = (id(px), len(px.columns), len(px))
+    if key in _ALT_RS_CACHE:
+        return _ALT_RS_CACHE[key]
+    alts = [c for c in px.columns if c not in DEFENSE_CORE and c != STABLE]
+    if not alts or 'BTC' not in px.columns:
+        s = pd.Series(1.0, index=px.index)
+    else:
+        rets = px[alts].pct_change()
+        idx = (1.0 + rets.mean(axis=1).fillna(0.0)).cumprod()
+        btc = px['BTC'] / px['BTC'].dropna().iloc[0]
+        s = idx / btc
+    _ALT_RS_CACHE[key] = s
+    return s
 MA200_WINDOW = 200   # MA200≈4年(周频)，用来算长期偏离度
 MOM26_WINDOW = 26    # 半年动量，用来检测FOMO狂热
 
@@ -127,9 +147,20 @@ class CryptoOptionsConfig:
     short_trend_exit_ma: int = 4             # 趋势止损: 标的价>4周MA时提前平空(防V回踏空)，0=关闭
     short_split: bool = False                # True=BTC+ETH各50%分空; False=只空 short_underlying
     # 主动做空: BTC跌破N周MA = 熊市信号(抓2018/2022暴跌), 不依赖被行权
-    short_proactive_ma: int = 0              # 0=关闭; >0=BTC周收盘<N周MA时主动开空(默认关闭, 需手动开启)
-    short_proactive_size: float = 0.30       # 主动做空仓位(占总资产30%)
+    short_proactive_ma: int = 20             # BTC周收盘<20周MA=趋势破位→主动开空(崩盘对冲, 经回测: MA20最优, MA10会噪音踏空)
+    short_proactive_size: float = 0.40       # 主动做空仓位(占总资产40%; 落"卖一半"精神, 崩盘期直接对冲现货)
     short_proactive_cooldown: int = 13       # 主动做空信号冷却(13周内不重复触发, 防频繁开空)
+
+    # ---- 主动做空 - 比特币减半周期门控 (基于BTC确定性减半时间线) ----
+    # 用法: 周期相位进入见顶/暴跌区时"武装"策略; 再用"高位+一段时期不破新高"确认后才开空。
+    # 期权期限用1年远程LEAPS(short_cycle_dte_weeks=52), 吃完整暴跌段, 非杠杆暴露。
+    short_cycle_gate: bool = True             # 周期门控开空: True=只在 gate_phases 内 + 高位滞涨确认才开
+    short_gate_phases: tuple = ('euphoria', 'crash')  # 允许开空的相位(12-24月post-halving=见顶到暴跌)
+    short_stall_lookback: int = 12            # 高位判定回看周数(取区间高点)
+    short_stall_pct: float = 0.15             # 当前价 >= 区间高点*(1-pct) 视为"高位附近"
+    short_stall_nohigh_weeks: int = 8         # 连续N周未创新高 = "滞涨/不破新高"
+    short_cycle_dte_weeks: int = 52           # 周期门控开空的期权期限 = 1年远程LEAPS
+    short_cycle_exit_ma: int = 40             # 周期空头退出确认MA(周); 价格收复该长MA=崩溃结束→平空; 0=纯持有至到期
 
     # ---- 极度高估主动 call ----
     ovl_ma200_dev: float = 2.0               # 币价/MA200 >2x → 触发
@@ -154,16 +185,46 @@ class CryptoOptionsConfig:
     #   18-24月 post-halving → crash/bear (BTC暴跌-50~80%)
     #   24-36月 post-halving → bear bottom (筑底)
     #   36-48月 post-halving → pre-halving rally ( anticipation)
-    halving_cycle_enabled: bool = False      # 默认关, 需手动开启
+    # 【2026-08-11 默认翻转为 True】此前默认关是因为一个测试错误: 当时只开 enabled 而三个
+    # risk_scale 仍为 1.0 → 减仓完全没生效, 只吃到 HALVING_PHASE_ADJUST['crash'] 的
+    # "做空×2/MA20→10"激进项, 那部分确实退化10y。真正的 alpha 在 risk_scale 时间刻减仓上。
+    # OOS 实证(20窗walk-forward, 见 docs/CYCLE_DERISK.md): 倍数 t=+3.45 / MDD t=+2.91 双维度显著;
+    # 减半周期切割 3 轮训练→测试 保留率 100%(训练选出的 cr0.3/bb0.3 恰为测试轮后视镜最优)。
+    halving_cycle_enabled: bool = True       # 时间刻减仓主干层(默认开)
     halving_dates: list = None               # 减半日列表, None=用默认4个日期
     # 减半周期预判性减仓: 在已知见顶/暴跌阶段主动降低现货敞口, 释放的权重转STABLE现金。
     # 1.0=不调; <1.0=把风险仓位(非STABLE)缩到该比例。利用"时间刻"提前避险, 而非被动等回撤。
-    halving_euphoria_risk_scale: float = 1.0  # 12-18月见顶期: 缩风险仓位(默认1.0不调, 扫描开启)
-    halving_crash_risk_scale: float = 1.0     # 18-24月暴跌期: 缩风险仓位(默认1.0不调, 扫描开启)
-    halving_bear_bottom_risk_scale: float = 1.0  # 24-36月筑底期: 缩风险仓位(暴跌余波仍跌, 默认1.0)
+    halving_euphoria_risk_scale: float = 1.0  # 12-18月见顶期: 必须保持1.0! 抛物线主升在此段,
+                                              # 实测改0.5会把10y从18378x砍到4580x(踏空)。"高位"不等于该减仓。
+    halving_crash_risk_scale: float = 0.0     # 18-24月暴跌期: 风险仓位清零(全部转现金)
+    halving_bear_bottom_risk_scale: float = 0.0  # 24~ph月筑底期: 同清零(筑底期仍在阴跌,
+                                                 # 实测此段设1.0会让10y MDD从-43.5%恶化到-64.2%)
+    # 0.0 优于 0.3: 156周窗 walk-forward 对照 0.3, 倍数 t=+5.98 / MDD t=+2.25 (双维度达标);
+    # 周期切割OOS 两轮均胜(2020轮 105.7x/-20.2% vs 89.3x/-27.3%; 2024轮 1.79x vs 1.49x)。
+    # 下行相位完全离场比留 30% 更优 —— 那 30% 在下行段是纯负贡献。
     # 相位边界(月, post-halving)。历史3轮验证: 预热启动≈减半前17月=减半后31月(4年周期)。
-    # 默认pre_halving_start_month=36(保守, 等筑底完整结束); 调到30=对齐历史预热启动点。
-    pre_halving_start_month: float = 36.0     # bear_bottom→pre_halving 转折点
+    # 31 实测显著优于保守的 36(10y: 24494x/-43.5% vs 9315x/-47.1%) —— 提前恢复满仓抓减半预热行情。
+    pre_halving_start_month: float = 31.0     # bear_bottom→pre_halving 转折点
+    # ---- 差别减仓 (offense-first derisk) ----
+    # 实证(2024轮): 山寨中位自周期顶 -89.4% vs BTC -48.2%; 且山寨见顶 post-halving 7.3月,
+    # 比 BTC(17.2月)提前 9.9 个月 —— 时间刻一刀切减仓对山寨"迟到"。
+    # True = 下行相位优先砍进攻山寨仓, 保留 BTC/ETH/OKB 防御核(轮换到大盘而非全体撤退)。
+    # ⚠ 实测结论: 本开关**无独立 alpha**。V4(山寨0/核心0.3)=38.5kx 恰好落在一刀切 0.05~0.1 之间,
+    #   即其收益 100% 来自"总敞口更低", 结构性差别对待本身零贡献。保留仅供研究, 默认关。
+    halving_derisk_offense_first: bool = False
+    halving_offense_scale: float = 0.0        # offense_first 模式: 进攻山寨缩放(0=清空)
+    halving_defense_scale: float = 1.0        # offense_first 模式: 防御核(BTC/ETH/OKB)缩放
+    # ---- 山寨相对强度门控 (非时间刻, 用市场信号) ----
+    # 实证漏洞: 最大回撤发生在 accumulation 相位(2024轮 MDD -40.3%, 收益仅+26%),
+    # 因该相位按时间刻应满仓, 但本轮山寨在 post-halving 7.3月就见顶后一路阴跌。
+    # 本门控: 山寨等权指数/BTC 比值跌破 N周MA => 进攻仓缩放(转现金或防御核)。三轮均可检验。
+    # 156周窗 walk-forward(与下行清仓组合, 对照旧默认): 倍数 t=+2.31 / MDD t=+6.17(胜17/18);
+    # 单独边际(对照仅清仓): MDD t=+2.75 显著改善, 倍数 t=-1.22 无显著损失。
+    # 效果: 全局 MDD 天花板从 -43.5% 打到 -32.4%(该 MDD 原发生在 pre_halving 2019, 时间刻层够不到)。
+    alt_rs_gate: bool = True
+    alt_rs_ma: int = 20                       # ALT/BTC 比值的 N 周均线
+    alt_rs_scale: float = 0.0                 # 走弱时进攻仓缩到该比例
+    alt_rs_to_defense: bool = True            # True=释放权重转防御核(轮换BTC); False=转现金(实测转BTC更优)
 
 
 DEFAULT_CFG = asdict(CryptoOptionsConfig())
@@ -217,6 +278,33 @@ def halving_cycle_phase(date, pre_halving_start_month=36.0):
         phase = 'pre_halving'     # ph_start~48月: 减半预期
 
     return phase, months_since, months_to_next
+
+
+def _is_high_stalled(px, t, lookback, pct, nohigh_weeks):
+    """BTC 是否处于'高位且滞涨(一段时期未破新高)'。t 为 0-based 周索引。
+    仅使用 t 及之前的数据(无后视)。用于周期门控开空前的确认信号。
+
+    判定: (1) 当前价 >= lookback 周区间高点的 (1-pct) 内(=在高位附近);
+          (2) 最近 nohigh_weeks 周未创新高(峰值落在窗口起点附近, 即"不继续突破新高")。
+    """
+    btc = px['BTC']
+    if t < lookback or t < nohigh_weeks:
+        return False
+    lb = btc.iloc[t - lookback + 1: t + 1].dropna()
+    if len(lb) < lookback:
+        return False
+    hi = float(lb.max())
+    now = float(lb.iloc[-1])
+    if now < hi * (1.0 - pct):
+        return False  # 不在高位附近
+    nw = btc.iloc[t - nohigh_weeks + 1: t + 1].dropna()
+    if len(nw) < 2:
+        return False
+    peak_pos = int(nw.values.argmax())  # 窗口内峰值位置(0-based)
+    weeks_since_peak = (len(nw) - 1) - peak_pos
+    if weeks_since_peak < nohigh_weeks - 1:
+        return False  # 近期仍在创新高 → 非滞涨
+    return True
 
 # 减半周期对各参数的调整乘数 (经10年回测验证: 只在crash阶段加强做空, 其他阶段不调)
 HALVING_PHASE_ADJUST = {
@@ -307,6 +395,7 @@ class ShortLeg:
     dte_total: int
     entry_price: float            # 开空时的标的价格
     size_ratio: float             # 占总资产比例
+    cycle_hedge: bool = False     # True=周期门控开仓(1年LEAPS), 按周期相位退出而非MA4紧止损
 
 
 @dataclass
@@ -336,7 +425,8 @@ class WeekRecord:
 
 # ========== 主回测引擎 ==========
 def run_bt(px, cfg_dict=None, label='V6_options', start=None,
-           cycle_overlay=False, cycle_tilt=None, cycle_weights=None, cycle_asym=None):
+           cycle_overlay=False, cycle_tilt=None, cycle_weights=None, cycle_asym=None,
+           return_recs=False):
     cfg = CryptoOptionsConfig(**(cfg_dict or {}))
     # 默认 tilt 从 specs.ENGINE_TILT["crypto"] 读取(让规格成为权威); 关闭 cycles 时不导入。
     if cycle_tilt is None:
@@ -392,21 +482,24 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         short_size_eff = cfg.short_proactive_size
         short_ma_eff = cfg.short_proactive_ma
         risk_scale_eff = 1.0   # 风险仓位缩放(预判性减仓): 1.0=不调
-        if cfg.halving_cycle_enabled:
+        phase = None
+        # 周期相位: halving_cycle_enabled 或 short_cycle_gate 任一开启即计算(供门控使用, 无后视)
+        if cfg.halving_cycle_enabled or cfg.short_cycle_gate:
             phase, months_since, months_to_next = halving_cycle_phase(
                 px.index[t], pre_halving_start_month=cfg.pre_halving_start_month)
             tp_mult, ss_mult, ma_delta = HALVING_PHASE_ADJUST.get(phase, (1.0, 1.0, 0))
-            tp_eff = cfg.take_profit_pct * tp_mult
-            short_size_eff = cfg.short_proactive_size * ss_mult
-            if short_ma_eff > 0:
-                short_ma_eff = max(5, short_ma_eff + ma_delta)
-            # 预判性减仓: 见顶期/暴跌期主动缩现货敞口(时间刻避险)
-            if phase == 'euphoria':
-                risk_scale_eff = cfg.halving_euphoria_risk_scale
-            elif phase == 'crash':
-                risk_scale_eff = cfg.halving_crash_risk_scale
-            elif phase == 'bear_bottom':
-                risk_scale_eff = cfg.halving_bear_bottom_risk_scale
+            if cfg.halving_cycle_enabled:
+                tp_eff = cfg.take_profit_pct * tp_mult
+                short_size_eff = cfg.short_proactive_size * ss_mult
+                if short_ma_eff > 0:
+                    short_ma_eff = max(5, short_ma_eff + ma_delta)
+                # 预判性减仓: 见顶期/暴跌期主动缩现货敞口(时间刻避险)
+                if phase == 'euphoria':
+                    risk_scale_eff = cfg.halving_euphoria_risk_scale
+                elif phase == 'crash':
+                    risk_scale_eff = cfg.halving_crash_risk_scale
+                elif phase == 'bear_bottom':
+                    risk_scale_eff = cfg.halving_bear_bottom_risk_scale
 
         # ---- 1. 用上周权重 + 做空仓位 算本周组合收益 ----
         if w is None:
@@ -457,16 +550,29 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                 pnl = -ret_s * s.size_ratio * nav[t - 1]
                 short_pnl += pnl
             s.dte_left -= 1
-            # 趋势止损: 标的价回升到MA以上 → 提前平空（防V型反转踏空）
-            if cfg.short_trend_exit_ma > 0 and s.dte_left > 0 and t >= cfg.short_trend_exit_ma:
-                hist_ma = []
-                for wk in range(t - cfg.short_trend_exit_ma + 1, t + 1):
-                    pv = price_for(px, sectors, s.underlying, wk)
-                    if pv and pv > 0: hist_ma.append(pv)
-                if len(hist_ma) >= cfg.short_trend_exit_ma:
-                    ma_val = sum(hist_ma) / len(hist_ma)
-                    if u1 and u1 > ma_val:
-                        s.dte_left = 0  # 平仓
+            if s.cycle_hedge:
+                # 周期门控空头(1年LEAPS语义): 不被MA4洗掉, 持有至到期或长期趋势反转确认
+                if (s.dte_left > 0 and cfg.short_cycle_exit_ma > 0
+                        and t >= cfg.short_cycle_exit_ma):
+                    long_hist = []
+                    for wk in range(t - cfg.short_cycle_exit_ma + 1, t + 1):
+                        pv = price_for(px, sectors, s.underlying, wk)
+                        if pv and pv > 0: long_hist.append(pv)
+                    if len(long_hist) >= cfg.short_cycle_exit_ma:
+                        long_ma = sum(long_hist) / len(long_hist)
+                        if u1 and u1 > long_ma:  # 收复长MA=崩溃结束→平空锁定收益
+                            s.dte_left = 0
+            else:
+                # 战术空头: 趋势止损 MA4(防V型反转踏空)
+                if cfg.short_trend_exit_ma > 0 and s.dte_left > 0 and t >= cfg.short_trend_exit_ma:
+                    hist_ma = []
+                    for wk in range(t - cfg.short_trend_exit_ma + 1, t + 1):
+                        pv = price_for(px, sectors, s.underlying, wk)
+                        if pv and pv > 0: hist_ma.append(pv)
+                    if len(hist_ma) >= cfg.short_trend_exit_ma:
+                        ma_val = sum(hist_ma) / len(hist_ma)
+                        if u1 and u1 > ma_val:
+                            s.dte_left = 0  # 平仓
             if s.dte_left > 0:
                 still_open.append(s)
         active_shorts = still_open
@@ -618,37 +724,57 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                             entry_price=float(u0), size_ratio=size_rat,
                         ))
 
-        # (e) 主动做空: BTC跌破N周MA = 熊市信号（抓2018/2022暴跌, 不依赖被行权）
-        # 减半周期生效时用 short_ma_eff / short_size_eff
-        if short_ma_eff > 0 and t >= short_ma_eff and proactive_short_cd <= 0:
-            btc_hist = px['BTC'].iloc[t - short_ma_eff + 1: t + 1].dropna()
-            if len(btc_hist) >= short_ma_eff:
-                ma_val = float(btc_hist.mean())
-                btc_now = float(btc_hist.iloc[-1])
-                if btc_now < ma_val:  # BTC跌破MA = 趋势向下
-                    exist_short = sum(s.size_ratio for s in active_shorts)
-                    allow = max(0.0, 0.80 - exist_short)
-                    p_size = min(short_size_eff, allow)
-                    if p_size > 0.001:
-                        if cfg.short_split:
-                            for under_half in ['BTC', 'ETH']:
-                                u0 = price_for(px, sectors, under_half, t)
-                                if u0 and u0 > 0:
-                                    active_shorts.append(ShortLeg(
-                                        underlying=under_half,
-                                        dte_left=cfg.short_dte_weeks, dte_total=cfg.short_dte_weeks,
-                                        entry_price=float(u0), size_ratio=p_size * 0.5,
-                                    ))
-                        else:
-                            under = cfg.short_underlying
-                            u0 = price_for(px, sectors, under, t)
+        # (e) 主动做空: 周期相位"武装" + 趋势/滞涨"确认"双条件
+        #   设计(用户意图): 用比特币减半周期时间线判断大致位置(见顶区=武装),
+        #        再用 (a) BTC跌破N周MA 或 (b) 高位且一段时期不破新高 来确认开空。
+        #   期权: 见顶区内开的所有空一律用 1年远程LEAPS(short_cycle_dte_weeks=52),
+        #        持有穿越暴跌, 价格收复长MA(short_cycle_exit_ma=40周)才平(防被4周抖动洗掉)。
+        #   见顶区外: 仅保留短DTE战术空(MA破位触发), 避免牛市早期假突破被挤空。
+        if proactive_short_cd <= 0:
+            armed = bool(cfg.short_cycle_gate and phase is not None and phase in cfg.short_gate_phases)
+            # 路径A(趋势): BTC跌破N周MA = 熊市信号(抓2018/2022暴跌)
+            ma_open = False
+            if short_ma_eff > 0 and t >= short_ma_eff:
+                btc_hist = px['BTC'].iloc[t - short_ma_eff + 1: t + 1].dropna()
+                if len(btc_hist) >= short_ma_eff:
+                    ma_val = float(btc_hist.mean())
+                    btc_now = float(btc_hist.iloc[-1])
+                    if btc_now < ma_val:  # BTC跌破MA = 趋势向下
+                        ma_open = True
+            # 路径B(周期门控+高位滞涨确认): 仅作见顶区内的"提前武装"补充触发
+            stall_open = False
+            if armed and _is_high_stalled(px, t, cfg.short_stall_lookback,
+                                          cfg.short_stall_pct, cfg.short_stall_nohigh_weeks):
+                stall_open = True
+            # 见顶区内: 任一确认信号(趋势破位 或 滞涨)都开空, 且用1年LEAPS
+            cycle_open = armed and (ma_open or stall_open)
+            dte_use = cfg.short_cycle_dte_weeks if cycle_open else cfg.short_dte_weeks
+            if ma_open or cycle_open:
+                exist_short = sum(s.size_ratio for s in active_shorts)
+                allow = max(0.0, 0.80 - exist_short)
+                p_size = min(short_size_eff, allow)
+                if p_size > 0.001:
+                    if cfg.short_split:
+                        for under_half in ['BTC', 'ETH']:
+                            u0 = price_for(px, sectors, under_half, t)
                             if u0 and u0 > 0:
                                 active_shorts.append(ShortLeg(
-                                    underlying=under,
-                                    dte_left=cfg.short_dte_weeks, dte_total=cfg.short_dte_weeks,
-                                    entry_price=float(u0), size_ratio=p_size,
+                                    underlying=under_half,
+                                    dte_left=dte_use, dte_total=dte_use,
+                                    entry_price=float(u0), size_ratio=p_size * 0.5,
+                                    cycle_hedge=cycle_open,
                                 ))
-                        proactive_short_cd = cfg.short_proactive_cooldown
+                    else:
+                        under = cfg.short_underlying
+                        u0 = price_for(px, sectors, under, t)
+                        if u0 and u0 > 0:
+                            active_shorts.append(ShortLeg(
+                                underlying=under,
+                                dte_left=dte_use, dte_total=dte_use,
+                                entry_price=float(u0), size_ratio=p_size,
+                                cycle_hedge=cycle_open,
+                            ))
+                    proactive_short_cd = cfg.short_proactive_cooldown
 
         if proactive_short_cd > 0:
             proactive_short_cd -= 1
@@ -671,11 +797,25 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         if risk_scale_eff < 1.0:
             risky = sum(v for k, v in target.items() if k != STABLE)
             if risky > 0:
-                new_target = {STABLE: target.get(STABLE, 0.0) + risky * (1.0 - risk_scale_eff)}
-                for k, v in target.items():
-                    if k != STABLE:
-                        new_target[k] = v * risk_scale_eff
-                target = new_target
+                if getattr(cfg, 'halving_derisk_offense_first', False):
+                    # 差别减仓: 进攻山寨砍到 off_s, 防御核(BTC/ETH/OKB)砍到 def_s, 差额转现金
+                    off_s = float(getattr(cfg, 'halving_offense_scale', 0.0))
+                    def_s = float(getattr(cfg, 'halving_defense_scale', 1.0))
+                    new_target, freed = {}, 0.0
+                    for k, v in target.items():
+                        if k == STABLE:
+                            continue
+                        sc = def_s if k in DEFENSE_CORE else off_s
+                        new_target[k] = v * sc
+                        freed += v * (1.0 - sc)
+                    new_target[STABLE] = target.get(STABLE, 0.0) + freed
+                    target = new_target
+                else:
+                    new_target = {STABLE: target.get(STABLE, 0.0) + risky * (1.0 - risk_scale_eff)}
+                    for k, v in target.items():
+                        if k != STABLE:
+                            new_target[k] = v * risk_scale_eff
+                    target = new_target
 
         # ---- 4. Crash Guard（可选） ----
         if cfg.crash_guard:
@@ -757,7 +897,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
     return {
         'label': label, 'multiple': multiple, 'cagr': cagr, 'mdd': mdd, 'sharpe': sharpe,
         'nav': nav_series, 'weeks': weeks, 'crash_weeks': crash_weeks,
-        'regimes': [r.regime for r in recs],
+        'regimes': [r.regime for r in recs], 'recs': recs if return_recs else None,
         'events': {
             'tp_calls': total_tp,
             'assigned_calls': total_assigned,
@@ -811,6 +951,25 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
         if top:
             each = alloc['offense'] / len(top)
             off_w = {c: each for c in top}
+
+    # 山寨相对强度门控: ALT/BTC 比值破 MA => 缩进攻仓 (只用 <=t 数据, 无前视)
+    if getattr(cfg, 'alt_rs_gate', False) and off_w:
+        _ma = int(getattr(cfg, 'alt_rs_ma', 20))
+        if t_idx >= _ma:
+            _rs = _alt_rs_ratio(px)
+            _cur = _rs.iloc[t_idx]
+            _mav = _rs.iloc[t_idx - _ma + 1: t_idx + 1].mean()
+            if pd.notna(_cur) and pd.notna(_mav) and _cur < _mav:
+                _sc = float(getattr(cfg, 'alt_rs_scale', 0.0))
+                _freed = sum(off_w.values()) * (1.0 - _sc)
+                off_w = {k: v * _sc for k, v in off_w.items()}
+                if getattr(cfg, 'alt_rs_to_defense', False) and defense_w:
+                    _ds = sum(defense_w.values())
+                    if _ds > 0:
+                        defense_w = {k: v + _freed * (v / _ds) for k, v in defense_w.items()}
+                        _freed = 0.0
+                alloc = dict(alloc)
+                alloc['stable'] = alloc.get('stable', 0.0) + _freed
 
     target = {}
     target.update(defense_w)

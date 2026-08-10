@@ -1,0 +1,427 @@
+{
+  "sector_map": {
+    "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe": [
+      "ETH",
+      "ADA",
+      "AVAX",
+      "SOL",
+      "DOT",
+      "NEAR",
+      "APT",
+      "SUI",
+      "SEI",
+      "TRX",
+      "TON",
+      "METIS"
+    ],
+    "L2 / \u6269\u5bb9": [
+      "ARB",
+      "OP",
+      "STRK",
+      "MANTA",
+      "MATIC"
+    ],
+    "DeFi / DEX": [
+      "1INCH",
+      "AAVE",
+      "COMP",
+      "CRV",
+      "LDO",
+      "MKR",
+      "SNX",
+      "UNI",
+      "JUP"
+    ],
+    "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+      "DYDX",
+      "GMX"
+    ],
+    "AI \u00d7 \u52a0\u5bc6": [
+      "FET",
+      "RENDER",
+      "RNDR",
+      "TAO",
+      "PHB",
+      "BLZ"
+    ],
+    "DePIN / AI\u57fa\u5efa": [
+      "HNT",
+      "PEAQ",
+      "AKT"
+    ],
+    "GameFi / \u5143\u5b87\u5b99": [
+      "AXS",
+      "GALA",
+      "ILV",
+      "BEAM",
+      "IMX"
+    ],
+    "\u9690\u79c1 / \u533f\u540d": [
+      "ZEC",
+      "SECRET",
+      "DASH"
+    ],
+    "RWA / \u771f\u5b9e\u8d44\u4ea7": [
+      "ONDO",
+      "MANTRA",
+      "RIO",
+      "POLYX",
+      "PAS"
+    ],
+    "\u5b58\u50a8 / \u6570\u636e": [
+      "FIL",
+      "AR"
+    ],
+    "\u6a21\u5757\u5316 / DA": [
+      "TIA",
+      "DYM"
+    ],
+    "\u57fa\u7840\u8bbe\u65bd": [
+      "LINK",
+      "ENS",
+      "API3",
+      "GRT"
+    ],
+    "\u5e73\u53f0\u5e01": [
+      "OKB",
+      "BNB"
+    ]
+  },
+  "cycle_returns": {
+    "2017(partial)": {
+      "\u5e73\u53f0\u5e01": [
+        1147.9,
+        852.7
+      ],
+      "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe": [
+        275.5,
+        -19.7
+      ],
+      "L2 / \u6269\u5bb9": [
+        null,
+        null
+      ],
+      "DeFi / DEX": [
+        null,
+        null
+      ],
+      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+        null,
+        null
+      ],
+      "AI \u00d7 \u52a0\u5bc6": [
+        null,
+        null
+      ],
+      "DePIN / AI\u57fa\u5efa": [
+        null,
+        null
+      ],
+      "GameFi / \u5143\u5b87\u5b99": [
+        null,
+        null
+      ],
+      "\u9690\u79c1 / \u533f\u540d": [
+        null,
+        null
+      ],
+      "RWA / \u771f\u5b9e\u8d44\u4ea7": [
+        null,
+        null
+      ],
+      "\u5b58\u50a8 / \u6570\u636e": [
+        null,
+        null
+      ],
+      "\u6a21\u5757\u5316 / DA": [
+        null,
+        null
+      ],
+      "\u57fa\u7840\u8bbe\u65bd": [
+        null,
+        null
+      ]
+    },
+    "2021": {
+      "GameFi / \u5143\u5b87\u5b99": [
+        17938.0,
+        17286.7
+      ],
+      "L2 / \u6269\u5bb9": [
+        8867.3,
+        8216.0
+      ],
+      "DePIN / AI\u57fa\u5efa": [
+        3351.2,
+        2699.9
+      ],
+      "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe": [
+        2577.8,
+        1926.5
+      ],
+      "\u5e73\u53f0\u5e01": [
+        2204.9,
+        1553.5
+      ],
+      "AI \u00d7 \u52a0\u5bc6": [
+        2181.3,
+        1529.9
+      ],
+      "DeFi / DEX": [
+        300.6,
+        -350.7
+      ],
+      "\u9690\u79c1 / \u533f\u540d": [
+        284.0,
+        -367.4
+      ],
+      "\u57fa\u7840\u8bbe\u65bd": [
+        278.2,
+        -373.1
+      ],
+      "\u5b58\u50a8 / \u6570\u636e": [
+        143.3,
+        -508.1
+      ],
+      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+        30.9,
+        -620.4
+      ],
+      "RWA / \u771f\u5b9e\u8d44\u4ea7": [
+        null,
+        null
+      ],
+      "\u6a21\u5757\u5316 / DA": [
+        null,
+        null
+      ]
+    },
+    "2024": {
+      "\u9690\u79c1 / \u533f\u540d": [
+        328.0,
+        232.4
+      ],
+      "\u5e73\u53f0\u5e01": [
+        209.0,
+        113.4
+      ],
+      "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe": [
+        18.9,
+        -76.7
+      ],
+      "DeFi / DEX": [
+        3.1,
+        -92.5
+      ],
+      "\u57fa\u7840\u8bbe\u65bd": [
+        -11.7,
+        -107.3
+      ],
+      "RWA / \u771f\u5b9e\u8d44\u4ea7": [
+        -30.9,
+        -126.5
+      ],
+      "AI \u00d7 \u52a0\u5bc6": [
+        -50.7,
+        -146.3
+      ],
+      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+        -58.3,
+        -154.0
+      ],
+      "GameFi / \u5143\u5b87\u5b99": [
+        -71.4,
+        -167.1
+      ],
+      "L2 / \u6269\u5bb9": [
+        -71.7,
+        -167.3
+      ],
+      "\u5b58\u50a8 / \u6570\u636e": [
+        -71.9,
+        -167.5
+      ],
+      "\u6a21\u5757\u5316 / DA": [
+        -90.2,
+        -185.8
+      ],
+      "DePIN / AI\u57fa\u5efa": [
+        null,
+        null
+      ]
+    }
+  },
+  "current_rs": {
+    "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe": [
+      5.8,
+      0.3
+    ],
+    "L2 / \u6269\u5bb9": [
+      17.4,
+      7.0
+    ],
+    "DeFi / DEX": [
+      11.1,
+      -8.9
+    ],
+    "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+      11.5,
+      6.0
+    ],
+    "AI \u00d7 \u52a0\u5bc6": [
+      -40.4,
+      -49.5
+    ],
+    "DePIN / AI\u57fa\u5efa": [
+      -40.6,
+      -50.9
+    ],
+    "GameFi / \u5143\u5b87\u5b99": [
+      -2.9,
+      -28.6
+    ],
+    "\u9690\u79c1 / \u533f\u540d": [
+      10.1,
+      59.2
+    ],
+    "RWA / \u771f\u5b9e\u8d44\u4ea7": [
+      2.3,
+      -19.2
+    ],
+    "\u5b58\u50a8 / \u6570\u636e": [
+      1.4,
+      -6.9
+    ],
+    "\u6a21\u5757\u5316 / DA": [
+      2.9,
+      0.7
+    ],
+    "\u57fa\u7840\u8bbe\u65bd": [
+      3.5,
+      0.6
+    ],
+    "\u5e73\u53f0\u5e01": [
+      12.9,
+      7.9
+    ]
+  },
+  "next_round_prediction": [
+    {
+      "sector": "RWA / \u771f\u5b9e\u8d44\u4ea7",
+      "prob": 10.8,
+      "cur26wRS": -19.2,
+      "rotation": 1.0,
+      "maturity": 1.0,
+      "pen_gap": 0.96,
+      "tailwind": 1.0
+    },
+    {
+      "sector": "DePIN / AI\u57fa\u5efa",
+      "prob": 10.7,
+      "cur26wRS": -50.9,
+      "rotation": 1.0,
+      "maturity": 1.0,
+      "pen_gap": 0.92,
+      "tailwind": 1.0
+    },
+    {
+      "sector": "\u6a21\u5757\u5316 / DA",
+      "prob": 9.2,
+      "cur26wRS": 0.7,
+      "rotation": 0.9,
+      "maturity": 0.98,
+      "pen_gap": 0.68,
+      "tailwind": 0.6
+    },
+    {
+      "sector": "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX",
+      "prob": 9.0,
+      "cur26wRS": 6.0,
+      "rotation": 0.85,
+      "maturity": 0.85,
+      "pen_gap": 0.76,
+      "tailwind": 0.8
+    },
+    {
+      "sector": "\u57fa\u7840\u8bbe\u65bd",
+      "prob": 8.2,
+      "cur26wRS": 0.6,
+      "rotation": 0.6,
+      "maturity": 0.98,
+      "pen_gap": 0.6,
+      "tailwind": 0.8
+    },
+    {
+      "sector": "AI \u00d7 \u52a0\u5bc6",
+      "prob": 8.1,
+      "cur26wRS": -49.5,
+      "rotation": 0.3,
+      "maturity": 1.0,
+      "pen_gap": 0.88,
+      "tailwind": 1.0
+    },
+    {
+      "sector": "\u5b58\u50a8 / \u6570\u636e",
+      "prob": 8.0,
+      "cur26wRS": -6.9,
+      "rotation": 0.5,
+      "maturity": 1.0,
+      "pen_gap": 0.8,
+      "tailwind": 0.6
+    },
+    {
+      "sector": "GameFi / \u5143\u5b87\u5b99",
+      "prob": 7.1,
+      "cur26wRS": -28.6,
+      "rotation": 0.4,
+      "maturity": 1.0,
+      "pen_gap": 0.68,
+      "tailwind": 0.4
+    },
+    {
+      "sector": "L1 \u667a\u80fd\u5408\u7ea6\u516c\u94fe",
+      "prob": 6.7,
+      "cur26wRS": 0.3,
+      "rotation": 0.5,
+      "maturity": 0.99,
+      "pen_gap": 0.0,
+      "tailwind": 0.8
+    },
+    {
+      "sector": "DeFi / DEX",
+      "prob": 6.0,
+      "cur26wRS": -8.9,
+      "rotation": 0.1,
+      "maturity": 1.0,
+      "pen_gap": 0.52,
+      "tailwind": 0.6
+    },
+    {
+      "sector": "\u9690\u79c1 / \u533f\u540d",
+      "prob": 5.9,
+      "cur26wRS": 59.2,
+      "rotation": 0.6,
+      "maturity": 0.36,
+      "pen_gap": 0.88,
+      "tailwind": 0.4
+    },
+    {
+      "sector": "L2 / \u6269\u5bb9",
+      "prob": 5.2,
+      "cur26wRS": 7.0,
+      "rotation": 0.2,
+      "maturity": 0.83,
+      "pen_gap": 0.28,
+      "tailwind": 0.6
+    },
+    {
+      "sector": "\u5e73\u53f0\u5e01",
+      "prob": 5.1,
+      "cur26wRS": 7.9,
+      "rotation": 0.2,
+      "maturity": 0.81,
+      "pen_gap": 0.4,
+      "tailwind": 0.4
+    }
+  ]
+}

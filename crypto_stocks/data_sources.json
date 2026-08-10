@@ -1,0 +1,41 @@
+{
+  "description": "Crypto 周K面板三数据源 (增量同步优先级从高到低, 见 sync_crypto_panel.py)",
+  "project": "mx_auto_strategy/crypto_stocks",
+  "panic_download_policy": "免费源有速率/日额度限制, 未付费 -> 能读本地面板就绝不重复下载; 仅当面板需要增量补周时才调用下面的源",
+  "sources": [
+    {
+      "name": "binance",
+      "priority": 1,
+      "type": "exchange",
+      "free": true,
+      "base_url": "https://api.binance.com",
+      "endpoint": "/api/v3/klines?symbol={SYMBOL}USDT&interval=1w",
+      "note": "主源, 免费; 部分小币翻页会返回 400 -> 降级 OKX"
+    },
+    {
+      "name": "okx",
+      "priority": 2,
+      "type": "exchange",
+      "free": true,
+      "base_url": "https://www.okx.com",
+      "endpoint": "/api/v5/market/candles?instId={SYMBOL}-USDT&bar=1W",
+      "note": "备源, 免费"
+    },
+    {
+      "name": "coinmarketcap",
+      "priority": 3,
+      "type": "api",
+      "free_tier": true,
+      "base_url": "https://pro-api.coinmarketcap.com",
+      "endpoint": "/v1/cryptocurrency/quotes/historical?id={CMC_ID}&time_start={DATE}&interval=daily",
+      "api_key_env": "CMC_API_KEY",
+      "key_storage": ".env (gitignore, 不入库) / 或环境变量 CMC_API_KEY",
+      "note": "兜底源, 需 API key; 56/57 币覆盖 (PAS 缺失); 日线聚合为周五收盘"
+    }
+  ],
+  "id_map_ref": "symbol->CMC id 映射见 sync_crypto_panel.py:_CMC_ID_MAP",
+  "target_panels": [
+    "data/weekly_adjclose_crypto50.csv",
+    "data/weekly_adjclose_crypto50_10y.csv"
+  ]
+}
