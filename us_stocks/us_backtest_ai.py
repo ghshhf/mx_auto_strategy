@@ -584,7 +584,8 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                   trend_gate="ma5", lookback=52, alloc=None, rebal=1, lev=1.0,
                   score_mode="mom", theme_div=False, max_per_theme=2,
                   phase_tilt=False, crash_off=80, vol_target=0.0, vol_floor=0.3,
-                  struct_def=0.0, gauge="QQQ", us_cfg=None, options_sim=None):
+                  struct_def=0.0, gauge="QQQ", cycle_overlay=False, cycle_tilt=0.5,
+                  us_cfg=None, options_sim=None):
     """美股优化引擎(默认 = 稳健甜点配置, 扫参确定):
     - 进攻占比拉满(bull100/balance95/weak75), 仅 death-cross 重仓现金(替代 GLD 停车)
     - 周频再平衡(对齐 A 股)
@@ -608,6 +609,15 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
     }
     # crash 档进攻占比覆盖(压回撤核心杠杆): 其余 def(15)+cash
     ALLOC["crash"] = {"off": crash_off, "def": 15, "cash": 85 - crash_off}
+    # 12 层周期叠加: 仅启用时导入 cycles(默认关闭, 绝不污染基线); 失败则静默降级
+    _cyc_fn = None
+    if cycle_overlay:
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from cycles.overlay import cycle_scale_at as _cs
+            _cyc_fn = _cs
+        except Exception as e:
+            print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
     REBAL = rebal                               # 再平衡周期(周, 默认1=周频, 对齐A股)
     n = len(dates); nav = 1.0; nav_hist = []; peak = 1.0; mdd = 0.0
     weights = {"__cash__": 1.0}; selected = []; last_rebal = -100; yearly = {}
@@ -933,6 +943,11 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
             # lev = 总杠杆(默认1.0); >1 时进攻仓放大, 现金变负=借入(净杠杆)。防御仓不放大。
             # struct_def = 永久防御袖(现金/分红): 结构性降股权敞口, 是唯一能均匀压每年回撤的手段。
             off_pct = a["off"] * vol_scale * lev
+            # 12 层周期叠加: 顺风加进攻 / 逆风减进攻, 现金自动吸收差额(额度守恒, 无隐性杠杆)
+            if _cyc_fn is not None:
+                from cycles.overlay import cap_offense
+                cyc_scale = _cyc_fn(dates[t], cycle_tilt)
+                off_pct = cap_offense(off_pct * cyc_scale, a["cash"], a["off"], struct_def)
             equity_pct = off_pct * (1.0 - struct_def)
             wts = []
             for mom, c in selected:

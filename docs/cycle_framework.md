@@ -71,20 +71,52 @@
 - **前视防护**：所有量化序列的 `available_date = 月份 + 发布滞后`（取全组最大滞后 2 月，保守）；定性序列以 `assessment_date` 为可用日。引擎在 T 日只读取 `available_date ≤ T` 的行。
 - **优雅降级**：文件缺失 / 列缺失 → 对应周期相位为 0，不影响其他周期与基线。已通过 `tests/test_cycles.py`（8 项，含前视不可见、相位有界、缺失降级、额度守恒）验证。
 
-## 6. 如何接入三市场引擎（opt-in）
+## 6. 已接入三市场引擎（opt-in，默认关闭）
 
-模块与现有 `macro_overlay` 同构，可作为统一叠加层：
+`composite_regime` 已作为**统一叠加层**接入 A股 / 美股 / 加密三引擎，复用 `cycles/overlay.py`
+的三个额度守恒 helper（`apply_to_alloc` / `cap_offense` / `apply_to_crypto_target`）。
+与现有 `macro_overlay` 同构、同款前视防护与额度守恒。
+
+### 6.1 统一接口
 
 ```python
-from cycles import load_cycles, cycle_phase_at, composite_regime, tilt_multiplier
+from cycles.overlay import cycle_scale_at, apply_to_alloc, cap_offense, apply_to_crypto_target
 
-st = load_cycles("cycles/data/cycles_raw.csv", "cycles/data/cycles_qualitative_seed.csv")
-regime = composite_regime(st, query_date)          # ∈ [-1, 1]
-mult   = tilt_multiplier(regime, tilt=0.5)          # ∈ [0.5, 1.5]
-# 将 mult 乘到进攻仓位比例，等价于 macro_overlay 的 macro_tilt 语义
+# 进攻仓乘数（默认 tilt=0.5 → 乘数 ∈ [0.5, 1.5]，前视防护由 composite_regime 保证）
+mult = cycle_scale_at(query_date, tilt=0.5)
 ```
 
-默认 `tilt=0.5` 即「regime 每偏离中性 1 个单位，进攻仓位在 [0.5, 1.5] 倍区间调整」。接入前须确认 `cycles/data/cycles_raw.csv` 已最新（`python -m cycles.fetch` 重新抓取），否则退化为中性。
+### 6.2 各引擎接入点（均 cycle_overlay=False 默认关闭）
+
+| 引擎 | 入口 | 接入参数 | 守恒 helper | 语义 |
+|------|------|----------|-------------|------|
+| A股 | `ashare_backtest/backtest_engine.py` `run()` | `cycle_overlay`, `cycle_tilt=0.5` | `apply_to_alloc` | 进攻/防御/现金三栏守恒：加仓从防御仓匀、减仓释放现金 |
+| 美股 | `us_stocks/us_backtest_ai.py` `run_optimized()` | `cycle_overlay`, `cycle_tilt=0.5` | `cap_offense` | 进攻% 缩放，现金自动吸收差额（顺风最多吃光现金，不借入） |
+| 加密 | `crypto_stocks/crypto_options_bt.py` `run_bt()` / `_build_target()` | `cycle_overlay`, `cycle_tilt=0.5` | `apply_to_crypto_target` | 缩放进攻权重，差额从稳定币(STABLE)匀取 |
+
+三处均在 `if cycle_overlay:` 分支内**惰性导入** `cycles`（默认关闭时路径与原基线逐字节一致，
+绝不污染基线）；导入失败则打印 `[warn]` 并静默降级为中性 1.0。
+
+### 6.3 启用示例
+
+```bash
+# A股：在 run() 调用加 cycle_overlay=True, cycle_tilt=0.5
+# 美股：run_optimized(..., cycle_overlay=True, cycle_tilt=0.5)
+# 加密：run_bt(px, cycle_overlay=True, cycle_tilt=0.5)
+```
+
+默认 `tilt=0.5` 即「regime 每偏离中性 1 个单位，进攻仓位在 [0.5, 1.5] 倍区间调整」。
+启用前须确认 `cycles/data/cycles_raw.csv` 已最新（`python -m cycles.fetch` 重新抓取），否则退化为中性。
+
+### 6.4 正确性与验证
+
+- **额度守恒（无隐性杠杆）**：`tests/test_cycle_overlay.py`（10 项，全过）验证
+  `apply_to_alloc`/`apply_to_crypto_target`/`cap_offense` 在 scale∈[0.5,1.5] 下
+  现金/稳定币 ≥ 0、三栏/总权重守恒。
+- **基线不污染**：同文件验证 `cycle_tilt=0` 时三引擎结果与 `cycle_overlay=False` 逐字节相等
+  （A股面板存在则实跑验证；美股/加密数据存在实跑验证）。
+- **前视防护**：由 `cycles/phases.py` 的 `available_date` 门控保证（见 `tests/test_cycles.py`）。
+- **优雅降级**：`cycles` 数据缺失 / 模块加载失败 → 乘数 1.0，不改变回测。
 
 ## 7. 文件结构
 
@@ -94,11 +126,13 @@ cycles/
 ├── specs.py          # 12 层周期定义（id/作用/类型/sign/权重/滞后/FRED序列）
 ├── fetch.py          # FRED 抓取 → cycles/data/cycles_raw.csv（带 available_date）
 ├── phases.py         # load_cycles / cycle_phase_at / composite_regime / tilt_multiplier / write_monthly
+├── overlay.py        # 统一叠加层接口: cycle_scale_at + 三引擎额度守恒 helper (v6.20 新增)
 └── data/
     ├── cycles_raw.csv              # 量化周期原始月度序列（真实 FRED）
     ├── cycles_monthly.csv          # 每月 12 相位 + 合成 regime（研究用导出）
     └── cycles_qualitative_seed.csv # 定性周期分析师判定（点截，含免责声明）
 tests/test_cycles.py                # 8 项单元测试（前视/有界/降级/守恒）
+tests/test_cycle_overlay.py         # 10 项单元测试（三引擎接入/守恒/基线不污染/降级）
 ```
 
 > ⚠️ **免责声明（三／三处）**：本框架所有输出均为**市场观点与研究假设，不构成投资建议**。周期相位依赖历史统计与分析师判断，存在模型误差、数据滞后与 regime 突变风险；价格预测详见各市场回测报告，均须以「仅市场观点，不构成投资建议」为前提。

@@ -335,7 +335,8 @@ class WeekRecord:
 
 
 # ========== 主回测引擎 ==========
-def run_bt(px, cfg_dict=None, label='V6_options', start=None):
+def run_bt(px, cfg_dict=None, label='V6_options', start=None,
+           cycle_overlay=False, cycle_tilt=0.5):
     cfg = CryptoOptionsConfig(**(cfg_dict or {}))
     px = px.sort_index()
     if start:
@@ -346,6 +347,16 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None):
         raise ValueError(f'数据不足: 需>{WARMUP}周, 仅{n}周')
 
     sectors = compute_sector_indices(px)
+
+    # 12 层周期叠加: 仅启用时导入 cycles(默认关闭, 绝不污染基线); 失败则静默降级
+    _cyc_fn = None
+    if cycle_overlay:
+        try:
+            sys.path.insert(0, os.path.dirname(HERE))  # 仓库根(cycles 包所在)
+            from cycles.overlay import cycle_scale_at as _cs
+            _cyc_fn = _cs
+        except Exception as e:
+            print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
 
     nav = np.ones(n)
     coin_state = {}     # symbol -> CoinState
@@ -383,7 +394,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None):
 
         # ---- 1. 用上周权重 + 做空仓位 算本周组合收益 ----
         if w is None:
-            built = _build_target(px, t, cfg, coin_state, sectors)
+            built = _build_target(px, t, cfg, coin_state, sectors,
+                                  cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt)
             if built is None:
                 nav[t] = nav[t - 1]
                 recs.append(rec); continue
@@ -631,7 +643,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None):
                 cs.cooldown_left -= 1
                 rec.cooldown_locked += 1
 
-        built = _build_target(px, t, cfg, coin_state, sectors)
+        built = _build_target(px, t, cfg, coin_state, sectors,
+                              cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt)
         if built is None:
             recs.append(rec); continue
         target, regime = built
@@ -741,7 +754,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None):
     }
 
 
-def _build_target(px, t_idx, cfg, coin_state, sectors):
+def _build_target(px, t_idx, cfg, coin_state, sectors,
+                 cyc_scale_fn=None, cycle_tilt=0.5):
     """构造 t_idx 的目标权重 (防御+进攻+稳定币)。严格只用<=t数据；冷却期的币不选入。"""
     date_t = px.index[t_idx]
     year = date_t.year
@@ -786,6 +800,14 @@ def _build_target(px, t_idx, cfg, coin_state, sectors):
     target.update(defense_w)
     target.update(off_w)
     target[STABLE] = alloc['stable']
+    # 12 层周期叠加: 缩放进攻权重, 差额从稳定币(STABLE)匀取(额度守恒, 无隐性杠杆)
+    if cyc_scale_fn is not None and off_w:
+        from cycles.overlay import apply_to_crypto_target
+        cyc_scale = cyc_scale_fn(date_t.strftime('%Y-%m-%d'), cycle_tilt)
+        if cyc_scale != 1.0:
+            off_w, _stable = apply_to_crypto_target(off_w, target[STABLE], cyc_scale)
+            target[STABLE] = _stable
+            target.update(off_w)
     # 归一
     tot = sum(target.values())
     if tot <= 0: return None

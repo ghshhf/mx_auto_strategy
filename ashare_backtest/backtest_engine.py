@@ -697,7 +697,8 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         costs=True, commission_rate=0.00025, stamp_duty_rate=0.0005, slippage=0.001,
         volume_confirm=False, volume_ratio=1.0,
         macro_overlay=False, macro_tilt=0.2, tech_mode="static", tech_strength=1.0,
-        valuation_overlay=False, val_tilt=0.2):
+        valuation_overlay=False, val_tilt=0.2,
+        cycle_overlay=False, cycle_tilt=0.5):
     """A 股周频回测引擎.
 
     交易成本参数 (v6.16+):
@@ -736,6 +737,15 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
       分位按时点现算(只用历史), 且数据读数滞后 1 周, 无前视。
       需要 data/valuation_daily.csv (由 valuation_fetch.py 产出)。
 
+    12 层金融周期叠加 (v6.20+, 默认关闭):
+      cycle_overlay=True: 用 cycles 模块的 12 层 composite_regime 微调进攻仓位。
+      cycle_tilt: 倾斜幅度(默认 0.5 = cycles.specs.DEFAULT_TILT), 进攻仓乘数 =
+        1 + cycle_tilt × composite_regime(regime∈[-1,1]), 落在 [TILT_MIN=0.5, TILT_MAX=1.5]。
+        与 macro/估值 同款额度守恒: 加仓从防御仓匀、减仓释放现金, 不产生隐性杠杆。
+        前视防护由 cycles 模块保证(仅看 available_date <= 调仓日的周期数据)。
+        需要 cycles/data/cycles_raw.csv + cycles_qualitative_seed.csv (由 cycles/fetch.py 产出)。
+        默认关闭; 详见 docs/cycle_framework.md。
+
       ★ 实证结论(务必先读, 勿被表面数字误导):
         全样本 tilt=0.6 看似"倍数 18.185x->16.575x, MDD -33.31%->-24.63%",
         但逐年拆解显示这是**单点事件**而非稳定风控能力:
@@ -753,6 +763,15 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
     vol_series = load_volume_panel(panel_path) if volume_confirm else None
     macro_rows = load_macro() if macro_overlay else None
     val_pct = build_valuation_pct(load_valuation()) if valuation_overlay else None
+    # 12 层周期叠加: 仅启用时导入 cycles(默认关闭, 绝不污染基线); 导入失败则静默降级
+    _cyc_fn = None
+    if cycle_overlay:
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from cycles.overlay import cycle_scale_at as _cycle_scale_at
+            _cyc_fn = _cycle_scale_at
+        except Exception as e:
+            print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
     if use_core_sub:
         # 核心仓时间扩展: needed 用代理票(更早上市)决定起点, 把窗口前推到 ~2011;
         # 上市后原样使用 OFF4 本尊(first_valid 切换)。需配合干净的后复权面板。
@@ -852,6 +871,12 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
                 else:
                     c_pct = c_pct + (o_pct - new_o)
                 o_pct = new_o
+        # 12 层金融周期叠加: composite_regime 微调进攻仓(同样的额度守恒规则)
+        if _cyc_fn is not None and o_pct > 0:
+            from cycles.overlay import apply_to_alloc
+            cs = _cyc_fn(dates[i], cycle_tilt)
+            if cs != 1.0:
+                o_pct, d_pct, c_pct = apply_to_alloc(o_pct, d_pct, c_pct, cs)
         return d_pct, o_pct, c_pct
 
     # ---- 交易成本参数 (v6.16+) ----
