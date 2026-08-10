@@ -18,7 +18,7 @@ SECTOR = {
  'L1 智能合约公链': ['ETH','ADA','AVAX','SOL','DOT','NEAR','APT','SUI','SEI','TRX','TON','METIS'],
  'L2 / 扩容':       ['ARB','OP','STRK','MANTA','MATIC'],
  'DeFi / DEX':      ['1INCH','AAVE','COMP','CRV','LDO','MKR','SNX','UNI','JUP'],
- '永续交易所 / Deriv DEX': ['DYDX','GMX'],
+ '链上永续交易所 / On-chain Deriv DEX': ['DYDX','GMX'],
  'AI × 加密':       ['FET','RENDER','RNDR','TAO','PHB','BLZ'],
  'DePIN / AI基建':   ['HNT','PEAQ','AKT'],
  'GameFi / 元宇宙':  ['AXS','GALA','ILV','BEAM','IMX'],
@@ -96,15 +96,15 @@ for sec in order:
 # 渗透率(来自 CRYPTO_THEMES, 越低=上行空间越大): 结构护城河/政策尾风 手评
 PEN = {'L1 智能合约公链':25,'L2 / 扩容':18,'DeFi / DEX':12,'AI × 加密':3,'DePIN / AI基建':2,
        'GameFi / 元宇宙':8,'隐私 / 匿名':3,'RWA / 真实资产':1,'存储 / 数据':5,
-       '模块化 / DA':8,'基础设施':10,'平台币':15,'永续交易所 / Deriv DEX':6}
+       '模块化 / DA':8,'基础设施':10,'平台币':15,'链上永续交易所 / On-chain Deriv DEX':6}
 # 结构护城河/宏观尾风 手评分(1-5): 真实经济连接/机构/政策/十年主题
 TAIL = {'L1 智能合约公链':4,'L2 / 扩容':3,'DeFi / DEX':3,'AI × 加密':5,'DePIN / AI基建':5,
         'GameFi / 元宇宙':2,'隐私 / 匿名':2,'RWA / 真实资产':5,'存储 / 数据':3,
-        '模块化 / DA':3,'基础设施':4,'平台币':2,'永续交易所 / Deriv DEX':4}
+        '模块化 / DA':3,'基础设施':4,'平台币':2,'链上永续交易所 / On-chain Deriv DEX':4}
 # 轮动律契合: 2024 是否"早期/边缘未领涨" (1=是早期未领涨=下轮候选, 0=已领涨=饱和)
 ROT = {'L1 智能合约公链':0.5,'L2 / 扩容':0.2,'DeFi / DEX':0.1,'AI × 加密':0.3,'DePIN / AI基建':1.0,
        'GameFi / 元宇宙':0.4,'隐私 / 匿名':0.6,'RWA / 真实资产':1.0,'存储 / 数据':0.5,
-       '模块化 / DA':0.9,'基础设施':0.6,'平台币':0.2,'永续交易所 / Deriv DEX':0.85}
+       '模块化 / DA':0.9,'基础设施':0.6,'平台币':0.2,'链上永续交易所 / On-chain Deriv DEX':0.85}
 
 print("\n===== 下一轮(≈2028减半后)领涨赛道 概率排序 =====")
 scores=[]

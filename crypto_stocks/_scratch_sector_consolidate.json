@@ -32,7 +32,7 @@
       "UNI",
       "JUP"
     ],
-    "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+    "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX": [
       "DYDX",
       "GMX"
     ],
@@ -105,7 +105,7 @@
         null,
         null
       ],
-      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+      "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX": [
         null,
         null
       ],
@@ -183,7 +183,7 @@
         143.3,
         -508.1
       ],
-      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+      "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX": [
         30.9,
         -620.4
       ],
@@ -225,7 +225,7 @@
         -50.7,
         -146.3
       ],
-      "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+      "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX": [
         -58.3,
         -154.0
       ],
@@ -264,7 +264,7 @@
       11.1,
       -8.9
     ],
-    "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX": [
+    "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX": [
       11.5,
       6.0
     ],
@@ -334,7 +334,7 @@
       "tailwind": 0.6
     },
     {
-      "sector": "\u6c38\u7eed\u4ea4\u6613\u6240 / Deriv DEX",
+      "sector": "\u94fe\u4e0a\u6c38\u7eed\u4ea4\u6613\u6240 / On-chain Deriv DEX",
       "prob": 9.0,
       "cur26wRS": 6.0,
       "rotation": 0.85,

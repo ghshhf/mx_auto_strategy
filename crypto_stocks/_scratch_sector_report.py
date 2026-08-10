@@ -46,7 +46,7 @@ for p in pred:
             'GameFi / 元宇宙':'2021霸主,需等下一轮复苏','L1 智能合约公链':'已成熟,渗透见顶',
             'DeFi / DEX':'2020饱和,难再爆发','隐私 / 匿名':'当前极热=将均值回归',
             'L2 / 扩容':'当前偏热,且2024已洗','平台币':'当前偏热(BNB+OKB),防御末段',
-            '永续交易所 / Deriv DEX':'真实收入/用途,买旧幸存者框架(DYDX+GMX)加持'}.get(p['sector'],'')
+            '链上永续交易所 / On-chain Deriv DEX':'真实收入/用途,买旧幸存者框架(DYDX+GMX)加持'}.get(p['sector'],'')
     prob_rows += f"""<tr class='{top}'><td>{p['sector']}</td><td class='p'>{p['prob']:.1f}%</td>
       <td><div class='bar'><div class='fill' style='width:{w:.0f}%'></div></div></td>
       <td class='note'>{note}</td></tr>"""
