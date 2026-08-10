@@ -24,7 +24,7 @@
 > 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
 > 未来 `git pull` 后如需 AI 自动分类，以各分类标记为准，将 `us_stocks/` 识别为「美股分类」、`crypto_stocks/` 识别为「加密分类」，勿与 A 股逻辑混淆。
 
-> 🌐 **多周期宏观框架**：跨市场 12 周期叠加层（联邦利率 / 美元 / 信贷 / 流动性 / 情绪 / 盈利 / 通胀 / 房地产 + 半导体库存 / 科技AI创新 / 监管政策 / 加密自身），作为 opt-in 风险 regime 信号，沿用 `macro_overlay` 范式（前视防护 + 优雅降级），默认关闭、不污染基线回测。详见 [`docs/cycle_framework.md`](docs/cycle_framework.md)。
+> 🌐 **多周期宏观框架**：跨市场 12 周期叠加层（联邦利率 / 半导体库存 / 科技AI创新 / 市场情绪 / 盈利 / 估值 / 信贷 / 美元 / 流动性 / 地缘政治 / 大宗商品 / 房地产），作为 opt-in 风险 regime 信号，沿用 `macro_overlay` 范式（前视防护 + 优雅降级）。**已按引擎分别筛选有效周期并赋权重**——A股 = 信贷+大宗商品（tilt 0.3）、加密 = 流动性+美联储利率+大宗商品+房地产（tilt 0.5）、美股无有效周期（空集中性）；默认关闭、不污染基线。样本外 walk-forward 验证见 [`docs/cycle_framework.md`](docs/cycle_framework.md)。
 
 ---
 

@@ -584,8 +584,8 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
                   trend_gate="ma5", lookback=52, alloc=None, rebal=1, lev=1.0,
                   score_mode="mom", theme_div=False, max_per_theme=2,
                   phase_tilt=False, crash_off=80, vol_target=0.0, vol_floor=0.3,
-                  struct_def=0.0, gauge="QQQ", cycle_overlay=False, cycle_tilt=0.5,
-                  us_cfg=None, options_sim=None):
+                  struct_def=0.0, gauge="QQQ", cycle_overlay=False, cycle_tilt=0.0,
+                  cycle_weights=None, us_cfg=None, options_sim=None):
     """美股优化引擎(默认 = 稳健甜点配置, 扫参确定):
     - 进攻占比拉满(bull100/balance95/weak75), 仅 death-cross 重仓现金(替代 GLD 停车)
     - 周频再平衡(对齐 A 股)
@@ -615,7 +615,14 @@ def run_optimized(series, dates, use_ai, cfg, refresh_weeks=4, top_n=3,
         try:
             sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             from cycles.overlay import cycle_scale_at as _cs
-            _cyc_fn = _cs
+            _cyc_weights = cycle_weights
+            if _cyc_weights is None:
+                try:
+                    from cycles import specs as _cspecs
+                    _cyc_weights = _cspecs.ENGINE_CYCLE_WEIGHTS.get("us")
+                except Exception:
+                    _cyc_weights = None
+            _cyc_fn = (lambda d, t, _at=_cs, _w=_cyc_weights: _at(d, t, weights=_w))
         except Exception as e:
             print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
     REBAL = rebal                               # 再平衡周期(周, 默认1=周频, 对齐A股)

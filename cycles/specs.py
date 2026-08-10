@@ -140,6 +140,34 @@ QUAL_CYCLES = [c for c in CYCLES if c["kind"] == "qual"]
 TOTAL_WEIGHT = sum(c["weight"] for c in CYCLES)
 
 # 默认 tilt: regime 得分映射到进攻仓位的乘数幅度(沿用 macro_overlay 语义)
-DEFAULT_TILT = 0.5
+# v6.21 优化: 由 0.5 下调至 0.2。
+DEFAULT_TILT = 0.2
+
+# 逐引擎精选周期 + 权重 (v6.22, 依据 optimize_cycle_weights.py 的逐周期有效性实验):
+#   对每个引擎, 把 12 周期**单独**接入(tilt=0.3)测 ON/OFF 倍数比, 取三窗口几何均值 >1.0 的周期入选;
+#   入选周期按有效性强弱赋相对权重(权重越高 -> 在合成 regime 中越主导, 即用户所言"权重越高越该起作用")。
+#   结论:
+#     - A股: credit(信贷)+ commodity(大宗商品) 入选。fed_rate 对 A股无效(ratio<1, 中国股受美联储利率
+#           传导弱), 但信贷利差/油价这类确实影响 -> 印证"宏观类周期有用, 只是走的不是美联储利率通道"。
+#     - 美股: 12 周期几何均值**全部 <1.0**(其死亡交叉/波动率目标已吃掉周期能加的东西) -> 精选集为空。
+#            cycle_overlay=True 时本 dict 为空 -> composite_regime 返回 0 -> 乘数 1.0(中性), 安全无副作用;
+#            **实证建议 美股保持 cycle_overlay=False**。
+#     - 加密: liquidity(流动性, 10y 单周期 ratio 1.99, 2022 寒冬前转逆风减仓)+ housing + commodity + fed_rate。
+#   权重已归一化到 sum=1, 仅表示引擎内相对主导度。
+ENGINE_CYCLE_WEIGHTS = {
+    "ashare": {"credit": 0.529, "commodity": 0.471},
+    "us": {},                       # 空 -> 叠加层中性(乘数1.0); 建议关闭
+    "crypto": {"fed_rate": 0.224, "liquidity": 0.307, "commodity": 0.227, "housing": 0.242},
+}
+
+# 逐引擎推荐 tilt(在各自精选子集上扫描 ON/OFF 几何倍数比 + 样本外 walk-forward 验证得出):
+#   - A股: 精选子集下 tilt 单调递增收益, 但 MDD 随 tilt 加深; 取 0.3 为"起作用但不至于把回撤拖太狠"的平衡点。
+#            OOS(wf_cycle_oos.py): 几何倍数比 +9.65%(t=12.0, |t|>=2 显著), MDD 中性(t=1.63 不显著)。
+#   - 美股: 无有用周期 -> 0.0(配合空精选集=纯中性); OOS 6 窗口全 1.0, 建议保持 cycle_overlay=False。
+#   - 加密: OOS 验证推翻"崩盘保险"叙事 -> 叠加层是**收益放大器**(显著 +22% 倍数, t=5.4)但
+#            **显著恶化 MDD(-6pp, t=-5.98)**; in-sample 的 MDD 改善是 2022 单事件幻觉(同估值层性质)。
+#            tilt 扫描(0.2/0.3/0.4/0.5)为单调权衡: 0.3 = 平衡档(仍显著 +16% 倍数 / -4pp MDD),
+#            0.5 收益最高但回撤代价大。默认取 0.3。
+ENGINE_TILT = {"ashare": 0.3, "us": 0.0, "crypto": 0.3}
 # 乘数边界(避免隐性杠杆/空仓过度)
 TILT_MIN, TILT_MAX = 0.5, 1.5

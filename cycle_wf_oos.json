@@ -1,0 +1,382 @@
+{
+  "A股": {
+    "n_windows": 12,
+    "n_active": 12,
+    "mean_ratio": 1.0969,
+    "geo_ratio": 1.0965,
+    "t_ratio": 12.003415374101527,
+    "t_mdd": 1.6317069309909178,
+    "pass_ratio": true,
+    "pass_mdd": false,
+    "pairs": [
+      {
+        "test_start": "2013-01-01",
+        "test_end": "2015-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 433074.806,
+        "mult_on": 487112.022,
+        "ratio": 1.1248,
+        "mdd_off": -62.48,
+        "mdd_on": -62.48,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2014-01-01",
+        "test_end": "2016-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 348231.967,
+        "mult_on": 391682.858,
+        "ratio": 1.1248,
+        "mdd_off": -62.48,
+        "mdd_on": -62.48,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2015-01-01",
+        "test_end": "2017-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 59670.93,
+        "mult_on": 67116.413,
+        "ratio": 1.1248,
+        "mdd_off": -62.48,
+        "mdd_on": -62.48,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2016-01-01",
+        "test_end": "2018-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 3039.292,
+        "mult_on": 3418.522,
+        "ratio": 1.1248,
+        "mdd_off": -31.61,
+        "mdd_on": -31.61,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2017-01-01",
+        "test_end": "2019-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 66.802,
+        "mult_on": 75.137,
+        "ratio": 1.1248,
+        "mdd_off": -31.61,
+        "mdd_on": -31.61,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2018-01-01",
+        "test_end": "2020-01-01",
+        "weights": {
+          "credit": 0.5292,
+          "commodity": 0.4708
+        },
+        "mult_off": 13.126,
+        "mult_on": 14.107,
+        "ratio": 1.0747,
+        "mdd_off": -31.61,
+        "mdd_on": -31.61,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2019-01-01",
+        "test_end": "2021-01-01",
+        "weights": {
+          "credit": 0.5265,
+          "commodity": 0.4735
+        },
+        "mult_off": 18.098,
+        "mult_on": 19.544,
+        "ratio": 1.0799,
+        "mdd_off": -23.39,
+        "mdd_on": -23.85,
+        "mdd_imp": 0.46,
+        "abstain": false
+      },
+      {
+        "test_start": "2020-01-01",
+        "test_end": "2022-01-01",
+        "weights": {
+          "credit": 0.5286,
+          "commodity": 0.4714
+        },
+        "mult_off": 10.208,
+        "mult_on": 10.98,
+        "ratio": 1.0756,
+        "mdd_off": -23.39,
+        "mdd_on": -23.85,
+        "mdd_imp": 0.46,
+        "abstain": false
+      },
+      {
+        "test_start": "2021-01-01",
+        "test_end": "2023-01-01",
+        "weights": {
+          "sentiment": 0.3257,
+          "credit": 0.3569,
+          "commodity": 0.3174
+        },
+        "mult_off": 4.007,
+        "mult_on": 4.24,
+        "ratio": 1.0581,
+        "mdd_off": -23.39,
+        "mdd_on": -23.18,
+        "mdd_imp": -0.21,
+        "abstain": false
+      },
+      {
+        "test_start": "2022-01-01",
+        "test_end": "2024-01-01",
+        "weights": {
+          "sentiment": 0.3197,
+          "credit": 0.3533,
+          "commodity": 0.327
+        },
+        "mult_off": 3.757,
+        "mult_on": 4.021,
+        "ratio": 1.0703,
+        "mdd_off": -19.59,
+        "mdd_on": -19.4,
+        "mdd_imp": -0.19,
+        "abstain": false
+      },
+      {
+        "test_start": "2023-01-01",
+        "test_end": "2025-01-01",
+        "weights": {
+          "sentiment": 0.3187,
+          "credit": 0.3549,
+          "commodity": 0.3264
+        },
+        "mult_off": 3.831,
+        "mult_on": 4.083,
+        "ratio": 1.0658,
+        "mdd_off": -9.45,
+        "mdd_on": -11.25,
+        "mdd_imp": 1.8,
+        "abstain": false
+      },
+      {
+        "test_start": "2024-01-01",
+        "test_end": "2026-01-01",
+        "weights": {
+          "credit": 0.5096,
+          "commodity": 0.4904
+        },
+        "mult_off": 2.988,
+        "mult_on": 3.328,
+        "ratio": 1.1138,
+        "mdd_off": -9.2,
+        "mdd_on": -11.63,
+        "mdd_imp": 2.43,
+        "abstain": false
+      }
+    ]
+  },
+  "美股": {
+    "n_windows": 6,
+    "n_active": 2,
+    "mean_ratio": 1.0,
+    "geo_ratio": 1.0,
+    "t_ratio": 0.0,
+    "t_mdd": 0.0,
+    "pass_ratio": false,
+    "pass_mdd": false,
+    "pairs": [
+      {
+        "test_start": "2019-01-01",
+        "test_end": "2021-01-01",
+        "weights": {},
+        "mult_off": 64.91171870232463,
+        "mult_on": 64.91171870232463,
+        "ratio": 1.0,
+        "mdd_off": -71.32415577957424,
+        "mdd_on": -71.32415577957424,
+        "mdd_imp": 0.0,
+        "abstain": true
+      },
+      {
+        "test_start": "2020-01-01",
+        "test_end": "2022-01-01",
+        "weights": {},
+        "mult_off": 34.60007890874948,
+        "mult_on": 34.60007890874948,
+        "ratio": 1.0,
+        "mdd_off": -73.29841306577262,
+        "mdd_on": -73.29841306577262,
+        "mdd_imp": 0.0,
+        "abstain": true
+      },
+      {
+        "test_start": "2021-01-01",
+        "test_end": "2023-01-01",
+        "weights": {},
+        "mult_off": 36.121083664199695,
+        "mult_on": 36.121083664199695,
+        "ratio": 1.0,
+        "mdd_off": -49.686686550581136,
+        "mdd_on": -49.686686550581136,
+        "mdd_imp": 0.0,
+        "abstain": true
+      },
+      {
+        "test_start": "2022-01-01",
+        "test_end": "2024-01-01",
+        "weights": {},
+        "mult_off": 52.14723734817262,
+        "mult_on": 52.14723734817262,
+        "ratio": 1.0,
+        "mdd_off": -37.102475555514125,
+        "mdd_on": -37.102475555514125,
+        "mdd_imp": 0.0,
+        "abstain": true
+      },
+      {
+        "test_start": "2023-01-01",
+        "test_end": "2025-01-01",
+        "weights": {
+          "credit": 0.507,
+          "commodity": 0.493
+        },
+        "mult_off": 13.237,
+        "mult_on": 13.237,
+        "ratio": 1.0,
+        "mdd_off": -38.03,
+        "mdd_on": -38.03,
+        "mdd_imp": 0.0,
+        "abstain": false
+      },
+      {
+        "test_start": "2024-01-01",
+        "test_end": "2026-01-01",
+        "weights": {
+          "credit": 1.0
+        },
+        "mult_off": 5.568,
+        "mult_on": 5.568,
+        "ratio": 1.0,
+        "mdd_off": -35.14,
+        "mdd_on": -35.14,
+        "mdd_imp": 0.0,
+        "abstain": false
+      }
+    ]
+  },
+  "加密": {
+    "n_windows": 5,
+    "n_active": 5,
+    "mean_ratio": 1.2257,
+    "geo_ratio": 1.223,
+    "t_ratio": 5.3970965719291994,
+    "t_mdd": -5.975517262970346,
+    "pass_ratio": true,
+    "pass_mdd": true,
+    "pairs": [
+      {
+        "test_start": "2020-01-01",
+        "test_end": "2022-01-01",
+        "weights": {
+          "fed_rate": 0.1481,
+          "sentiment": 0.1449,
+          "earnings": 0.1606,
+          "dollar": 0.1587,
+          "liquidity": 0.2169,
+          "housing": 0.1708
+        },
+        "mult_off": 40.404,
+        "mult_on": 56.198,
+        "ratio": 1.3909,
+        "mdd_off": -57.61,
+        "mdd_on": -54.7,
+        "mdd_imp": -2.92,
+        "abstain": false
+      },
+      {
+        "test_start": "2021-01-01",
+        "test_end": "2023-01-01",
+        "weights": {
+          "sentiment": 0.3422,
+          "liquidity": 0.347,
+          "commodity": 0.3108
+        },
+        "mult_off": 2.094,
+        "mult_on": 2.442,
+        "ratio": 1.1663,
+        "mdd_off": -56.97,
+        "mdd_on": -51.73,
+        "mdd_imp": -5.24,
+        "abstain": false
+      },
+      {
+        "test_start": "2022-01-01",
+        "test_end": "2024-01-01",
+        "weights": {
+          "sentiment": 0.2524,
+          "dollar": 0.226,
+          "liquidity": 0.2761,
+          "housing": 0.2455
+        },
+        "mult_off": 1.274,
+        "mult_on": 1.539,
+        "ratio": 1.2075,
+        "mdd_off": -58.19,
+        "mdd_on": -49.15,
+        "mdd_imp": -9.03,
+        "abstain": false
+      },
+      {
+        "test_start": "2023-01-01",
+        "test_end": "2025-01-01",
+        "weights": {
+          "sentiment": 0.1886,
+          "dollar": 0.1961,
+          "liquidity": 0.2156,
+          "commodity": 0.1913,
+          "housing": 0.2085
+        },
+        "mult_off": 0.867,
+        "mult_on": 1.026,
+        "ratio": 1.1833,
+        "mdd_off": -57.68,
+        "mdd_on": -50.27,
+        "mdd_imp": -7.41,
+        "abstain": false
+      },
+      {
+        "test_start": "2024-01-01",
+        "test_end": "2026-01-01",
+        "weights": {
+          "fed_rate": 0.1518,
+          "sentiment": 0.1548,
+          "dollar": 0.1676,
+          "liquidity": 0.1836,
+          "commodity": 0.1585,
+          "housing": 0.1836
+        },
+        "mult_off": 0.522,
+        "mult_on": 0.617,
+        "ratio": 1.1806,
+        "mdd_off": -58.19,
+        "mdd_on": -52.07,
+        "mdd_imp": -6.12,
+        "abstain": false
+      }
+    ]
+  }
+}

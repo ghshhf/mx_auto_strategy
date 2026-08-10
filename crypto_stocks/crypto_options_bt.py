@@ -336,7 +336,7 @@ class WeekRecord:
 
 # ========== 主回测引擎 ==========
 def run_bt(px, cfg_dict=None, label='V6_options', start=None,
-           cycle_overlay=False, cycle_tilt=0.5):
+           cycle_overlay=False, cycle_tilt=0.5, cycle_weights=None):
     cfg = CryptoOptionsConfig(**(cfg_dict or {}))
     px = px.sort_index()
     if start:
@@ -354,7 +354,14 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         try:
             sys.path.insert(0, os.path.dirname(HERE))  # 仓库根(cycles 包所在)
             from cycles.overlay import cycle_scale_at as _cs
-            _cyc_fn = _cs
+            _cyc_weights = cycle_weights
+            if _cyc_weights is None:
+                try:
+                    from cycles import specs as _cspecs
+                    _cyc_weights = _cspecs.ENGINE_CYCLE_WEIGHTS.get("crypto")
+                except Exception:
+                    _cyc_weights = None
+            _cyc_fn = (lambda d, t, _at=_cs, _w=_cyc_weights: _at(d, t, weights=_w))
         except Exception as e:
             print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
 

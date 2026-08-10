@@ -1,0 +1,956 @@
+{
+  "single_tilt": 0.3,
+  "raw": {
+    "A股": {
+      "3y": {
+        "start": "2023-08-06",
+        "end": "2026-08-06",
+        "actual_years": 3.0,
+        "off": {
+          "mult": 2.926,
+          "cagr": 43.36,
+          "mdd": -9.2,
+          "bench": 1.197
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.9655,
+            "mult_on": 2.825,
+            "mdd_on": -9.26,
+            "mdd_off": -9.2
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 2.926,
+            "mdd_on": -9.2,
+            "mdd_off": -9.2
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 2.926,
+            "mdd_on": -9.2,
+            "mdd_off": -9.2
+          },
+          "sentiment": {
+            "ratio": 0.9853,
+            "mult_on": 2.883,
+            "mdd_on": -10.43,
+            "mdd_off": -9.2
+          },
+          "earnings": {
+            "ratio": 0.9286,
+            "mult_on": 2.717,
+            "mdd_on": -10.93,
+            "mdd_off": -9.2
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 2.926,
+            "mdd_on": -9.2,
+            "mdd_off": -9.2
+          },
+          "credit": {
+            "ratio": 1.1247,
+            "mult_on": 3.291,
+            "mdd_on": -11.85,
+            "mdd_off": -9.2
+          },
+          "dollar": {
+            "ratio": 0.9528,
+            "mult_on": 2.788,
+            "mdd_on": -8.93,
+            "mdd_off": -9.2
+          },
+          "liquidity": {
+            "ratio": 0.8274,
+            "mult_on": 2.421,
+            "mdd_on": -8.15,
+            "mdd_off": -9.2
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 2.926,
+            "mdd_on": -9.2,
+            "mdd_off": -9.2
+          },
+          "commodity": {
+            "ratio": 1.0827,
+            "mult_on": 3.168,
+            "mdd_on": -11.4,
+            "mdd_off": -9.2
+          },
+          "housing": {
+            "ratio": 0.8079,
+            "mult_on": 2.364,
+            "mdd_on": -8.15,
+            "mdd_off": -9.2
+          }
+        }
+      },
+      "5y": {
+        "start": "2021-08-06",
+        "end": "2026-08-06",
+        "actual_years": 5.0,
+        "off": {
+          "mult": 4.047,
+          "cagr": 32.55,
+          "mdd": -23.0,
+          "bench": 0.945
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.9068,
+            "mult_on": 3.67,
+            "mdd_on": -24.61,
+            "mdd_off": -23.0
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 4.047,
+            "mdd_on": -23.0,
+            "mdd_off": -23.0
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 4.047,
+            "mdd_on": -23.0,
+            "mdd_off": -23.0
+          },
+          "sentiment": {
+            "ratio": 1.0116,
+            "mult_on": 4.094,
+            "mdd_on": -23.43,
+            "mdd_off": -23.0
+          },
+          "earnings": {
+            "ratio": 0.9167,
+            "mult_on": 3.71,
+            "mdd_on": -24.22,
+            "mdd_off": -23.0
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 4.047,
+            "mdd_on": -23.0,
+            "mdd_off": -23.0
+          },
+          "credit": {
+            "ratio": 1.1248,
+            "mult_on": 4.552,
+            "mdd_on": -23.0,
+            "mdd_off": -23.0
+          },
+          "dollar": {
+            "ratio": 0.915,
+            "mult_on": 3.703,
+            "mdd_on": -22.91,
+            "mdd_off": -23.0
+          },
+          "liquidity": {
+            "ratio": 0.8693,
+            "mult_on": 3.518,
+            "mdd_on": -24.3,
+            "mdd_off": -23.0
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 4.047,
+            "mdd_on": -23.0,
+            "mdd_off": -23.0
+          },
+          "commodity": {
+            "ratio": 1.0452,
+            "mult_on": 4.23,
+            "mdd_on": -20.97,
+            "mdd_off": -23.0
+          },
+          "housing": {
+            "ratio": 0.7737,
+            "mult_on": 3.131,
+            "mdd_on": -24.3,
+            "mdd_off": -23.0
+          }
+        }
+      },
+      "10y": {
+        "start": "2016-08-06",
+        "end": "2026-08-06",
+        "actual_years": 10.0,
+        "off": {
+          "mult": 123.522,
+          "cagr": 60.27,
+          "mdd": -31.61,
+          "bench": 1.411
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.7941,
+            "mult_on": 98.094,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 123.522,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 123.522,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "sentiment": {
+            "ratio": 0.7276,
+            "mult_on": 89.87,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "earnings": {
+            "ratio": 0.8966,
+            "mult_on": 110.75,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 123.522,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "credit": {
+            "ratio": 1.1248,
+            "mult_on": 138.934,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "dollar": {
+            "ratio": 0.7226,
+            "mult_on": 89.251,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "liquidity": {
+            "ratio": 0.7558,
+            "mult_on": 93.352,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 123.522,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "commodity": {
+            "ratio": 0.8917,
+            "mult_on": 110.141,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          },
+          "housing": {
+            "ratio": 0.7452,
+            "mult_on": 92.049,
+            "mdd_on": -31.61,
+            "mdd_off": -31.61
+          }
+        }
+      }
+    },
+    "美股": {
+      "3y": {
+        "start": "2023-07-20",
+        "end": "2026-07-20",
+        "actual_years": 3.0,
+        "off": {
+          "mult": 7.459829981535396,
+          "cagr": 150.0845602993164,
+          "mdd": -35.14016307981021,
+          "bench": 1.3507021940479387
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.8814,
+            "mult_on": 6.575,
+            "mdd_on": -31.67,
+            "mdd_off": -35.14
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 7.46,
+            "mdd_on": -35.14,
+            "mdd_off": -35.14
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 7.46,
+            "mdd_on": -35.14,
+            "mdd_off": -35.14
+          },
+          "sentiment": {
+            "ratio": 0.8717,
+            "mult_on": 6.503,
+            "mdd_on": -35.64,
+            "mdd_off": -35.14
+          },
+          "earnings": {
+            "ratio": 0.9327,
+            "mult_on": 6.958,
+            "mdd_on": -31.32,
+            "mdd_off": -35.14
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 7.46,
+            "mdd_on": -35.14,
+            "mdd_off": -35.14
+          },
+          "credit": {
+            "ratio": 1.0203,
+            "mult_on": 7.611,
+            "mdd_on": -36.21,
+            "mdd_off": -35.14
+          },
+          "dollar": {
+            "ratio": 0.7372,
+            "mult_on": 5.499,
+            "mdd_on": -24.51,
+            "mdd_off": -35.14
+          },
+          "liquidity": {
+            "ratio": 0.694,
+            "mult_on": 5.177,
+            "mdd_on": -26.78,
+            "mdd_off": -35.14
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 7.46,
+            "mdd_on": -35.14,
+            "mdd_off": -35.14
+          },
+          "commodity": {
+            "ratio": 0.9582,
+            "mult_on": 7.148,
+            "mdd_on": -34.52,
+            "mdd_off": -35.14
+          },
+          "housing": {
+            "ratio": 0.645,
+            "mult_on": 4.812,
+            "mdd_on": -26.74,
+            "mdd_off": -35.14
+          }
+        }
+      },
+      "5y": {
+        "start": "2021-07-20",
+        "end": "2026-07-20",
+        "actual_years": 5.0,
+        "off": {
+          "mult": 44.836037050138835,
+          "cagr": 143.70679425704077,
+          "mdd": -37.63409553044311,
+          "bench": 2.005961446057871
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.5743,
+            "mult_on": 25.749,
+            "mdd_on": -27.66,
+            "mdd_off": -37.63
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 44.836,
+            "mdd_on": -37.63,
+            "mdd_off": -37.63
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 44.836,
+            "mdd_on": -37.63,
+            "mdd_off": -37.63
+          },
+          "sentiment": {
+            "ratio": 0.8056,
+            "mult_on": 36.118,
+            "mdd_on": -37.64,
+            "mdd_off": -37.63
+          },
+          "earnings": {
+            "ratio": 0.9812,
+            "mult_on": 43.991,
+            "mdd_on": -32.71,
+            "mdd_off": -37.63
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 44.836,
+            "mdd_on": -37.63,
+            "mdd_off": -37.63
+          },
+          "credit": {
+            "ratio": 0.9554,
+            "mult_on": 42.838,
+            "mdd_on": -37.63,
+            "mdd_off": -37.63
+          },
+          "dollar": {
+            "ratio": 0.5472,
+            "mult_on": 24.532,
+            "mdd_on": -31.06,
+            "mdd_off": -37.63
+          },
+          "liquidity": {
+            "ratio": 0.6815,
+            "mult_on": 30.556,
+            "mdd_on": -37.64,
+            "mdd_off": -37.63
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 44.836,
+            "mdd_on": -37.63,
+            "mdd_off": -37.63
+          },
+          "commodity": {
+            "ratio": 0.7601,
+            "mult_on": 34.08,
+            "mdd_on": -32.97,
+            "mdd_off": -37.63
+          },
+          "housing": {
+            "ratio": 0.4601,
+            "mult_on": 20.631,
+            "mdd_on": -27.68,
+            "mdd_off": -37.63
+          }
+        }
+      },
+      "10y": {
+        "start": "2016-07-20",
+        "end": "2026-07-20",
+        "actual_years": 10.0,
+        "off": {
+          "mult": 97.731798433317,
+          "cagr": 48.65612429034927,
+          "mdd": -70.34125053253346,
+          "bench": 3.6264545227006146
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.4596,
+            "mult_on": 44.919,
+            "mdd_on": -69.26,
+            "mdd_off": -70.34
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 97.732,
+            "mdd_on": -70.34,
+            "mdd_off": -70.34
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 97.732,
+            "mdd_on": -70.34,
+            "mdd_off": -70.34
+          },
+          "sentiment": {
+            "ratio": 0.6587,
+            "mult_on": 64.372,
+            "mdd_on": -66.85,
+            "mdd_off": -70.34
+          },
+          "earnings": {
+            "ratio": 0.8353,
+            "mult_on": 81.631,
+            "mdd_on": -70.12,
+            "mdd_off": -70.34
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 97.732,
+            "mdd_on": -70.34,
+            "mdd_off": -70.34
+          },
+          "credit": {
+            "ratio": 0.9671,
+            "mult_on": 94.512,
+            "mdd_on": -70.34,
+            "mdd_off": -70.34
+          },
+          "dollar": {
+            "ratio": 0.3801,
+            "mult_on": 37.148,
+            "mdd_on": -66.56,
+            "mdd_off": -70.34
+          },
+          "liquidity": {
+            "ratio": 0.5232,
+            "mult_on": 51.136,
+            "mdd_on": -70.75,
+            "mdd_off": -70.34
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 97.732,
+            "mdd_on": -70.34,
+            "mdd_off": -70.34
+          },
+          "commodity": {
+            "ratio": 0.8388,
+            "mult_on": 81.975,
+            "mdd_on": -65.56,
+            "mdd_off": -70.34
+          },
+          "housing": {
+            "ratio": 0.3267,
+            "mult_on": 31.926,
+            "mdd_on": -70.75,
+            "mdd_off": -70.34
+          }
+        }
+      }
+    },
+    "加密": {
+      "3y": {
+        "start": "2023-07-24",
+        "end": "2026-07-24",
+        "actual_years": 3.0,
+        "off": {
+          "mult": 1.0572183294320792,
+          "cagr": 0.01872014583071535,
+          "mdd": -57.68127167473336,
+          "bench": 2.2272106907147244
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.9238,
+            "mult_on": 0.977,
+            "mdd_on": -58.4,
+            "mdd_off": -57.68
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 1.057,
+            "mdd_on": -57.68,
+            "mdd_off": -57.68
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 1.057,
+            "mdd_on": -57.68,
+            "mdd_off": -57.68
+          },
+          "sentiment": {
+            "ratio": 1.0766,
+            "mult_on": 1.138,
+            "mdd_on": -55.86,
+            "mdd_off": -57.68
+          },
+          "earnings": {
+            "ratio": 0.8938,
+            "mult_on": 0.945,
+            "mdd_on": -59.16,
+            "mdd_off": -57.68
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 1.057,
+            "mdd_on": -57.68,
+            "mdd_off": -57.68
+          },
+          "credit": {
+            "ratio": 0.9306,
+            "mult_on": 0.984,
+            "mdd_on": -62.83,
+            "mdd_off": -57.68
+          },
+          "dollar": {
+            "ratio": 1.0264,
+            "mult_on": 1.085,
+            "mdd_on": -55.26,
+            "mdd_off": -57.68
+          },
+          "liquidity": {
+            "ratio": 1.1808,
+            "mult_on": 1.248,
+            "mdd_on": -49.43,
+            "mdd_off": -57.68
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 1.057,
+            "mdd_on": -57.68,
+            "mdd_off": -57.68
+          },
+          "commodity": {
+            "ratio": 1.0251,
+            "mult_on": 1.084,
+            "mdd_on": -58.98,
+            "mdd_off": -57.68
+          },
+          "housing": {
+            "ratio": 1.1334,
+            "mult_on": 1.198,
+            "mdd_on": -49.49,
+            "mdd_off": -57.68
+          }
+        }
+      },
+      "5y": {
+        "start": "2021-07-24",
+        "end": "2026-07-24",
+        "actual_years": 5.0,
+        "off": {
+          "mult": 1.1177987971299967,
+          "cagr": 0.022522157216684935,
+          "mdd": -57.61425529215194,
+          "bench": 1.4793234838176688
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 0.8914,
+            "mult_on": 0.996,
+            "mdd_on": -58.33,
+            "mdd_off": -57.61
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 1.118,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 1.118,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "sentiment": {
+            "ratio": 1.1145,
+            "mult_on": 1.246,
+            "mdd_on": -55.79,
+            "mdd_off": -57.61
+          },
+          "earnings": {
+            "ratio": 0.9026,
+            "mult_on": 1.009,
+            "mdd_on": -58.46,
+            "mdd_off": -57.61
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 1.118,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "credit": {
+            "ratio": 0.8624,
+            "mult_on": 0.964,
+            "mdd_on": -62.56,
+            "mdd_off": -57.61
+          },
+          "dollar": {
+            "ratio": 1.0383,
+            "mult_on": 1.161,
+            "mdd_on": -55.19,
+            "mdd_off": -57.61
+          },
+          "liquidity": {
+            "ratio": 1.1593,
+            "mult_on": 1.296,
+            "mdd_on": -54.04,
+            "mdd_off": -57.61
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 1.118,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "commodity": {
+            "ratio": 1.0015,
+            "mult_on": 1.119,
+            "mdd_on": -58.92,
+            "mdd_off": -57.61
+          },
+          "housing": {
+            "ratio": 0.9806,
+            "mult_on": 1.096,
+            "mdd_on": -52.69,
+            "mdd_off": -57.61
+          }
+        }
+      },
+      "10y": {
+        "start": "2017-08-11",
+        "end": "2026-07-24",
+        "actual_years": 8.95,
+        "off": {
+          "mult": 448.56933845203264,
+          "cagr": 0.973688764916284,
+          "mdd": -57.61425529215195,
+          "bench": 15.854489035286287
+        },
+        "single": {
+          "fed_rate": {
+            "ratio": 1.2895,
+            "mult_on": 578.437,
+            "mdd_on": -58.33,
+            "mdd_off": -57.61
+          },
+          "semiconductor": {
+            "ratio": 1.0,
+            "mult_on": 448.569,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "ai_innovation": {
+            "ratio": 1.0,
+            "mult_on": 448.569,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "sentiment": {
+            "ratio": 0.7886,
+            "mult_on": 353.739,
+            "mdd_on": -55.79,
+            "mdd_off": -57.61
+          },
+          "earnings": {
+            "ratio": 1.2305,
+            "mult_on": 551.96,
+            "mdd_on": -58.46,
+            "mdd_off": -57.61
+          },
+          "valuation": {
+            "ratio": 1.0,
+            "mult_on": 448.569,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "credit": {
+            "ratio": 0.8569,
+            "mult_on": 384.401,
+            "mdd_on": -62.56,
+            "mdd_off": -57.61
+          },
+          "dollar": {
+            "ratio": 0.9128,
+            "mult_on": 409.474,
+            "mdd_on": -55.19,
+            "mdd_off": -57.61
+          },
+          "liquidity": {
+            "ratio": 1.9874,
+            "mult_on": 891.503,
+            "mdd_on": -55.98,
+            "mdd_off": -57.61
+          },
+          "geopolitics": {
+            "ratio": 1.0,
+            "mult_on": 448.569,
+            "mdd_on": -57.61,
+            "mdd_off": -57.61
+          },
+          "commodity": {
+            "ratio": 1.0724,
+            "mult_on": 481.059,
+            "mdd_on": -58.92,
+            "mdd_off": -57.61
+          },
+          "housing": {
+            "ratio": 1.1993,
+            "mult_on": 537.951,
+            "mdd_on": -54.69,
+            "mdd_off": -57.61
+          }
+        }
+      }
+    }
+  },
+  "geo_ratio": {
+    "A股": {
+      "fed_rate": 0.8859,
+      "semiconductor": 1.0,
+      "ai_innovation": 1.0,
+      "sentiment": 0.8984,
+      "earnings": 0.9139,
+      "valuation": 1.0,
+      "credit": 1.1248,
+      "dollar": 0.8572,
+      "liquidity": 0.8161,
+      "geopolitics": 1.0,
+      "commodity": 1.003,
+      "housing": 0.7752
+    },
+    "美股": {
+      "fed_rate": 0.615,
+      "semiconductor": 1.0,
+      "ai_innovation": 1.0,
+      "sentiment": 0.7734,
+      "earnings": 0.9144,
+      "valuation": 1.0,
+      "credit": 0.9805,
+      "dollar": 0.5352,
+      "liquidity": 0.6278,
+      "geopolitics": 1.0,
+      "commodity": 0.8485,
+      "housing": 0.4594
+    },
+    "加密": {
+      "fed_rate": 1.0202,
+      "semiconductor": 1.0,
+      "ai_innovation": 1.0,
+      "sentiment": 0.9817,
+      "earnings": 0.9976,
+      "valuation": 1.0,
+      "credit": 0.8827,
+      "dollar": 0.9908,
+      "liquidity": 1.396,
+      "geopolitics": 1.0,
+      "commodity": 1.0326,
+      "housing": 1.1005
+    }
+  },
+  "selection": {
+    "A股": {
+      "credit": 0.529,
+      "commodity": 0.471
+    },
+    "美股": {},
+    "加密": {
+      "fed_rate": 0.224,
+      "liquidity": 0.307,
+      "commodity": 0.227,
+      "housing": 0.242
+    }
+  },
+  "tilt_scan": {
+    "A股": {
+      "0.0": {
+        "geo_ratio": 1.0,
+        "worst_mdd_on": -9.2,
+        "worst_mdd_off": -9.2
+      },
+      "0.1": {
+        "geo_ratio": 1.0254,
+        "worst_mdd_on": -10.02,
+        "worst_mdd_off": -9.2
+      },
+      "0.15": {
+        "geo_ratio": 1.038,
+        "worst_mdd_on": -10.42,
+        "worst_mdd_off": -9.2
+      },
+      "0.2": {
+        "geo_ratio": 1.0506,
+        "worst_mdd_on": -10.83,
+        "worst_mdd_off": -9.2
+      },
+      "0.3": {
+        "geo_ratio": 1.0759,
+        "worst_mdd_on": -11.64,
+        "worst_mdd_off": -9.2
+      },
+      "0.4": {
+        "geo_ratio": 1.1046,
+        "worst_mdd_on": -12.14,
+        "worst_mdd_off": -9.2
+      },
+      "0.5": {
+        "geo_ratio": 1.1364,
+        "worst_mdd_on": -12.14,
+        "worst_mdd_off": -9.2
+      }
+    },
+    "美股": {
+      "0.0": {
+        "geo_ratio": 1.0,
+        "worst_mdd_on": -35.14,
+        "worst_mdd_off": -35.14
+      },
+      "0.1": {
+        "geo_ratio": 0.968,
+        "worst_mdd_on": -34.46,
+        "worst_mdd_off": -35.14
+      },
+      "0.15": {
+        "geo_ratio": 0.9334,
+        "worst_mdd_on": -34.12,
+        "worst_mdd_off": -35.14
+      },
+      "0.2": {
+        "geo_ratio": 0.9183,
+        "worst_mdd_on": -33.78,
+        "worst_mdd_off": -35.14
+      },
+      "0.3": {
+        "geo_ratio": 0.8889,
+        "worst_mdd_on": -33.09,
+        "worst_mdd_off": -35.14
+      },
+      "0.4": {
+        "geo_ratio": 0.8597,
+        "worst_mdd_on": -32.4,
+        "worst_mdd_off": -35.14
+      },
+      "0.5": {
+        "geo_ratio": 0.8303,
+        "worst_mdd_on": -31.7,
+        "worst_mdd_off": -35.14
+      }
+    },
+    "加密": {
+      "0.0": {
+        "geo_ratio": 1.0,
+        "worst_mdd_on": -57.61,
+        "worst_mdd_off": -57.61
+      },
+      "0.1": {
+        "geo_ratio": 1.0666,
+        "worst_mdd_on": -56.18,
+        "worst_mdd_off": -57.61
+      },
+      "0.15": {
+        "geo_ratio": 1.1004,
+        "worst_mdd_on": -55.45,
+        "worst_mdd_off": -57.61
+      },
+      "0.2": {
+        "geo_ratio": 1.1345,
+        "worst_mdd_on": -54.7,
+        "worst_mdd_off": -57.61
+      },
+      "0.3": {
+        "geo_ratio": 1.1896,
+        "worst_mdd_on": -53.24,
+        "worst_mdd_off": -57.61
+      },
+      "0.4": {
+        "geo_ratio": 1.2147,
+        "worst_mdd_on": -51.78,
+        "worst_mdd_off": -57.61
+      },
+      "0.5": {
+        "geo_ratio": 1.2222,
+        "worst_mdd_on": -50.3,
+        "worst_mdd_off": -57.61
+      }
+    }
+  },
+  "best_tilt": {
+    "A股": 0.5,
+    "美股": 0.0,
+    "加密": 0.5
+  },
+  "engine_key": {
+    "A股": "ashare",
+    "美股": "us",
+    "加密": "crypto"
+  }
+}

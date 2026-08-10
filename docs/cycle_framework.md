@@ -90,9 +90,11 @@ mult = cycle_scale_at(query_date, tilt=0.5)
 
 | 引擎 | 入口 | 接入参数 | 守恒 helper | 语义 |
 |------|------|----------|-------------|------|
-| A股 | `ashare_backtest/backtest_engine.py` `run()` | `cycle_overlay`, `cycle_tilt=0.5` | `apply_to_alloc` | 进攻/防御/现金三栏守恒：加仓从防御仓匀、减仓释放现金 |
-| 美股 | `us_stocks/us_backtest_ai.py` `run_optimized()` | `cycle_overlay`, `cycle_tilt=0.5` | `cap_offense` | 进攻% 缩放，现金自动吸收差额（顺风最多吃光现金，不借入） |
-| 加密 | `crypto_stocks/crypto_options_bt.py` `run_bt()` / `_build_target()` | `cycle_overlay`, `cycle_tilt=0.5` | `apply_to_crypto_target` | 缩放进攻权重，差额从稳定币(STABLE)匀取 |
+| A股 | `ashare_backtest/backtest_engine.py` `run()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_alloc` | 进攻/防御/现金三栏守恒：加仓从防御仓匀、减仓释放现金 |
+| 美股 | `us_stocks/us_backtest_ai.py` `run_optimized()` | `cycle_overlay`, `cycle_tilt=0.0`(默认), `cycle_weights=None` | `cap_offense` | 进攻% 缩放，现金自动吸收差额（顺风最多吃光现金，不借入） |
+| 加密 | `crypto_stocks/crypto_options_bt.py` `run_bt()` / `_build_target()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_crypto_target` | 缩放进攻权重，差额从稳定币(STABLE)匀取 |
+
+> 不传 `cycle_weights` 时，引擎按自身 key（`ashare`/`us`/`crypto`）回退到 `specs.ENGINE_CYCLE_WEIGHTS` 的**逐引擎精选周期+权重**；传了则用它（用于实验）。`composite_regime` 已支持 `weights` 参数，只合成指定周期、忽略其余。
 
 三处均在 `if cycle_overlay:` 分支内**惰性导入** `cycles`（默认关闭时路径与原基线逐字节一致，
 绝不污染基线）；导入失败则打印 `[warn]` 并静默降级为中性 1.0。
@@ -100,12 +102,13 @@ mult = cycle_scale_at(query_date, tilt=0.5)
 ### 6.3 启用示例
 
 ```bash
-# A股：在 run() 调用加 cycle_overlay=True, cycle_tilt=0.5
-# 美股：run_optimized(..., cycle_overlay=True, cycle_tilt=0.5)
-# 加密：run_bt(px, cycle_overlay=True, cycle_tilt=0.5)
+# A股：在 run() 调用加 cycle_overlay=True        # 默认 tilt=0.3, 用 ENGINE_CYCLE_WEIGHTS['ashare']
+# 美股：run_optimized(..., cycle_overlay=True)   # 默认 tilt=0.0, 精选集为空 -> 中性(建议保持关闭)
+# 加密：run_bt(px, cycle_overlay=True)           # 默认 tilt=0.3, 用 ENGINE_CYCLE_WEIGHTS['crypto']
+# 自定义：任何引擎均可显式传 cycle_tilt=... 与 cycle_weights={...} 覆盖默认
 ```
 
-默认 `tilt=0.5` 即「regime 每偏离中性 1 个单位，进攻仓位在 [0.5, 1.5] 倍区间调整」。
+`tilt` 默认取 `specs.ENGINE_TILT`（A股 0.3 / 美股 0.0 / 加密 0.3），即「regime 每偏离中性 1 单位，进攻仓位在 [1±tilt] 倍区间调整」（乘数边界仍裁剪到 [0.5,1.5]）。
 启用前须确认 `cycles/data/cycles_raw.csv` 已最新（`python -m cycles.fetch` 重新抓取），否则退化为中性。
 
 ### 6.4 正确性与验证
@@ -117,6 +120,18 @@ mult = cycle_scale_at(query_date, tilt=0.5)
   （A股面板存在则实跑验证；美股/加密数据存在实跑验证）。
 - **前视防护**：由 `cycles/phases.py` 的 `available_date` 门控保证（见 `tests/test_cycles.py`）。
 - **优雅降级**：`cycles` 数据缺失 / 模块加载失败 → 乘数 1.0，不改变回测。
+
+### 6.5 逐引擎精选权重 (v6.21)
+
+`composite_regime` 改为**按引擎分别筛选有效周期 + 配权重**（不再全周期等权），由 `cycles/specs.py` 的 `ENGINE_CYCLE_WEIGHTS` + `ENGINE_TILT` 定义；引擎 `cycle_overlay=True` 时默认按自身 key 取精选集。选法：对每引擎 × 3/5/10 年窗口，逐个周期单独接入测 ON/OFF 倍数比，保留几何均值 >1.0 的周期并按比值归一化权重。
+
+| 引擎 | 精选周期（权重，归一化） | 默认 tilt | 结论 |
+|------|--------------------------|-----------|------|
+| A股 | credit 信贷 0.529 + commodity 大宗商品 0.471 | 0.3 | 有用；credit 在 2013–2026 持续偏宽松 → 结构性小幅加进攻 |
+| 美股 | （空） | 0.0 | 12 周期几何均值全 <1.0 → 无有用周期，叠加层中性；建议保持关闭 |
+| 加密 | liquidity 流动性 0.307 + fed_rate 美联储利率 0.224 + commodity 大宗商品 0.227 + housing 房地产 0.242 | 0.3 | 有用但为「收益放大器」而非保险（见 §8） |
+
+> 印证用户判断：宏观/利率类周期（信贷、流动性、美联储利率、油价）**必然对权益与加密有影响**；只是对 A股走的是信贷利差/油价通道（美联储利率本身对 A股无效），对加密走流动性/利率通道。美股则因自身死亡交叉/波动率目标已吃掉周期可加的部分，无净增益。
 
 ## 7. 文件结构
 
@@ -134,5 +149,31 @@ cycles/
 tests/test_cycles.py                # 8 项单元测试（前视/有界/降级/守恒）
 tests/test_cycle_overlay.py         # 10 项单元测试（三引擎接入/守恒/基线不污染/降级）
 ```
+
+## 8. 样本外 walk-forward 验证 (v6.21)
+
+按项目方法论（滚动窗口 + 双维度配对 t 检验，|t|≥2 才算真改进）对三引擎做 expanding-origin walk-forward：每个 origin `t` 用 `[起点, t]` 训练选权重、`[t, t+1y]` 测试评估，聚合多窗口做配对 t 检验（倍数维度 `d = ON/OFF − 1`；MDD 维度 `d = MDD_off − MDD_on`，正 = 改善）。脚本 `wf_cycle_oos.py`，原始见 `cycle_wf_oos.json`。
+
+| 引擎 | 窗口数 | 几何倍数比(OOS) | t(倍数) | t(MDD) | 倍数 \|t\|≥2 | MDD \|t\|≥2 |
+|------|--------|-----------------|---------|--------|-------------|-------------|
+| A股 | 12 | **1.0965 (+9.65%)** | 12.0 | 1.63 | ✓ 显著增益 | ✗ 中性 |
+| 美股 | 6 | 1.000 (全中性) | 0.0 | 0.0 | ✗ | ✗ |
+| 加密 | 5 | **1.223 (+22.3%)** | 5.4 | **−5.98** | ✓ 显著增益 | ✗ **显著恶化(~−6pp)** |
+
+**诚实结论（纠正早期"崩盘保险"叙事）：**
+- **A股**：OOS 显著增益倍数（+9.65%, t=12），MDD 中性（t=1.63）→ **真有用且稳健**，可启用（默认 tilt 0.3）。增益偏结构性（信贷长期宽松→持续小幅加进攻），非强择时。
+- **美股**：OOS 完全中性 → 确认无可用周期，**保持 `cycle_overlay=False`**。
+- **加密**：OOS 显著增益倍数（+22.3%, t=5.4）但 **MDD 显著恶化（t=−5.98, ~−6pp）**。**in-sample 的 MDD 改善是 2022 单事件幻觉**（与项目估值层同性质：全样本被一次崩盘压平，walk-forward 1y 窗口下效应消失）。叠加层实为**收益放大器**，非保险。
+
+**加密 tilt 权衡（OOS，权重来自各自 train 选出）：**
+
+| tilt | 几何倍数比 | 均值 MDD 变化 |
+|------|-----------|---------------|
+| 0.2 | +10.8% | −2.7pp |
+| 0.3 | +15.9% | −4.1pp |
+| 0.4 | +19.5% | −5.3pp |
+| 0.5 | +22.3% | −6.1pp |
+
+→ 任何力度下都是「更多收益 + 更多回撤」的单调权衡；默认取 **0.3**（仍显著 +16% 倍数，MDD 代价减半）。原 0.5 的"崩盘保险"定性被 OOS 推翻，改为"收益增强、承担更高回撤"。
 
 > ⚠️ **免责声明（三／三处）**：本框架所有输出均为**市场观点与研究假设，不构成投资建议**。周期相位依赖历史统计与分析师判断，存在模型误差、数据滞后与 regime 突变风险；价格预测详见各市场回测报告，均须以「仅市场观点，不构成投资建议」为前提。

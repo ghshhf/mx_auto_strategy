@@ -698,7 +698,7 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         volume_confirm=False, volume_ratio=1.0,
         macro_overlay=False, macro_tilt=0.2, tech_mode="static", tech_strength=1.0,
         valuation_overlay=False, val_tilt=0.2,
-        cycle_overlay=False, cycle_tilt=0.5):
+        cycle_overlay=False, cycle_tilt=0.3, cycle_weights=None, start_date=None):
     """A 股周频回测引擎.
 
     交易成本参数 (v6.16+):
@@ -739,7 +739,8 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
 
     12 层金融周期叠加 (v6.20+, 默认关闭):
       cycle_overlay=True: 用 cycles 模块的 12 层 composite_regime 微调进攻仓位。
-      cycle_tilt: 倾斜幅度(默认 0.5 = cycles.specs.DEFAULT_TILT), 进攻仓乘数 =
+      cycle_tilt: 倾斜幅度(默认 0.3 = cycles.specs.ENGINE_TILT['ashare']; 全局 specs.DEFAULT_TILT=0.2),
+        进攻仓乘数 =
         1 + cycle_tilt × composite_regime(regime∈[-1,1]), 落在 [TILT_MIN=0.5, TILT_MAX=1.5]。
         与 macro/估值 同款额度守恒: 加仓从防御仓匀、减仓释放现金, 不产生隐性杠杆。
         前视防护由 cycles 模块保证(仅看 available_date <= 调仓日的周期数据)。
@@ -769,7 +770,15 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         try:
             sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             from cycles.overlay import cycle_scale_at as _cycle_scale_at
-            _cyc_fn = _cycle_scale_at
+            # 未显式传权重时, 按引擎 key 回退到 specs.ENGINE_CYCLE_WEIGHTS(逐引擎精选周期+权重)
+            _cyc_weights = cycle_weights
+            if _cyc_weights is None:
+                try:
+                    from cycles import specs as _cspecs
+                    _cyc_weights = _cspecs.ENGINE_CYCLE_WEIGHTS.get("ashare")
+                except Exception:
+                    _cyc_weights = None
+            _cyc_fn = (lambda d, t, _at=_cycle_scale_at, _w=_cyc_weights: _at(d, t, weights=_w))
         except Exception as e:
             print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
     if use_core_sub:
@@ -792,6 +801,14 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
         needed = DEF16 + OFF4 + [HS300] + DC_INDICES
         aligned, start = extract(dates, series, needed)
         first_valid = None
+
+    # 窗口起点约束(用于 3/5/10 年回测): 交易从 start_date 当周开始, 不影响全样本基线(默认 None)
+    if start_date:
+        _sd = str(start_date)
+        for _i, _d in enumerate(dates):
+            if _d >= _sd:
+                start = max(start, _i)
+                break
 
     # 进攻候选池(剔除黑名单行业)元信息: 从 config 读 industry
     cfg = json.load(open(os.path.join(os.path.dirname(BASE), "strategy_config.json"), encoding="utf-8"))

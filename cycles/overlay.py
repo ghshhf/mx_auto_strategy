@@ -57,16 +57,18 @@ def get_cycle_state():
     return _STATE
 
 
-def cycle_scale_at(date_str, tilt=DEFAULT_TILT):
+def cycle_scale_at(date_str, tilt=DEFAULT_TILT, weights=None):
     """返回进攻仓乘数 ∈ [TILT_MIN, TILT_MAX]; 无数据 -> 1.0(中性, 不改变基线)。
 
     date_str: 'YYYY-MM-DD' 字符串或 pandas Timestamp。
+    weights: 可选 {cycle_id: w} 字典, 仅用指定周期并按权重合成 regime(其余周期被忽略)。
+      不传(None)则用 specs 全局 12 周期等权。用于"按引擎分别筛选周期"。
     内部 composite_regime 自带前视防护(仅看 available_date <= date_str 的行)。
     """
     state = get_cycle_state()
     if not state or not state.get("quant_rows"):
         return 1.0
-    regime = composite_regime(state, _as_date(date_str))
+    regime = composite_regime(state, _as_date(date_str), weights=weights)
     return tilt_multiplier(regime, tilt)
 
 
