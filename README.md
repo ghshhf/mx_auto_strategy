@@ -1,7 +1,8 @@
-# mx_auto_strategy — 龙虾炒股大赛自动交易系统 v6.18
+# mx_auto_strategy — 三市场量化回测研究引擎 v6.18
 
-> 模拟盘专用：龙虾炒股大赛（账户 261984600000041416，100 万虚拟金，全零持仓）
-> 核心模式：**剧本书写者** —— 防御端系统自治 + 进攻端用户方向叠加 + 大方向甩剧本
+> ⚠️ **项目现状（2026-08）**：龙虾炒股大赛 **live 自动交易方向已搁置**。本仓库当前定位为 **A股 / 美股 / 加密三市场量化回测研究引擎**（非实盘执行系统）；权威真值见 [`docs/TRUTH.md`](docs/TRUTH.md)。`auto_trader.py` / `grid_trader.py` / `sync_contest.py` 等 live 模块为 **legacy（历史/实验性）代码**，保留参考，不再主维护。
+
+> （历史背景）原模拟盘定位：龙虾炒股大赛（账户 261984600000041416，100 万虚拟金），核心模式「剧本书写者」—— 防御端系统自治 + 进攻端用户方向叠加 + 大方向甩剧本。
 
 🔗 **GitHub**：https://github.com/ghshhf/mx_auto_strategy
 
@@ -49,6 +50,8 @@ python3 auto_trader.py --mode select
 # 实际下单(需模拟盘账户 + 交易时段)
 python3 auto_trader.py
 ```
+
+> 📌 上述 `auto_trader.py` 命令为 **legacy live 交易入口**（龙虾大赛已搁置）。研究引擎主入口见各市场回测脚本：`ashare_backtest/run_10y.py`、`us_stocks/us_backtest_ai.py`、`crypto_stocks/crypto_options_bt.py`，跨市场组合见 `portfolio_blend.py`。
 
 **交易节奏**：每天手动触发 3 次（10:00 / 12:00 / 14:00）。无自动 cron、无后台脚本（用户铁律）。
 

@@ -7,12 +7,14 @@
 
 | 子系统 | 来源 | 共同窗口倍数 | 说明 |
 |------|------|------|------|
-| A股 | `docs/data/nav.json` `windows['full']['optimized']['mult']` | 全长 33.1x | 上海东方财富后复权干净面板（已纠 westock 虚增） |
+| A股 | `docs/data/nav.json` `windows['full']['optimized']['mult']` | 全长 33.1x | 腾讯后复权面板（v6.16 起 `web.ifzq.gtimg.cn`；已纠 eastmoney 字段错位 + westock 伪迹） |
 | 美股 | `us_stocks/data/us_nav_ai.csv` `optimized_ai_nav` | 23.1x | 真实面板，155 标的 |
 | 加密 | `crypto_stocks/backtest_v2.py` 真数据**重算** | 进攻 100.6x / 防御 40.7x | Binance/OKX 真实周K线；**未用**陈旧的合成 `backtest_v2_results.json`(46,238x) |
 
 **对齐方式**：三序列周收盘日不同（A股周四 / 美股周一 / 加密周五），统一 `resample('W-FRI')` 后 inner join。
 **共同窗口**：`2017-08-11 ~ 2026-07-24`，共 **468 周**。所有倍数均在该窗口内计算（苹果对苹果）。
+
+> ⚠️ **窗口说明**：上表 A股「共同窗口」倍数为 **11.88x**；表格首行「全长 33.1x」为另一更长窗口口径。A股**全窗口权威头条 18.185x（749 周，2014-10-17~2026-08-06）** 见 `docs/TRUTH.md`——三者窗口/面板口径不同，不矛盾，以 TRUTH.md 为准。
 
 ## 2. 单市场（共同窗口）
 
