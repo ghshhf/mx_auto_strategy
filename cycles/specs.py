@@ -152,7 +152,9 @@ DEFAULT_TILT = 0.2
 #     - 美股: 12 周期几何均值**全部 <1.0**(其死亡交叉/波动率目标已吃掉周期能加的东西) -> 精选集为空。
 #            cycle_overlay=True 时本 dict 为空 -> composite_regime 返回 0 -> 乘数 1.0(中性), 安全无副作用;
 #            **实证建议 美股保持 cycle_overlay=False**。
-#     - 加密: liquidity(流动性, 10y 单周期 ratio 1.99, 2022 寒冬前转逆风减仓)+ housing + commodity + fed_rate。
+#     - 加密: liquidity(流动性)+ housing + commodity + fed_rate。这 4 个慢变量宏观周期对加密是
+#            **顺周期动量确认**(宏观宽松期 regime 正->加仓, 紧缩期 regime 负->减仓), 而非逆周期保险。
+#            优化证据见 optimize_crypto_asym.py + cycle_crypto_asym.json。
 #   权重已归一化到 sum=1, 仅表示引擎内相对主导度。
 ENGINE_CYCLE_WEIGHTS = {
     "ashare": {"credit": 0.529, "commodity": 0.471},
@@ -164,10 +166,13 @@ ENGINE_CYCLE_WEIGHTS = {
 #   - A股: 精选子集下 tilt 单调递增收益, 但 MDD 随 tilt 加深; 取 0.3 为"起作用但不至于把回撤拖太狠"的平衡点。
 #            OOS(wf_cycle_oos.py): 几何倍数比 +9.65%(t=12.0, |t|>=2 显著), MDD 中性(t=1.63 不显著)。
 #   - 美股: 无有用周期 -> 0.0(配合空精选集=纯中性); OOS 6 窗口全 1.0, 建议保持 cycle_overlay=False。
-#   - 加密: OOS 验证推翻"崩盘保险"叙事 -> 叠加层是**收益放大器**(显著 +22% 倍数, t=5.4)但
-#            **显著恶化 MDD(-6pp, t=-5.98)**; in-sample 的 MDD 改善是 2022 单事件幻觉(同估值层性质)。
-#            tilt 扫描(0.2/0.3/0.4/0.5)为单调权衡: 0.3 = 平衡档(仍显著 +16% 倍数 / -4pp MDD),
-#            0.5 收益最高但回撤代价大。默认取 0.3。
+#   - 加密: **顺周期收益放大器, 非保险**(optimize_crypto_asym.py + wf_cycle_oos.py 双重验证)。
+#            OOS 稳定放大收益(t(倍数)=3.2~5.4 显著)也稳定放大回撤(t(MDD)=+6.4 显著恶化)。
+#            机制扫描(对称/下行保护/纯保险)证明: 无任何机制能消除回撤恶化; 纯保险型(顺风不加仓)
+#            虽减回撤却牺牲全部收益(10y 倍数比<1)。故加密叠加层是一个**收益/回撤的 trade-off 旋钮**,
+#            不是风控装置。默认 tilt=0.3 = 克制放大器档位(OOS 仍放大回撤, 仅程度较轻);
+#            想要更高收益可提到 0.5, 想要回撤控制则 cycle_overlay=False(回到无叠加基线)。
+#            引擎 run_bt 默认 cycle_tilt=None -> 自动读本 dict["crypto"]。
 ENGINE_TILT = {"ashare": 0.3, "us": 0.0, "crypto": 0.3}
 # 乘数边界(避免隐性杠杆/空仓过度)
 TILT_MIN, TILT_MAX = 0.5, 1.5

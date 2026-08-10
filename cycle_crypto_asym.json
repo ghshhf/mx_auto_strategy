@@ -1,0 +1,471 @@
+{
+  "scan": {
+    "对称 tilt=0.3 (当前默认)": {
+      "asym": null,
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.138,
+          "ratio": 1.076,
+          "mdd_diff": 4.37
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.141,
+          "ratio": 1.0208,
+          "mdd_diff": 4.38
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 687.485,
+          "ratio": 1.5326,
+          "mdd_diff": 4.38
+        }
+      },
+      "geo_ratio": 1.1896,
+      "mean_mdd_diff": 4.37
+    },
+    "对称 tilt=0.5 (旧默认)": {
+      "asym": null,
+      "tilt": 0.5,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.19,
+          "ratio": 1.1257,
+          "mdd_diff": 7.31
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.151,
+          "ratio": 1.0294,
+          "mdd_diff": 7.32
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 706.64,
+          "ratio": 1.5753,
+          "mdd_diff": 5.96
+        }
+      },
+      "geo_ratio": 1.2222,
+      "mean_mdd_diff": 6.86
+    },
+    "下行保护 up=0.0 down=0.4": {
+      "asym": [
+        0.0,
+        0.4
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.164,
+          "ratio": 1.101,
+          "mdd_diff": 5.82
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.167,
+          "ratio": 1.0437,
+          "mdd_diff": 5.83
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 410.431,
+          "ratio": 0.915,
+          "mdd_diff": 5.83
+        }
+      },
+      "geo_ratio": 1.0169,
+      "mean_mdd_diff": 5.83
+    },
+    "下行保护 up=0.0 down=0.6": {
+      "asym": [
+        0.0,
+        0.6
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.216,
+          "ratio": 1.15,
+          "mdd_diff": 8.83
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.184,
+          "ratio": 1.0594,
+          "mdd_diff": 8.84
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 388.653,
+          "ratio": 0.8664,
+          "mdd_diff": 8.84
+        }
+      },
+      "geo_ratio": 1.0182,
+      "mean_mdd_diff": 8.84
+    },
+    "下行保护 up=0.0 down=0.8": {
+      "asym": [
+        0.0,
+        0.8
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.242,
+          "ratio": 1.1745,
+          "mdd_diff": 11.03
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.174,
+          "ratio": 1.05,
+          "mdd_diff": 9.65
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 375.923,
+          "ratio": 0.838,
+          "mdd_diff": 10.65
+        }
+      },
+      "geo_ratio": 1.011,
+      "mean_mdd_diff": 10.44
+    },
+    "下行保护 up=0.1 down=0.4": {
+      "asym": [
+        0.1,
+        0.4
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.164,
+          "ratio": 1.101,
+          "mdd_diff": 5.82
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.162,
+          "ratio": 1.0392,
+          "mdd_diff": 5.83
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 490.353,
+          "ratio": 1.0931,
+          "mdd_diff": 5.83
+        }
+      },
+      "geo_ratio": 1.0774,
+      "mean_mdd_diff": 5.83
+    },
+    "下行保护 up=0.1 down=0.6": {
+      "asym": [
+        0.1,
+        0.6
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.216,
+          "ratio": 1.15,
+          "mdd_diff": 8.83
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.179,
+          "ratio": 1.0548,
+          "mdd_diff": 8.84
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 464.335,
+          "ratio": 1.0351,
+          "mdd_diff": 8.84
+        }
+      },
+      "geo_ratio": 1.0788,
+      "mean_mdd_diff": 8.84
+    },
+    "下行保护 up=0.1 down=0.8": {
+      "asym": [
+        0.1,
+        0.8
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.242,
+          "ratio": 1.1745,
+          "mdd_diff": 11.03
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.169,
+          "ratio": 1.0455,
+          "mdd_diff": 9.42
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 449.127,
+          "ratio": 1.0012,
+          "mdd_diff": 9.72
+        }
+      },
+      "geo_ratio": 1.0713,
+      "mean_mdd_diff": 10.06
+    },
+    "下行保护 up=0.15 down=0.4": {
+      "asym": [
+        0.15,
+        0.4
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.164,
+          "ratio": 1.101,
+          "mdd_diff": 5.82
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.159,
+          "ratio": 1.0369,
+          "mdd_diff": 5.83
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 535.288,
+          "ratio": 1.1933,
+          "mdd_diff": 5.83
+        }
+      },
+      "geo_ratio": 1.1086,
+      "mean_mdd_diff": 5.83
+    },
+    "下行保护 up=0.15 down=0.6": {
+      "asym": [
+        0.15,
+        0.6
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.216,
+          "ratio": 1.15,
+          "mdd_diff": 8.83
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.176,
+          "ratio": 1.0525,
+          "mdd_diff": 8.84
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 506.885,
+          "ratio": 1.13,
+          "mdd_diff": 8.84
+        }
+      },
+      "geo_ratio": 1.11,
+      "mean_mdd_diff": 8.84
+    },
+    "下行保护 up=0.15 down=0.8": {
+      "asym": [
+        0.15,
+        0.8
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.242,
+          "ratio": 1.1745,
+          "mdd_diff": 11.03
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.166,
+          "ratio": 1.0432,
+          "mdd_diff": 9.31
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 490.283,
+          "ratio": 1.093,
+          "mdd_diff": 9.27
+        }
+      },
+      "geo_ratio": 1.1022,
+      "mean_mdd_diff": 9.87
+    },
+    "纯保险 down=0.4": {
+      "asym": [
+        0.0,
+        0.4
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.164,
+          "ratio": 1.101,
+          "mdd_diff": 5.82
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.167,
+          "ratio": 1.0437,
+          "mdd_diff": 5.83
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 410.431,
+          "ratio": 0.915,
+          "mdd_diff": 5.83
+        }
+      },
+      "geo_ratio": 1.0169,
+      "mean_mdd_diff": 5.83
+    },
+    "纯保险 down=0.6": {
+      "asym": [
+        0.0,
+        0.6
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.216,
+          "ratio": 1.15,
+          "mdd_diff": 8.83
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.184,
+          "ratio": 1.0594,
+          "mdd_diff": 8.84
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 388.653,
+          "ratio": 0.8664,
+          "mdd_diff": 8.84
+        }
+      },
+      "geo_ratio": 1.0182,
+      "mean_mdd_diff": 8.84
+    },
+    "纯保险 down=0.8": {
+      "asym": [
+        0.0,
+        0.8
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.242,
+          "ratio": 1.1745,
+          "mdd_diff": 11.03
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.174,
+          "ratio": 1.05,
+          "mdd_diff": 9.65
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 375.923,
+          "ratio": 0.838,
+          "mdd_diff": 10.65
+        }
+      },
+      "geo_ratio": 1.011,
+      "mean_mdd_diff": 10.44
+    },
+    "纯保险 down=1.0": {
+      "asym": [
+        0.0,
+        1.0
+      ],
+      "tilt": 0.3,
+      "windows": {
+        "3y": {
+          "off_mult": 1.057,
+          "on_mult": 1.235,
+          "ratio": 1.1679,
+          "mdd_diff": 12.32
+        },
+        "5y": {
+          "off_mult": 1.118,
+          "on_mult": 1.131,
+          "ratio": 1.0118,
+          "mdd_diff": 9.77
+        },
+        "10y": {
+          "off_mult": 448.569,
+          "on_mult": 355.078,
+          "ratio": 0.7916,
+          "mdd_diff": 10.77
+        }
+      },
+      "geo_ratio": 0.978,
+      "mean_mdd_diff": 10.95
+    }
+  },
+  "best": "对称 tilt=0.5 (旧默认)",
+  "best_basis": "feasible(约束 mean_MDD>=-2pp) 内 geo 最大",
+  "best_asym": null,
+  "best_tilt": 0.5,
+  "oos": {
+    "samples": 5,
+    "geo_ratio": 1.0916,
+    "t_mult": 3.21,
+    "t_mdd": 6.39,
+    "detail": [
+      [
+        1.0434895734699945,
+        2.348137577834649
+      ],
+      [
+        1.0508958257443508,
+        7.318569798264676
+      ],
+      [
+        1.0454818275212336,
+        7.220016572056174
+      ],
+      [
+        1.1461518038029483,
+        7.270645133263528
+      ],
+      [
+        1.1794973067316323,
+        7.220016572056174
+      ]
+    ]
+  },
+  "crypto_weights": {
+    "fed_rate": 0.224,
+    "liquidity": 0.307,
+    "commodity": 0.227,
+    "housing": 0.242
+  }
+}

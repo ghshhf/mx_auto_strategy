@@ -26,6 +26,7 @@ from . import specs
 from .phases import load_cycles, composite_regime, tilt_multiplier
 
 DEFAULT_TILT = specs.DEFAULT_TILT  # = 0.5; 乘数 ∈ [TILT_MIN, TILT_MAX] = [0.5, 1.5]
+TILT_MIN, TILT_MAX = specs.TILT_MIN, specs.TILT_MAX
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(_HERE, "data", "cycles_raw.csv")
@@ -57,19 +58,27 @@ def get_cycle_state():
     return _STATE
 
 
-def cycle_scale_at(date_str, tilt=DEFAULT_TILT, weights=None):
+def cycle_scale_at(date_str, tilt=DEFAULT_TILT, weights=None, asym=None):
     """返回进攻仓乘数 ∈ [TILT_MIN, TILT_MAX]; 无数据 -> 1.0(中性, 不改变基线)。
 
     date_str: 'YYYY-MM-DD' 字符串或 pandas Timestamp。
     weights: 可选 {cycle_id: w} 字典, 仅用指定周期并按权重合成 regime(其余周期被忽略)。
       不传(None)则用 specs 全局 12 周期等权。用于"按引擎分别筛选周期"。
+    asym: 可选 (tilt_up, tilt_down) 非对称缩放。regime>=0(顺风)用 tilt_up, regime<0(逆风)
+      用 tilt_down。用于"下行保护型"叠加(逆风强力减仓、顺风小幅加息), 或纯保险型(tilt_up=0)。
+      不传(None) -> 对称缩放(1 + tilt*regime)。
     内部 composite_regime 自带前视防护(仅看 available_date <= date_str 的行)。
     """
     state = get_cycle_state()
     if not state or not state.get("quant_rows"):
         return 1.0
     regime = composite_regime(state, _as_date(date_str), weights=weights)
-    return tilt_multiplier(regime, tilt)
+    if asym is not None:
+        up, down = asym
+        raw = (1.0 + up * regime) if regime >= 0 else (1.0 + down * regime)
+    else:
+        raw = 1.0 + tilt * regime
+    return max(TILT_MIN, min(TILT_MAX, raw))
 
 
 # ---------------- 额度守恒 helper (被三引擎复用, 便于单元测试) ----------------

@@ -336,8 +336,15 @@ class WeekRecord:
 
 # ========== 主回测引擎 ==========
 def run_bt(px, cfg_dict=None, label='V6_options', start=None,
-           cycle_overlay=False, cycle_tilt=0.5, cycle_weights=None):
+           cycle_overlay=False, cycle_tilt=None, cycle_weights=None, cycle_asym=None):
     cfg = CryptoOptionsConfig(**(cfg_dict or {}))
+    # 默认 tilt 从 specs.ENGINE_TILT["crypto"] 读取(让规格成为权威); 关闭 cycles 时不导入。
+    if cycle_tilt is None:
+        try:
+            from cycles import specs as _sp
+            cycle_tilt = _sp.ENGINE_TILT.get("crypto", 0.3)
+        except Exception:
+            cycle_tilt = 0.3
     px = px.sort_index()
     if start:
         px = px[px.index >= pd.Timestamp(start)]
@@ -361,7 +368,9 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                     _cyc_weights = _cspecs.ENGINE_CYCLE_WEIGHTS.get("crypto")
                 except Exception:
                     _cyc_weights = None
-            _cyc_fn = (lambda d, t, _at=_cs, _w=_cyc_weights: _at(d, t, weights=_w))
+            _cyc_asym = cycle_asym
+            _cyc_fn = (lambda d, t, _at=_cs, _w=_cyc_weights, _a=_cyc_asym:
+                       _at(d, t, weights=_w, asym=_a))
         except Exception as e:
             print(f"[warn] cycle_overlay 启用但 cycles 模块加载失败: {e}; 叠加层已禁用")
 
