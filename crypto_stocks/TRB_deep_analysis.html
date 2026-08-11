@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRB (Tellor) 完整深度分析</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1a2230; --sub:#5b6675; --line:#e4e8ef;
+    --accent:#3b6fd6; --bull:#1f9d6b; --bear:#d6453b; --base:#c98a13;
+    --chip:#eef3fb; --warn:#fff5e6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;font-size:15px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
+  .hero{background:linear-gradient(135deg,#1f2a44,#2c3d63);color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:18px;}
+  .hero h1{margin:0 0 4px;font-size:26px;letter-spacing:.5px;}
+  .hero .tk{opacity:.8;font-size:14px;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px;}
+  .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;}
+  .stat .k{font-size:12px;opacity:.75;}
+  .stat .v{font-size:18px;font-weight:700;margin-top:3px;}
+  .stat .v.red{color:#ff8a80;}
+  .disclaimer{background:var(--warn);border:1px solid #f0d9a8;border-left:4px solid var(--base);
+    color:#7a5b15;padding:12px 16px;border-radius:8px;font-size:13.5px;margin:16px 0;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:16px;}
+  h2{font-size:19px;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--chip);color:#22304d;}
+  h3{font-size:15.5px;color:#2a3a58;margin:18px 0 8px;}
+  p{margin:8px 0;color:#2b3645;}
+  ul{margin:8px 0;padding-left:20px;} li{margin:5px 0;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--chip);font-weight:600;color:#2a3a58;}
+  td .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:12px;font-weight:600;}
+  .t-bull{background:#e3f6ec;color:var(--bull);}
+  .t-bear{background:#fde8e6;color:var(--bear);}
+  .t-base{background:#fbf0d8;color:var(--base);}
+  .t-ok{background:#e3f6ec;color:var(--bull);}
+  .t-warn{background:#fff3df;color:#b9791a;}
+  .card{background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+  .scn{display:flex;align-items:center;gap:14px;margin:10px 0;}
+  .scn .lbl{width:90px;font-weight:700;}
+  .scn .bar{flex:1;background:#eef1f6;border-radius:6px;height:26px;position:relative;overflow:hidden;}
+  .scn .fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;color:#fff;font-size:12.5px;font-weight:600;}
+  .bull .fill{background:var(--bull);} .base .fill{background:var(--base);} .bear .fill{background:var(--bear);}
+  .scn .prob{width:64px;text-align:right;font-size:13px;color:var(--sub);}
+  .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin:-2px 0 14px 104px;}
+  .foot{font-size:12.5px;color:var(--sub);text-align:center;margin-top:24px;line-height:1.9;}
+  .src{font-size:12px;color:var(--sub);}
+  .key{font-weight:700;color:#1f2a44;}
+  .note{background:#eef6ff;border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;margin:12px 0;font-size:13.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== HERO ===== -->
+  <div class="hero">
+    <h1>Tellor (TRB) 完整深度分析</h1>
+    <div class="tk">去中心化预言机网络 · 2019 上线 · 无 ICO / 无预挖 · 现为 Tellor Layer (Cosmos SDK PoS 链)</div>
+    <div class="stats">
+      <div class="stat"><div class="k">当前价 (2026-08-07)</div><div class="v">$13.73</div></div>
+      <div class="stat"><div class="k">流通市值</div><div class="v">≈ $37.5M</div></div>
+      <div class="stat"><div class="k">流通量 / 总量</div><div class="v">≈ 2.80M / 2.87M</div></div>
+      <div class="stat"><div class="k">历史高点 (盘中)</div><div class="v red">$596 (2024-01-01)</div></div>
+      <div class="stat"><div class="k">距 ATH 回撤</div><div class="v red">≈ −97.7%</div></div>
+      <div class="stat"><div class="k">CMC 排名</div><div class="v">#440–480</div></div>
+    </div>
+  </div>
+
+  <!-- ===== 顶部免责声明 ===== -->
+  <div class="disclaimer">
+    <b>免责声明（一）</b>：本报告为基于公开历史价格与市场信息的<strong>研究记录与市场观点汇总</strong>，<strong>不构成任何投资建议</strong>。加密资产风险极高，请独立判断、自负盈亏。下文所有价格预测仅为第三方市场观点的聚合，非确定性判断。
+  </div>
+
+  <!-- ===== 补遗（深挖） ===== -->
+  <div class="disclaimer" style="border-left-color:var(--accent);background:#eef6ff;color:#234;">
+    <b>补遗（2026-08-11 二次深挖）</b>：应要求对 5 项关键指标做了二次核查，主要修正/补全：① <b>TVS</b>：Tellor <strong>未进入 DeFiLlama 预言机榜（共 67 个）</strong>，TVS 低于约 $4M 门槛，与 Chainlink $34.1B 差约 4 个数量级；② <b>TokenBridge V2</b>：主网 V1→V2 切换已于 <strong>2026 年 4 月中旬</strong>完成（纠正"仍在测试网"的旧判）；③ <b>通胀</b>：实测年通胀仅 <strong>≈4.1%</strong>（低通胀，非主要价格逆风）；④ <b>销毁</b>：打赏的 2% 会被销毁（此前"无销毁机制"表述不严谨）；⑤ <b>融资</b>：2024–2026 <strong>无新融资轮</strong>，靠开发分成自举。详见各节内联修正。
+  </div>
+
+  <!-- ===== §1 底层逻辑 & 代币经济 ===== -->
+  <section>
+    <h2>一、项目底层逻辑与代币经济</h2>
+    <h3>1.1 它在解决什么问题</h3>
+    <p>Tellor 是<strong>最老牌的去中心化预言机网络之一</strong>（2019 上线），核心定位是"数据的真理基准（benchmark for truth）"——它<strong>不聚合既有中心化 API</strong>，而是由无许可的 Reporter 网络<strong>自主生产</strong>数据，任何人质押 TRB 即可成为 Reporter，任何人可对可疑数据发起争议（Dispute），由 TRB 加权投票裁决并 slash 恶意方。这一"独立生产 + 争议仲裁"模型被 Tellor 视为比聚合式预言机更抗审查的结构性优势。</p>
+
+    <h3>1.2 代币 TRB 的三重功能</h3>
+    <ul>
+      <li><span class="key">质押与报告</span>：Reporter / Validator 须质押 TRB 作抵押，提交错误数据即被罚没（slash）——攻击成本 = 跨多轮质押并承担被罚没的 TRB。</li>
+      <li><span class="key">打赏 (Tipping)</span>：用户以 TRB 打赏激励特定数据请求，价高者优先更新，形成市场化的优先级机制。</li>
+      <li><span class="key">治理与争议</span>：TRB 持有者投票决定协议升级、参数调整与争议裁决；Tellor Layer 验证者上限 100，治理权重真实有效。</li>
+    </ul>
+
+    <h3>1.3 代币经济关键参数</h3>
+    <table>
+      <tr><th>项目</th><th>数值 / 机制</th><th>对价格的含义</th></tr>
+      <tr><td>供应上限</td><td><strong>无硬顶（通胀型）</strong></td><td>长期稀释压力——但年通胀仅 <strong>≈4.1%</strong>（见下），实际<strong>温和</strong>，非解锁悬崖</td></tr>
+      <tr><td>通胀分配</td><td>75% → Reporter，25% → Validator；团队取发行的 10%</td><td>团队收益与协议使用挂钩（"用才发钱"），无预挖/ICO 抛压</td></tr>
+      <tr><td>年通胀率（实测）</td><td><strong>≈ 4.11% YoY</strong>（截至 2026-08-09；日均增发 299 TRB ≈ $4,094，年化增发值 ≈$1.49M）</td><td>cryptoinflation.eu 实测；Tellor Layer 白皮书：团队每月 4,000 TRB + 等额通胀奖励给 Reporter/Validator。属<strong>低通胀</strong>，非主要价格逆风</td></tr>
+      <tr><td>MC/FDV</td><td><strong>≈ 0.97</strong></td><td>几乎全部流通，<strong>解锁/悬崖风险极低</strong>（正面结构项）</td></tr>
+      <tr><td>价值捕获</td><td>质押需求 + 打赏 + 通胀奖励；打赏中 <strong>2% 销毁</strong>（98% 给 Reporter），<strong>无回购</strong></td><td>存在微小通缩 sink（销毁量取决于打赏量，当前很小）；被动持有者基本不分享协议收入，依赖投机需求与质押收益</td></tr>
+      <tr><td>分配透明度</td><td>无详细 TGE 分配明细公开；已知公司关联地址约 7.8 万 TRB (≈$1.2M)</td><td>机构尽调的<strong>黄色信号</strong>，但团队直接卖压有限</td></tr>
+    </table>
+    <div class="note">⚠️ <b>Overhang 状态（按风险纪律①）</b>：TRB <strong>不存在</strong> VC 解锁 / 创始人杠杆式悬崖——发行自 2019 年起仅通过奖励增长，流通率 97%。年通胀实测仅 <strong>≈4.1%</strong>（低通胀），属"有限且收敛/缓慢稀释"类，标注为<strong>净中性偏负面</strong>，而非"永久结构性风险"。<b>更正</b>：此前"无销毁机制"表述不严谨——打赏的 2% 会被销毁，形成微小通缩 sink，但规模有限不足以改变供需格局。</div>
+  </section>
+
+  <!-- ===== §2 业务动态 & 机构采用 ===== -->
+  <section>
+    <h2>二、核心业务动态与机构采用</h2>
+    <div class="note">重要区分：以下"采用"绝大多数指<strong>协议层部署（把 Tellor 预言机集成进产品）</strong>，<strong>不等于机构直接买入并持有 TRB 代币</strong>。加密研究界对 TRB 的"机构持仓"缺乏可验证的链上/13F 证据——它属微盘（市值 ≈$37M），传统买方鲜有直接敞口。</div>
+
+    <h3>2.0 核心采用指标：TVS 与协议数（预言机价值锚）</h3>
+    <div class="card">
+      <span class="key">DeFiLlama 预言机排名（共 67 个）</span>：Chainlink <strong>$34.1B</strong> TVS / 522 链（你此前记为 $33.1B/505 协议，量级一致），Chronicle $7.3B，RedStone $3.5B，Pyth $2.4B，Band $152M，API3 $42M……榜单末位（最小可见 TVS）约 $4M。<br>
+      <span class="key" style="color:var(--bear)">Tellor 未出现在该排名中</span> —— 即其 TVS 低于约 $4M 的追踪门槛，或未被独立统计。<strong>与 Chainlink 相差约 4 个数量级</strong>。Yellow、Ainvest 等多方一致确认 Tellor"不在领先 TVS 排名"。
+    </div>
+    <div class="note">⚠️ 这是 Tellor 最硬的基本面短板：预言机的全部价值主张是"<strong>保护的价值（TVS）</strong>"，而 Tellor 保护的价值<strong>几乎可忽略</strong>。协议数同理——无独立可核实的大规模生产级集成（Saga 主预言机是最大亮点，但 Saga 自身生态体量有限）。这直接解释了 TRB 价格 6 年对 BTC −98.8%：<strong>没有 TVS 支撑的"去中心化叙事"无法转化为代币需求</strong>。</div>
+
+    <h3>2.1 已落地的生态采用</h3>
+    <table>
+      <tr><th>采用方 / 事件</th><th>性质</th><th>状态</th></tr>
+      <tr><td><strong>Saga 协议</strong></td><td>将 Tellor 作为<strong>其 EVM 生态主预言机</strong></td><td><span class="tag t-ok">生产中</span> 2025 Q3 集成</td></tr>
+      <tr><td>Mustang Finance / Palomino Finance</td><td>基于 Saga 的 DeFi 应用，运行于 Tellor Layer</td><td><span class="tag t-ok">已上线</span> 首批生态项目</td></tr>
+      <tr><td>zkSync Era 部署</td><td>Tellor 预言机部署至 zkSync</td><td><span class="tag t-ok">已部署</span> 2025-05</td></tr>
+      <tr><td>Aave / Curve / Balancer（历史）</td><td>早期曾将 Tellor 作为数据来源之一</td><td><span class="tag t-warn">存疑/存量</span> 来自低质量信源，需谨慎对待</td></tr>
+      <tr><td>Binance Labs (现 YZi Labs)</td><td>早期战略支持，促成币安上线</td><td><span class="tag t-ok">历史背书</span></td></tr>
+    </table>
+
+    <h3>2.2 业务动态（2025–2026）</h3>
+    <ul>
+      <li><span class="key">架构跃迁</span>：从以太坊合约升级为独立 L1（Tellor Layer），2025-08 主网上线，2026-05 奖励完全迁移至 Layer。</li>
+      <li><span class="key">新消费模型</span>：<b>Tellor Pull</b>（2026-05-28）降低集成门槛；<b>Operator Dashboard</b>（2026-06）提升运营透明度。</li>
+      <li><span class="key">叙事窗口</span>：若"AI Agent 数据需求"或"预言机板块轮动"成为市场主线，TRB 作为小盘预言机代币可能获得 beta 弹性（板块性顺风，非 TRB 特异）。</li>
+    </ul>
+    <p class="src">来源：Tellor 官方博客、Yellow.com、OKX Orbit、Ainvest（2026-07）。注：DeFiLlama TVL 接口当时返回 403，<strong>独立链上用量难以外部验证</strong>——"交付"本身仍是开放问题。</p>
+  </section>
+
+  <!-- ===== §3 技术与生态进展 ===== -->
+  <section>
+    <h2>三、技术与生态进展</h2>
+    <div class="card">
+      <span class="key">Tellor Layer（2025-08 主网）</span>：基于 Cosmos SDK 的 PoS 专属数据链，验证者上限 100，Gas 降低约 40%，支持 bytes 数据（可承载编码合约调用、字符串等复杂类型），通过轻客户端桥向 Ethereum / Polygon / Arbitrum 等中继数据。Reporter 可双重质押（验证 + 报告）。
+    </div>
+    <h3>3.1 主网升级节奏（异常活跃）</h3>
+    <table>
+      <tr><th>时间</th><th>版本 / 动作</th><th>要点</th></tr>
+      <tr><td>2025-08</td><td>Layer 主网公开</td><td>从合约到主权数据链</td></tr>
+      <tr><td>2026-01</td><td>v6.1.1</td><td>写入状态前强化验证、改进错误处理</td></tr>
+      <tr><td>2026-04</td><td>v6.1.4</td><td>TokenBridge V2：更强桥接验证 + 暂停机制</td></tr>
+      <tr><td>2026-05</td><td>v6.1.5 + 奖励完全迁移</td><td>移除免质押报告、精细化剪枝</td></tr>
+      <tr><td>2026-05/06</td><td>Tellor Pull + Operator Dashboard</td><td>新消费模型 + 运营透明</td></tr>
+      <tr><td>2026-07</td><td>Palmito 测试网 v6.1.6</td><td>持续迭代</td></tr>
+    </table>
+    <h3>3.2 技术差异化叙事</h3>
+    <ul>
+      <li><span class="key">独立数据生产</span>：不依赖外部 API 聚合，主张更抗审查（vs Chainlink 聚合模型）。</li>
+      <li><span class="key">自定义/主观数据</span>：可定义任意数据类型（天气、CPI、长尾资产、争议感知数据），覆盖通用高频预言机顾及不到的利基。</li>
+      <li><span class="key">模块化跨链桥</span>：TokenBridge V2 以"风险隔离 + 暂停"应对跨链桥这一行业最脆弱环节。</li>
+    </ul>
+    <div class="note">⚠️ 开发节奏是 Tellor 的<strong>真实强项</strong>：过去 12 个月主网升级密度远高于多数项目。技术能力已获验证；<strong>真正未解之题是"能否把技术进度转化为可持续的预言机需求"</strong>（见 §5 风险）。</div>
+    <div class="note">🔧 <b>TokenBridge V2 主网状态（更正）</b>：测试网 v6.1.4 于 2026-03-23 在 Palmito 测试网上线；据 OKX Orbit（2026）报道，<strong>主网 v6.1.4 于 2026 年 4 月中旬完成 V1→V2 切换</strong>。即该更新<strong>并非"仍在测试网"</strong>——主网迁移已于 4 月发生，剩余仅为 V1 锁定 TRB 经合成提款（受 5% 提款上限约束）的<strong>渐进自动迁移</strong>。你此前"未找到主网上线日期"的缺口已补上。</div>
+  </section>
+
+  <!-- ===== §4 机构研报观点 & 持仓 ===== -->
+  <section>
+    <h2>四、机构研报观点、持仓与展望</h2>
+    <p>TRB 属微盘，<strong>无主流卖方（Goldman/Morgan Stanley 等）覆盖</strong>。所谓"机构研报"实际来自<strong>加密原生研究台</strong>（教育/分析类媒体），观点如下：</p>
+    <table>
+      <tr><th>研究方</th><th>核心观点</th><th>态度</th></tr>
+      <tr><td>Yellow.com (2026)</td><td>Tellor Layer 已交付可信架构；结构性难题是"小网络能否从 Chainlink/Pyth 手中赢得足够生产级集成"。可行路径＝服务<strong>定制化/主观/抗审查/争议感知</strong>数据</td><td><span class="tag t-base">中性偏审慎</span></td></tr>
+      <tr><td>Ainvest (2026-07)</td><td>TRB 近期 +9% 属"板块轮动还是死猫反弹"之问；链上牵引难验证；代币有真实效用但无销毁机制</td><td><span class="tag t-warn">审慎</span></td></tr>
+      <tr><td>Phemex 教育栏</td><td>肯定 Tellor Layer 架构跃迁、真实协议效用、无预挖；提示 14 地址持 70% 的高度集中</td><td><span class="tag t-base">中性</span></td></tr>
+      <tr><td>OKX Orbit</td><td>将 Tellor 重新定位为"专注数据的公链"而非"Chainlink 替代品"，价值锚点从预言机协议转向数据基础设施</td><td><span class="tag t-bull">偏多</span></td></tr>
+    </table>
+    <h3>4.1 机构持仓</h3>
+    <ul>
+      <li><strong>直接代币持仓</strong>：无可核实的主流机构/基金直接持有 TRB 的公开证据（微盘 + 流动性薄）。</li>
+      <li><strong>间接背书</strong>：Binance Labs（YZi Labs）早期投资；Saga 协议将其列为生态主预言机（属"部署产品"非"买币"）。</li>
+      <li><strong>持币集中度风险</strong>：信源称约 14 个地址持有 ~70% 流通量——但其中应包含<strong>质押/桥合约地址</strong>，须剥离合约地址后再判定真实实体集中度（按风险纪律，不可直接等同"操纵"）。</li>
+    </ul>
+    <h3>4.2 融资情况（2024–2026）</h3>
+    <ul>
+      <li><strong>早期背书</strong>：MakerDAO + Binance Labs（现 YZi Labs）。Binance 种子轮约 $25 万（信源 $5 万–$25 万分歧），早期总融资约 $40 万；<strong>无 ICO、无预挖</strong>。</li>
+      <li><strong>CB Insights</strong>：最新轮次记为 "Unattributed VC"，投资方含 <strong>YZi Labs</strong>（即 Binance Labs 更名）——原始背书方仍在，但<strong>无新轮次</strong>。</li>
+      <li><strong>2024–2026 新融资</strong>：<strong>未查到任何重大新融资轮</strong>。项目实质靠 <strong>10% 开发分成（现为每月 4,000 TRB ≈ 微薄）</strong>自举，无外部资本注入。</li>
+      <li><span class="key">双刃</span>：无 VC = 无解锁抛压（契合"买旧"框架）；但亦<strong>无资金弹药</strong>用于 BD / 营销 / 扩张 → 增长能力受限，自我维持但资本匮乏。</li>
+    </ul>
+    <p class="src">结论：机构面以<strong>协议集成</strong>为主，<strong>直接资本买入</strong>缺位；研报整体<strong>中性偏审慎</strong>，强调"交付"为关键变量。</p>
+  </section>
+
+  <!-- ===== §5 风险点 ===== -->
+  <section>
+    <h2>五、风险点（经三过滤重新定性）</h2>
+    <p class="src">对每条候选风险套用三问：①当前真实状态？②趋势方向？③是否 TRB 特异？剔除"已出清/行业共性/价基背离/赢家通吃/数据误读"类，余下真实风险。</p>
+    <table>
+      <tr><th>市场常见叙事</th><th>重新定性</th><th>理由（三过滤）</th></tr>
+      <tr>
+        <td>"Chainlink 占 70% 份额，TRB 必死"</td>
+        <td><span class="tag t-ok">误判（赢家通吃谬误）</span></td>
+        <td>预言机市场正在<strong>细分</strong>：Chainlink=机构/默认层，Pyth=高频，RedStone=模块化，Tellor=定制/抗审查/争议感知利基。<strong>多赢共存</strong>，非零和。TRB 真风险是利基内<strong>执行/交付</strong>，而非 incumbent 体量。</td>
+      </tr>
+      <tr>
+        <td>"价格较 ATH −98%，基本面背离=最大风险"</td>
+        <td><span class="tag t-ok">误判（错杀论题）</span></td>
+        <td>价格/基本面长期背离是跨市场常态（Graham 投票机 vs 称重机）。若链上现实持续交付，背离=<strong>错杀信号</strong>；唯一真风险是"<strong>链上现实是否继续交付</strong>"。本例链上牵引<strong>难独立验证</strong>，故背离目前<strong>既不能证伪也不能确认</strong>为 bullish。</td>
+      </tr>
+      <tr>
+        <td>"无硬顶通胀 = 永久抛压"</td>
+        <td><span class="tag t-ok">部分误判</span></td>
+        <td>实测年通胀仅 <strong>≈4.1%</strong>（cryptoinflation，2026-08），属<strong>低通胀</strong>；流通率 97%、绝对增发量小（日均 299 TRB ≈ $4,094）。稀释<strong>温和</strong>，非"永久抛压"。净中性偏负面，非致命。</td>
+      </tr>
+      <tr>
+        <td>"创始人/VC 解锁砸盘"</td>
+        <td><span class="tag t-ok">不适用</span></td>
+        <td>无 ICO、无预挖、无 VC 悬崖；团队仅取 10% 发行。MC/FDV 0.97 → 几乎无锁定待释放。<strong>已出清/不存在</strong>。</td>
+      </tr>
+      <tr>
+        <td><strong>真实特有风险</strong>：Tellor Layer 未能转化为可持续预言机需求</td>
+        <td><span class="tag t-bear">核心风险</span></td>
+        <td>架构已证明，但独立链上 TVL/查询量难验证；若生产级集成增长不及开发投入，代币效用需求不足，价格锚将仅靠投机。这是唯一经三过滤保留的 TRB 特异风险。</td>
+      </tr>
+      <tr>
+        <td><strong>真实特有风险</strong>：微盘流动性 + 持币集中</td>
+        <td><span class="tag t-bear">较高</span></td>
+        <td>市值 ≈$37M、深度远低于大盘；少量地址集中度（含合约）放大尾部波动与单点退出冲击。2024-01-01 盘中飙至 $596 后被指鲸鱼拉抬，即集中度副作用的实证。</td>
+      </tr>
+      <tr>
+        <td><strong>真实特有风险</strong>：TVS 未被独立追踪（≈&lt;$4M 或零）</td>
+        <td><span class="tag t-bear">核心基本面</span></td>
+        <td>DeFiLlama 预言机榜（67 个）无 Tellor，TVS 低于约 $4M 门槛。预言机价值锚 = 保护的价值，Tellor 近乎为零 → 无法支撑"去中心化叙事"转化为代币需求（详见 §2.0）。</td>
+      </tr>
+      <tr>
+        <td><strong>真实特有风险</strong>：验证者上限 100、活跃 Reporter 数未公开</td>
+        <td><span class="tag t-warn">待验证</span></td>
+        <td>文档明确验证者上限 100；活跃 Reporter 数量<strong>无公开精确数据</strong>（"1.1 万链上地址"是持币地址非 Reporter）。网络无许可但<strong>实际参与度低、难以独立验证</strong>，去中心化为"理论上开放、实践中稀薄"。</td>
+      </tr>
+      <tr>
+        <td><strong>真实特有风险</strong>：无回购，被动持有者不分享收入</td>
+        <td><span class="tag t-warn">结构性</span></td>
+        <td>价值捕获经质押/打赏，打赏中 2% 销毁但规模极小，<strong>无费用/现金流回流持有人</strong>。价值重估依赖需求增长或投机，缺乏现金流兜底。</td>
+      </tr>
+    </table>
+    <div class="note">综合（呼应本项目"买旧不买新"先验）：TRB <strong>通过幸存者筛查</strong>（2019 上线、熬过 2022 熊市、至今未死、无归零/预解锁风险），但<strong>未通过回报筛查</strong>——6 年 USD −81%、对 BTC −98.8%、MDD −94%。印证框架铁律：<strong>"买旧 = 不归零风险低，≠ 回报高"</strong>。建议保留于篮子补全预言机赛道，但<strong>不应超配</strong>。</div>
+  </section>
+
+  <!-- ===== 价格预测上方免责声明 ===== -->
+  <div class="disclaimer">
+    <b>免责声明（二）</b>：以下<strong>乐观 / 中性 / 悲观</strong>三情景价格仅为<strong>第三方市场观点的聚合与重新锚定</strong>，基于当前价 ≈$13.7（2026-08）推导，<strong>不构成投资建议，亦非确定性预测</strong>。加密价格受市场周期、监管、竞争与技术交付多重影响，实际结果可能与任一情景显著偏离。
+  </div>
+
+  <!-- ===== §6 三情景价格展望 ===== -->
+  <section>
+    <h2>六、市场对 TRB 的未来价格预期（三情景）</h2>
+    <p>第三方模型（Gate、priceprediction.net、AltcoinDaily、Bitrue、CoinCodex 等）对 2026–2027 的目标区间分歧极大（保守 $16、中性 $40–70、激进 $100+），且多写于 TRB=$30–40 时。下表在当前 $13.7 价位<strong>重新锚定</strong>为 12–18 个月情景，并附概率（主观，基于研报情绪聚合）：</p>
+
+    <div class="scn bear">
+      <div class="lbl" style="color:var(--bear)">悲观</div>
+      <div class="bar"><div class="fill" style="width:30%">$5 – 10</div></div>
+      <div class="prob">≈30%</div>
+    </div>
+    <div class="scn base">
+      <div class="lbl" style="color:var(--base)">中性</div>
+      <div class="bar"><div class="fill" style="width:62%">$15 – 30</div></div>
+      <div class="prob">≈45%</div>
+    </div>
+    <div class="scn bull">
+      <div class="lbl" style="color:var(--bull)">乐观</div>
+      <div class="bar"><div class="fill" style="width:100%">$40 – 90</div></div>
+      <div class="prob">≈25%</div>
+    </div>
+    <div class="axis"><span>$0</span><span>$30</span><span>$60</span><span>$90+</span></div>
+
+    <h3>情景驱动因素</h3>
+    <div class="grid2">
+      <div class="card">
+        <b style="color:var(--bear)">悲观情景（$5–10，≈30%）</b>
+        <ul>
+          <li>预言机份额持续向 Chainlink / Pyth / RedStone 集中，Tellor Layer 未转化为需求</li>
+          <li>通胀稀释 + 微盘流动性 + 集中度退出冲击</li>
+          <li>对 BTC 比率延续 6 年 −98.8% 下行，再测 2022 低点 $8–12 甚至跌破</li>
+          <li>无销毁/回购，被动持有者无现金流兜底</li>
+        </ul>
+      </div>
+      <div class="card">
+        <b style="color:var(--base)">中性情景（$15–30，≈45%）</b>
+        <ul>
+          <li>维持利基相关性，Saga/zkSync/定制 feed 缓慢集成增长</li>
+          <li>价格跟随小盘预言机板块，温和修复至 2023–2024 均值区间</li>
+          <li>技术持续交付但需求弹性有限，估值靠投机 + 质押需求支撑</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <b style="color:var(--bull)">乐观情景（$40–90，≈25%）</b>
+      <ul>
+        <li>"AI Agent 数据需求"或预言机板块轮动成为主线，小盘预言机获 beta 弹性</li>
+        <li>Tellor Pull + Layer 吸引新一批集成方，链上查询量可验证增长</li>
+        <li>重估为"专注数据的公链"叙事成立，回收 2021 年 $123–164 量级的催化条件</li>
+      </ul>
+    </div>
+    <div class="note">概率加权中点 ≈ $18–20（12–18 个月），<strong>隐含对当前 $13.7 的中性略偏正</strong>。但需强调：第三方面预测的共识缺失本身即信号——<strong>中期价格方向无市场共识</strong>。</div>
+  </section>
+
+  <!-- ===== 底部免责声明 ===== -->
+  <div class="disclaimer">
+    <b>免责声明（三）</b>：本报告全部内容（含底层逻辑、业务动态、技术进展、机构观点、风险与三情景价格）均为<strong>公开信息汇总与市场观点</strong>，<strong>不构成任何投资建议</strong>。加密资产价格波动剧烈，历史表现不代表未来。请独立研究、自担风险。
+  </div>
+
+  <div class="foot">
+    数据来源：Tellor 官方博客、Binance/OKX/Gate/Phemex/1inch/Ainvest/Yellow.com 等公开资料，及本项目 Binance 周线回填面板（2020-08-21 ~ 2026-08-07）。<br>
+    本报告由 WorkBuddy 基于 crypto-token-deep-analysis 技能框架生成，并套用本项目"买旧不买新"先验与三处免责声明要求。<br>
+    生成时间：2026-08-11。仅供研究参考，非投资依据。
+  </div>
+
+</div>
+</body>
+</html>

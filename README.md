@@ -1,287 +1,121 @@
-# mx_auto_strategy — 三市场量化回测研究引擎 v6.18
+# mx_auto_strategy — 三市场量化回测研究引擎
 
-> ⚠️ **项目现状（2026-08）**：龙虾炒股大赛 **live 自动交易方向已搁置**。本仓库当前定位为 **A股 / 美股 / 加密三市场量化回测研究引擎**（非实盘执行系统）；权威真值见 [`docs/TRUTH.md`](docs/TRUTH.md)。`auto_trader.py` / `grid_trader.py` / `sync_contest.py` 等 live 模块为 **legacy（历史/实验性）代码**，保留参考，不再主维护。
-
-> （历史背景）原模拟盘定位：龙虾炒股大赛（账户 261984600000041416，100 万虚拟金），核心模式「剧本书写者」—— 防御端系统自治 + 进攻端用户方向叠加 + 大方向甩剧本。
-
-🔗 **GitHub**：https://github.com/ghshhf/mx_auto_strategy
-
-📄 **智能体入口**：`CLAUDE.md`（Claude Code / Cursor / Codex / 其他 AI 拉取后自动读取，直接上手）
+> 给「下一个 AI（或接手的人）」的操作手册。本项目是 **A股 / 美股 / 加密** 三市场的**周线动量 + 周期减仓**回测研究引擎，**非实盘交易系统**。A股 live 自动交易（剧本 / 模拟盘 / 龙虾大赛）已于 2026-08-07 **永久搁置**，项目重心是三市场量化回测研究。
 
 ---
 
-## 分类索引（多市场导航）｜ AI 自动分类
+## 0. 30 秒上手（最重要）
 
-本仓库按**市场**分三大类，AI 拉取后请按此归类：
-
-| 类别 | 路径 | 说明 | 分类标记 |
-|---|---|---|---|
-| **A 股（主系统）** | 仓库根目录 | 龙虾炒股大赛自动交易（剧本书写者 + 防御自治 + 网格），依赖 mx-moni API / T+1 / 限价 | 无（默认根） |
-| **美股（对标迁移）** | `us_stocks/` | 同方法论迁移到美股：US50 篮子 + 动量轮动 + 崩盘保护 + AI 选股层（`us_backtest_ai.py`）；真实面板回测结果见 `us_stocks/README.md`。（v6.18 期权审计：真实面板 + 公允 BS 期权定价 = **99.85x** / CAGR 46.8% / MDD −47.2%；无期权基线 22.48x；保守下限 31.7x） | `us_stocks/README.md` 首行 `CATEGORY: us_stocks` |
-| **加密（第三策略）** | `crypto_stocks/` | 同方法论迁移到加密：Crypto50 篮子 + 12 赛道 + 木头姐选币 + CrashGuard + VolTarget + **期权三件套引擎**（`crypto_options_bt.py`）。**权威真值（期权增强，v6.18 审计）**：进攻 Top3 + 期权三件套 + 封顶 4.5x = **448.6x**（CAGR 97.4% / MDD −57.6% / Sharpe 1.40，Binance/OKX 真实周K线 468 周）；无期权基线进攻 Top3 = 100.6x（MDD −63.5%）／防御档 = 40.7x（MDD −45.2%）。**减半周期（opt-in，协议级确定性日期零后视）= 实盘合法 regime 信号；其 in-sample 拟合峰值 ~17000x（10 年面板 619 周，真实数据可复现）为样本内上限非承诺值，真实样本外 Walk-forward = 274.8x（后视镜 69% 保留）/ 切割 B = 3.4x**。（⚠️ 旧 ~42,484x 系**合成数据 · 非实盘口径 · 已废弃推翻**，与上面真实数据的 17000x 不可混淆；真值含幸存者偏差，非未来承诺） | `crypto_stocks/README.md` 首行 `CATEGORY: crypto` |
-
-> 🔎 **美股分类权威标记**：`us_stocks/README.md` 首行 HTML 注释含 `CATEGORY: us_stocks` 与 `CLASSIFY_KEYWORDS`。
-> 🔎 **加密分类权威标记**：`crypto_stocks/README.md` 首行 HTML 注释含 `CATEGORY: crypto` 与 `CLASSIFY_KEYWORDS`。
-> 未来 `git pull` 后如需 AI 自动分类，以各分类标记为准，将 `us_stocks/` 识别为「美股分类」、`crypto_stocks/` 识别为「加密分类」，勿与 A 股逻辑混淆。
-
-> 🌐 **多周期宏观框架**：跨市场 12 周期叠加层（联邦利率 / 半导体库存 / 科技AI创新 / 市场情绪 / 盈利 / 估值 / 信贷 / 美元 / 流动性 / 地缘政治 / 大宗商品 / 房地产），作为 opt-in 风险 regime 信号，沿用 `macro_overlay` 范式（前视防护 + 优雅降级）。**已按引擎分别筛选有效周期并赋权重**——A股 = 信贷+大宗商品（tilt 0.3）、加密 = 流动性+美联储利率+大宗商品+房地产（tilt 0.5）、美股无有效周期（空集中性）；默认关闭、不污染基线。样本外 walk-forward 验证见 [`docs/cycle_framework.md`](docs/cycle_framework.md)。
+1. **Python 必须用量化 venv**，默认 `python` 没有 pandas，会立刻报 `ModuleNotFoundError`：
+   ```
+   G:/venv/quant/Scripts/python.exe
+   ```
+2. **下载行情走本地代理** `http://127.0.0.1:3067`（Binance/OKX/CMC/腾讯可达；Binance 经本机代理偶发 451 地理封锁，靠 OKX/CMC 兜底）。
+3. **Git Bash 下 Python 不认 `/e/` 挂载点**，一律用 Windows 绝对路径（如 `C:/Users/...` 或 `E:/xmanbian/...`）。
+4. 改完任何东西，先读 `PITFALLS.md`（本仓根目录）——里面是历年踩过的坑，能省你几小时。
 
 ---
 
-## 一句话哲学
+## 1. 仓内结构
 
-> **防御端自律 + 进攻端剧本锁定 + 大方向甩剧本 = 不可能输**
-
-- **防御端**：系统自治。低 beta 蓝筹白名单自动选 Top3，三档市况自动调仓。
-- **进攻端**：你给方向就锁定你的方向，不给就走自适应主线（行业动量扫描）。
-- **大方向**：直接写人话剧本（`user_script.md`），系统解析执行——写啥演啥。
-
----
-
-## 快速开始
-
-```bash
-git clone https://github.com/ghshhf/mx_auto_strategy.git
-cd mx_auto_strategy
-pip install pandas numpy matplotlib     # 仅回测/画图需要; 实盘主流程只用标准库
-export MX_APIKEY="你的mx-moni API key"   # 从环境变量读, 绝不硬编码
-
-# 干跑选股(不交易)
-python3 auto_trader.py --mode select
-
-# 实际下单(需模拟盘账户 + 交易时段)
-python3 auto_trader.py
-```
-
-> 📌 上述 `auto_trader.py` 命令为 **legacy live 交易入口**（龙虾大赛已搁置）。研究引擎主入口见各市场回测脚本：`ashare_backtest/run_10y.py`、`us_stocks/us_backtest_ai.py`、`crypto_stocks/crypto_options_bt.py`，跨市场组合见 `portfolio_blend.py`。
-
-**交易节奏**：每天手动触发 3 次（10:00 / 12:00 / 14:00）。无自动 cron、无后台脚本（用户铁律）。
-
----
-
-## 给方向（人话入口）
-
-> 🔒 **剧本已封印（2026-07-30 / W31）**：`user_script.md` 顶部有封印横幅，方向主轴已全面移交 AI（`script_advisor` 生成剧本草稿 + `ai_score` 选股加权）。**默认不再手写作业**；重新启用手写需置 `strategy_config.json` 的 `playbook.sealed=false` 并清除封印横幅。智能体改方向请走 AI 路径，勿直接改 `user_script.md` 正文。
-
-直接编辑 `user_script.md`（仅限封印解除后）：
-
-```
-下周主攻电力和医疗，防御端你定，弱势市多留现金。
-```
-
-关键词映射（写口语即可）：
-
-| 你写的 | 系统理解 |
+| 路径 | 作用 |
 |---|---|
-| `电力` / `电网` | 进攻端叠加电力方向 |
-| `医疗` / `医药` / `药` | 进攻端叠加医药方向 |
-| 不写进攻方向 | 系统走自适应主线 |
-| `防御端你定` / 不写 | 系统从防御白名单自治 |
-
-运行时 `user_script.md` 被解析并同步进 `weekly_theme.json`（machine-readable）。
+| `crypto_stocks/` | 加密回测主引擎（周线动量 + 减半周期减仓） |
+| `ashare_backtest/` | A股回测（腾讯后复权金标准面板） |
+| `us_stocks/` | 美股回测（真实面板 + AI 选股层） |
+| `cycles/` | 减半周期相位表与叠加层（`phases.py` / `overlay.py` / `specs.py`） |
+| `docs/` | 报告产物（如 `curves.html`） |
+| `PITFALLS.md` | **必读**：历史踩坑清单 |
+| `README.md` | 本文件 |
 
 ---
 
-## 账号体系 + 自己的实盘资金曲线（手动记账，本地永久留存）
+## 2. 当前权威真值（改完必须回归到这里，勿飘）
 
-`manual_log.py` 支持**多账号**，每个账号独立资金曲线、互不串账。**本地无自动清零**——所有账号永久留存，攒回测依据：
-
-| 账号来源 | account_id | 本地行为 |
+| 市场 | 真值 | 口径 |
 |---|---|---|
-| 自己实盘（默认） | `real`（可加 `real2`…） | 你手动买卖，永久记录 |
-| 模拟大赛 | `sim_261984600000041416` | 远程比赛平台自己清零，本地只看远程每笔如实记，远程清零不影响本地 |
+| **A股** v6.18 | **18.185x** / CAGR 22.31% / MDD −33.31% | 2014-10-17~2026-08-06，749 周，含成本；基线 = momentum26 + 核心卫星 0.5 + 死叉，`use_tech=False + trend_filter=False` |
+| **美股** | 无杠杆 **22.48x / −48.4%**；20% 现金袖 **14.46x / −40.8%** | 155 列真实面板（2021-08 起） |
+| **加密 10y** | base **21,419x** / cycle(tilt=0.3) **28,092x** / MDD ≈−33% / Sharpe 2.01 | 621 周（2016-08 起），62 币（含 TRB）；同期 BTC 买入持有 108.8x |
 
-> 龙虾大赛的清零是【远程比赛平台】干的，与本地无关。本地只负责忠实记录，未来回测才有完整依据。
+> ⚠️ **旧口径 `24,493x / −43.5%` 已废弃**（2026-08-11 MDD 修复后 `DEFAULT_CFG` 演进）。不要把它和现在的 28,092x 直接并列对比。
+> ⚠️ A股真值 18.185x 含**幸存者偏差**（指数成分股幸存筛选）。
 
+---
+
+## 3. 各市场怎么跑（精确命令）
+
+### 加密（已含 TRB，62 币）
 ```bash
-python3 manual_log.py accounts                                 # 所有账号+余额
-python3 manual_log.py deposit --amount 50000                  # 实盘入金(默认real)
-python3 manual_log.py buy --code 600900 --name 长江电力 --price 28.5 --qty 100
-python3 manual_log.py buy --account real2 --code 601398 --name 工商银行 --price 6.8 --qty 10000
-python3 manual_log.py summary --account sim_261984600000041416   # 读龙虾大赛(本地留存)
-python3 manual_log.py delete --account real2 --confirm        # 仅当你亲口要求删账号
+cd crypto_stocks
+G:/venv/quant/Scripts/python.exe run_windows_bt.py
+# 产出: crypto_windows_report.md + crypto_windows_results.json（10/5/3 年 × base/cycle 两档）
 ```
+引擎：`crypto_options_bt.py`；面板：`data/weekly_adjclose_crypto50.csv`（全样本）+ `data/weekly_adjclose_crypto50_10y.csv`（621 周）。引擎按周过滤"当周有非 NaN 非零价"的币，早期空缺列（如 TRB 2020-08 前）自动不可选，不会报错。
 
-- 数据落在 `records/<账号ID>/*.jsonl`（**已 `.gitignore` 排除，不推 GitHub、永不自动清零**）。
-- 本地无清零机制；只有你明确说"删账号"才用 `delete`（带 `--confirm`，`real` 受保护禁止删）。
-- 与 `auto_trader.py` 的模拟盘状态完全隔离，是追加写的独立账本。
-
----
-
-## 市况三档（系统自动判定，剧本可覆盖）
-
-| 市况 | 判定 | 防御% | 进攻% | 现金% |
-|---|---|---|---|---|
-| 弱势 | 沪深300 低于20日MA -3% | 60 | 24 | 16 |
-| 平衡 | MA ±3% 带内 | 45 | 45 | 10 |
-| 强势 | 高于 MA +3% | 35 | 60 | 5 |
-
----
-
-## 大盘结构风险信号（多指数死叉去风险，v6.10）
-
-在温度计提早「削进攻」的基础上，再叠加一层「大盘结构风险」确认：6 大宽基指数
-（沪深300 / 中证500 / 上证综指 / 创业板指 / 上证50 / 中证1000）**周线 MA5/MA20 死叉**复合判定。
-
-- 单指数「熊化」= 收盘价 < MA20 且 MA5 < MA20 且 MA20 向下（结构性向下，非单日波动）
-- **≥ 3 个指数同时熊化** → 触发「进攻转全防御」：本周不新开进攻仓（进攻仓 = 0，释放额度并入防御）；
-  已持仓进攻票仍按正常止损/止盈规则持有（**不强行卖出**，遵循「防御持仓不动、周频不全卖」铁律）
-- 这是基于「16 倍」回测主线落地的升级：**回测 10 年（2016~2026），死叉转全防御相对纯 16 倍框架
-  多赚约 +4.2% 相对收益、最大回撤少约 2.8 个百分点**——既增厚收益又降风险，且不改变 16 倍框架逻辑
-  （防御蓝筹底仓 + 弱市进攻切可转债 + 周频再平衡），只在市场结构性向下时把进攻收口
-
-**稳健性**：任一指数周线抓取失败且可用比例 < 80% → 不触发（保守退回原逻辑）；信号缓存 30 分钟；
-`strategy_config.json` 中 `death_cross.shadow_mode=true` 可先只打印不执行供观察。
-
----
-
-## 进攻题材渗透率倾斜（木头姐框架，v6.11）— ⚠️ v6.18 已验证含前视偏差，默认关闭
-
-参考 Cathie Wood / ARK 对科技的分析框架（**莱特定律 + 渗透率 S 曲线**）：一项技术累计产量每翻倍成本降固定比例，成本降到临界点后采用非线性爆发；渗透率跨过 ~10%~30% 甜区后加速、过 ~50%~60% 进入成熟/饱和增速放缓。
-
-> ⚠️ **v6.18 状态：默认关闭（含前视偏差）**。该层依赖的 `PHASE_HISTORY` 是 2026 年回看标注的行业相位表，回测在 2019 年即"预知"后续哪个行业会加速 = 典型**前视偏差**，虚增约 +37.2%（static 21.500x vs 无前视 data 15.674x）。数据驱动版（`tech_mode="data"`，逐周现算相位）经检验仍为负贡献。结论：**二者均默认关闭**，仅保留为历史对照，不得作为实盘加权依据。
-
-本系统把这套「产品普及率」思想落成一个**轻量、离线、可解释**的进攻侧权重倾斜层（`tech_adoption.py`）：
-
-- 给进攻题材（行业）标注「采用相位」：`early`（渗透极低、爆发前夜，如人形机器人）/ `accelerating`（加速段甜区，如半导体、AI、计算机）/ `saturating`（过甜区、增速放缓，如新能源）/ `mature`（国内渗透已高，如光伏、通信）/ `policy`（政策预算驱动、非消费扩散，如军工、稀土，中性不倾斜）/ `unknown`（未收录，中性）
-- 相位映射成动量权重乘子，叠加到 `weekly_theme` 的行业动量上：**加速期加成（×1.35）、早期甜区（×1.15）、饱和降权（×0.65）、成熟（×0.8）**
-- **仅影响进攻主线排序**：半导体（加速期）即使真实涨幅低于新能源（饱和），倾斜后也会优先被选为本周进攻主线；**防御蓝筹底仓完全不动**，符合「16 倍逻辑不凭空升系统」的铁律
-- 主线资格仍要求**真实涨幅 > 0**，避免纯靠相位抬出的伪主线
-
-**数据**：内置精选渗透率表（`tech_adoption.THEMES`），离线零依赖、无网络；渗透率为近似估值（截至 `as_of`），用于相位判断而非精确预测，定期人工复核即可。`strategy_config.json` 中 `tech_adoption.shadow_mode=true` 可先只打印倾斜建议不执行供观察；乘子（boost_accelerating / early_boost / cut_saturating / mature_mult）均可调。任何模块异常 → 自动降级中性、不中断主流程。
-
-- **v6.11b 时变渗透率表（按年代标相位）**：新增 `PHASE_HISTORY`，给每个赛道按年代标相位——例如宁德 2019-2021=加速×1.35、2022+=饱和×0.65；AI 2023+=加速；白酒 2016-2020=加速。新增 `get_adoption(industry, year=Y)` 可按年份查当年真实相位。`strategy_config.json` 中 `tech_adoption.shadow_mode=true` 可先只打印倾斜建议不执行供观察；乘子（boost_accelerating / early_boost / cut_saturating / mature_mult）均可调。任何模块异常 → 自动降级中性、不中断主流程。**live 不传 year 时行为不变（仍用当前 2025 评估），向后兼容**。这修复了旧版「2025 静态快照错配早年主升浪」的缺陷——回测 10 年从静态版 −2.1% 转为时变版 **+7.4%**（≈18.0 万 vs 16.8 万），且 3/5/10 年全段净正。
-
-> ⚠️ **口径更正（v6.18）**：旧「16.29x / 22.18x / 24.16x」均系 eastmoney 字段错位或前视偏差虚增, **已废弃**。v6.18 改用腾讯 `web.ifzq.gtimg.cn` 后复权周线（字段正确）+ 交易成本建模, **全样本真值: 基线 18.185x / CAGR 22.31% / MDD -33.31% / 相对沪深300 超额 +9.55x**（窗口 2014-10-17~2026-08-06, 749 周, 含幸存者偏差, 非未来承诺）。v6.18 同时经样本外配对检验确认趋势过滤/科技相位/量能/宏观/估值等叠加层均不显著, 基线锁定动量26+核心卫星+死叉。
-
----
-
-## 回测对标真实沪深300（10 年窗口实测）
-
-起步本金 **1 万元**，周频再平衡，真实股票 / 可转债历史（**腾讯后复权金标准面板** `web.ifzq.gtimg.cn`，v6.16 起替代 eastmoney）。下图为「本系统（v6.18 基线：动量26 + 核心卫星 core_frac=0.5 + 死叉去风险）」vs「买入持有沪深300（真实基准）」的净值对比与水下回撤对比。
-
-> 注：下方静态示意图为旧版 v6.10 生成，最新交互数据见 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)。
-
-![净值曲线对比](assets/backtest_curves.png)
-
-![水下回撤对比](assets/backtest_drawdowns.png)
-
-**收益与回撤对标（v6.18 腾讯后复权面板，含交易成本，全样本）**
-
-| 口径 | 数值 |
-|---|---|
-| 回测窗口 | 2014-10-17 ~ 2026-08-06（749 周，约 11.7 年） |
-| 本系统期末倍数 | **18.185x** |
-| 年化（CAGR） | **22.31%** |
-| 最大回撤（MDD） | **-33.31%** |
-| 沪深300 同期倍数 | 1.905x |
-| 相对沪深300 超额 | **+9.55x** |
-| 幸存者偏差 | 含（静态候选池，非未来承诺） |
-
-> ⚠️ **v6.18 口径更正**：旧「16.29x / 22.18x / 24.16x」均系 eastmoney 字段错位或前视偏差虚增，已全面废弃。
-> 上表为腾讯后复权面板 + 交易成本建模下的**全样本**真值。3/5/10 年窗口明细由
-> `python3 ashare_backtest/run_10y.py` 实时生成，交互曲线见 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)。
-
-**核心结论**：大胜宽基靠的是系统本身的「**防御蓝筹底仓 + 弱市进攻切可转债（债底保护） + 周频再平衡 + 动态选股**」这四样。v6.16 改用腾讯后复权面板（修正 eastmoney 字段错位 bug），新增交易成本建模、walk-forward 验证、幸存者偏差声明。**v6.18 进一步消除前视偏差**：手写行业相位表经证实含 +37.2% 前视（2026 回看标注，回测 2019 即"预知"后续主线），已默认关闭；并经样本外双维度配对检验确认所有候选叠加层（趋势过滤 / 科技相位 / 量能 / 宏观 / 估值分位）均不显著（|t|<2），**基线锁定为 动量26 + 核心卫星(core_frac=0.5) + 死叉去风险**，其余全关。完整可交互版（鼠标悬停看任意日期市值，部署在 GitHub Pages）：[https://ghshhf.github.io/mx_auto_strategy/](https://ghshhf.github.io/mx_auto_strategy/)（自动跳转至 [curves.html](https://ghshhf.github.io/mx_auto_strategy/curves.html)）；详细论证：`docs/backtest_report.md`（待更新至 v6.18）。
-
-> ⚠️ 局限：进攻仓为动态选股代理（历史周线面板可复现，但真实 live 仍取决于当周选股）；防御端为 DEF16 蓝筹等权；**已计交易成本/滑点/印花税（v6.16 起建模，默认开启）**。回测窗口以面板可用最早日期为起点（2014-10-17），末周 2026-08-06。
-
----
-
-## 文件结构
-
-```
-mx_auto_strategy/
-├── CLAUDE.md            # 🤖 智能体入口(自动读取, 直接上手)
-├── user_script.md       # 📝 用户剧本入口(人话给方向)
-├── weekly_theme.json    # 机器可读的叠加配置(由user_script自动同步)
-├── strategy_config.json # 所有可调参数(候选池109只 + 风控)
-├── weekly_theme.py      # 叠加解析逻辑(user_direction_overlay模式)
-├── selector.py          # 三维评分选股引擎
-├── auto_trader.py       # 主引擎(市况判定→选股→买入→止盈止损)
-├── market_data.py       # 腾讯财经行情获取
-├── death_cross.py       # 多指数周线死叉去风险信号(v6.10, 进攻转全防御)
-├── tech_adoption.py     # 科技渗透率倾斜(木头姐框架 v6.11, 时变渗透率表; ⚠️ v6.18验证含前视偏差, 默认关闭)
-├── manual_log.py        # 📒 账号体系手动记账(本地无清零, 永久留存, 仅手动delete)
-├── script_tracker.py    # 📜 剧本书写者命中追踪 v1.1(剧本JSON→自动判定→胜率, human/ai分源)
-├── shadow_eval.py       # 🧪 AI shadow A/B 评估(规则vs AI排序前向收益对比)
-├── ai_promotion_gate.py # 🚪 shadow→active 晋升门槛(5项量化标准)
-├── tencent_hfq_rebuild.py # 📊 腾讯后复权周线面板重建(v6.16, 替代eastmoney)
-├── walk_forward.py     # 🔄 滚动窗口walk-forward验证(过拟合检测)
-├── survivorship_check.py # ⚠️ 幸存者偏差敏感性检查(移除TopN涨幅股重算)
-├── run_10y.py           # 📈 10年回测入口(v6.16, 含交易成本)
-├── sync_contest.py      # 🔄 龙虾大赛远程只读同步(本地永久留存)
-├── news_feed.py         # 📰 实时新闻参考源(拉快讯→剧本共振标记, 仅参考不交易)
-├── crypto_data.py       # 🪙 加密数据源(全币种+交易所数据, 公开行情, 并入总资金统计)
-├── backtest_*.py        # 回测脚本(3年/5年/剧本关仓验证)
-├── scripts/             # 剧本存档(用户护城河资产, 进版本库)
-├── cycles/              # 🌐 多周期研究框架(12周期宏观叠加层, opt-in, 详见 docs/cycle_framework.md)
-└── *_proof.md / *_report.md  # 论证报告(剧本书写者实力证据链)
-```
-
-### 扩展工具
-
-| 工具 | 能力 |
-|---|---|
-| `manual_log.py mark` | 实时市值估值（持仓×最新价→浮动盈亏+总净值） |
-| `manual_log.py curve` | 资金曲线导出 CSV（日期→净值，供回测/画图） |
-| `manual_log.py drawdown` | 回撤闸（超阈输出降级全防御建议） |
-| `script_tracker.py` | 剧本命中追踪 v1.1（add/list/check/stats/compare, human/ai 分源胜率对比） |
-| `shadow_eval.py` | AI shadow A/B 评估（规则 vs AI 排序前向收益, 量化 AI 是否真加分） |
-| `ai_promotion_gate.py` | shadow→active 晋升门槛（5 项量化标准, 全满足才建议晋升） |
-| `tencent_hfq_rebuild.py` | 腾讯后复权周线面板重建（v6.16 替代 eastmoney, 字段正确） |
-| `walk_forward.py` | 滚动窗口 walk-forward 验证（过拟合检测, 含/不含成本对比） |
-| `survivorship_check.py` | 幸存者偏差敏感性检查（移除 TopN 涨幅股重算, 评估偏差量级） |
-| `sync_contest.py` | 大赛只读同步（远程快照追加本地，远程清零不影响） |
-| `news_feed.py` | 实时新闻参考源（拉快讯→与剧本方向匹配打共振标签，仅参考不交易） |
-| `crypto_data.py` | 加密数据源（CoinGecko主·Binance/OKX备，免费全币种+交易所数据，仅公开行情） |
-
+### A股
 ```bash
-python3 manual_log.py mark                              # 实时估值
-python3 manual_log.py curve                             # 导出曲线CSV
-python3 manual_log.py drawdown --threshold 5            # 回撤>5%告警
-python3 script_tracker.py add --title "科技离场" --direction bearish --expiry 2026-08-01 --code sh000300 --expect down
-python3 script_tracker.py check                         # 自动判定到期剧本
-python3 script_tracker.py stats                         # 剧本胜率
-python3 script_tracker.py compare                      # human vs AI 胜率对比
-python3 shadow_eval.py evaluate --horizon 20           # 评估 shadow 快照前向收益
-python3 shadow_eval.py report                          # A/B 对比报告
-python3 ai_promotion_gate.py check                     # 检查 shadow→active 晋升门槛
-python3 tencent_hfq_rebuild.py --force --verify        # 重建腾讯后复权周线面板
-python3 ashare_backtest/run_10y.py                     # 10年回测(含交易成本)
-python3 ashare_backtest/walk_forward.py --compare      # walk-forward验证(含/不含成本对比)
-python3 ashare_backtest/survivorship_check.py --compare # 幸存者偏差敏感性检查
-python3 sync_contest.py --account sim_261984600000041416   # 同步大赛(需MX_APIKEY)
-python3 news_feed.py fetch                                # 拉快讯+剧本方向共振标记
-python3 news_feed.py latest --resonance                   # 只看与剧本共振的新闻
+cd ashare_backtest
+G:/venv/quant/Scripts/python.exe run_windows.py
+# 产出: nav_windows.html + nav_windows.csv（3/5/10y trailing 窗口对比）
 ```
+⚠️ **陷阱**：`run_windows.py` 硬编码 `use_tech=True`，而 v6.18 权威真值 18.185x 是 `use_tech=False + trend_filter=False`。直接跑 `run_windows.py` 得到的不是 18.185x。要复现真值，改 `run_windows.py` 里的 `cfg`（`use_tech=False, trend_filter=False`），或直接调 `backtest_engine.run(...)`。面板来源 `ashare_panel_close_em.csv`（活跃腾讯后复权数据）。
+
+### 美股
+```bash
+cd us_stocks
+G:/venv/quant/Scripts/python.exe us_backtest_ai.py --no-ai
+# --no-ai: 关闭 AI 选股层，只跑 baseline + optimized（复现 22.48x 真值无需 LLM）
+# 默认还会跑 optimized；如需真接 LLM 加权加 --with-llm（需配置，否则 pass-through=1.0）
+```
+面板：`weekly_adjclose_full_ext.csv`（155 列）。基线真值 22.48x 来自 `run_baseline`（无杠杆）。
+
+### 周期叠加（加密）
+```bash
+python run_cycle_windows.py        # 根目录
+```
+把 `cycles/` 的减半相位减仓叠加到加密引擎上。相位表见 `cycles/phases.py` 的 `HALVING_PHASE_ADJUST`（默认 `crash=bear_bottom=0.3`、预热起点 `ph=31` 月）。
 
 ---
 
-## 安全红线
+## 4. 怎么加一个新代币到加密篮子（以 TRB 为例，2026-08-11 实操可复现）
 
-1. **API key 只从环境变量 `MX_APIKEY` 读取，绝不写入文件或回显。**
-2. **不碰合约/杠杆**（除非剧本明确指定）。
-3. **不开 cron / 后台定时**（每天手动触发 3 次）。
-4. **单票 ≤ 18%**，不重仓。
-5. **推送前确认 `.gitignore` 已排除 token / 状态文件。**
+1. **`crypto_adoption_v2.py`**
+   - `THEME_COINS[<赛道>]` 加入符号（如 `'基础设施': ['LINK','ENS','API3','GRT','TRB']`）
+   - `COIN_META` 加元信息：`'TRB': {'name':'Tellor','role':'offense','theme':'基础设施','launch':2019}`
+2. **`sync_crypto_panel.py`** 的 `_CMC_ID_MAP` 加 CMC id
+   - ⚠️ **先查再写**：用 `pro-api.coinmarketcap.com/v1/cryptocurrency/map?symbol=XXX` 核实 id，**别猜**（Tellor 实测是 4944，不是直觉的 10108）
+3. **回填历史周线**：写脚本用 `crypto_hist_data.fetch_binance_full('<SYM>USDT', '<起始日>')` 主源（OKX/CMC 兜底），对齐日期写回 `data/weekly_adjclose_crypto50.csv` 和 `..._10y.csv` 的新列。上市前留空。参考本仓 `_add_trb_backfill.py`。
+4. **重跑** `run_windows_bt.py` 验证新币进入且历史非空。
 
----
-
-## 论证报告（为什么这么设计）
-
-- `strategy_script_proof.md` —— 十层证据链：用户「剧本书写者」能力（3年5000%/50倍为何很正常）
-- `pool_analysis_report.md` —— 为什么5年回测失真（池子太小）
-- `strategy_power_proof.md` —— 散户-30% vs 用户-2.67% 实力论证
-- `backtest_script_july.py` —— 6月底交剧本→7月关仓+5.79% 量化验证
+> ⚠️ **统计坑（踩过）**：算新币与 BTC 的**相关性 / beta 必须按【日期对齐】**，不能按行索引对齐（两币上市日不同会错位），更不能把"同周价格比值"当收益率（会得到假的 corr=1.0000）。见 `crypto_options_bt.py` 周边分析代码。
 
 ---
 
-## 当前剧本状态（2026-W32 当周快照）
+## 5. 数据怎么重抓
 
-- **进攻方向（AI 生成）**：电力 / 医疗（v6.15 AI 成熟度框架, shadow 模式积累中）
-- **防御端（系统自治）**：银行 + 电力 + 红利低波
-- **目标**：正收益即可，赚红包，拿大赛前十
-- **市况**：弱势市（沪深300 偏离 MA 约 -6.5%）
+| 市场 | 脚本 | 源 |
+|---|---|---|
+| A股 | `ashare_backtest/tencent_hfq_rebuild.py` | 腾讯 `web.ifzq.gtimg.cn` 后复权周线（**活跃**；eastmoney 源已死，勿用 `eastmoney_hfq_rebuild.py`） |
+| 加密 | `crypto_stocks/sync_crypto_panel.py` | Binance → OKX → CMC 三级降级同步 |
 
-> 实际以 `user_script.md` + `weekly_theme.json` 运行时为准。
+> ⚠️ 文件名带 `_em` ≠ eastmoney 源。`ashare_weekly_em/`、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv` 是**活跃腾讯数据**，被引擎读写——**删了回测直接崩**。真废弃是带 `OLD_eastmoney_bak` / `.bak9` 后缀的。
+
+---
+
+## 6. 关键坑速查（详见 `PITFALLS.md`）
+
+- **前视偏差**：手写 `PHASE_HISTORY` 是 2026 回看标注，回测 2019 年即"知道"哪个行业加速 → 虚增 +18%~+37%。只用 `[0,i]` 现算的 `tech_mode="data"`。
+- **减半周期减仓是加密主干**：alpha 100% 来自 `halving_*_risk_scale` 按相位减仓，与做空零关系。翻开关前先确认子参数不是空操作默认值。
+- **加密反直觉铁律**：① 见顶期 euphoria 必须满仓（"高位"不是减仓信号，"减半后 18 个月"才是）；② 筑底期 bear_bottom 不能恢复仓位；③ 预热起点 ph=31 月 ≫ 36 月。
+- **估值层 MDD 改善是单点事件**（压平 2015 泡沫），非持续风控能力；默认关闭。
+- **框架纪律**：加密"买旧不买新"——新代币有解锁放量→归零序列风险；老牌=已证幸存者（非高回报保证）。集中度量赛道（如预言机 TVS） favor 老大 LINK，嫌弃利基 also-ran 是证据支持、非偏见。
+
+---
+
+## 7. 项目状态 / 不做什么
+
+- ✅ 三市场回测研究（活跃）
+- ❌ A股 live 自动交易（剧本 / 模拟盘 / 龙虾大赛）—— 2026-08-07 起永久搁置
+- 📌 `_scratch_*.py` 草稿脚本（约 25 个，零外部 import）保留不动，作方法论备查；根目录 `E:\xmanbian` 的 `mx_backtest_*.html` / `_mx_src` / `_qa_verify` 等 mx 残留不在本仓，勿误删
+- 📌 所有成果已 `git commit` 入库（含 TRB 入池、回测、本报告、`PITFALLS.md`）
