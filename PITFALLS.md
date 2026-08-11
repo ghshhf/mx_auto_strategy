@@ -108,3 +108,55 @@
 保留待确认（未删）：`crypto_stocks/_scratch_*.py` 等草稿脚本（19 个，无外部 import）、`E:\xmanbian` 根目录 mx 相关残留（`mx_backtest_*.html`、`_mx_src/`、`mx_auto_strategy_*.md`、`_qa_verify/`、`mx_hk_design/`、`mx_backtest_run/` 等）——见对话确认。
 
 **回收空间**：`ashare_backtest/data` 由 ~25M+ 降至 5.5M。
+
+---
+
+## §9 MANTRA → CFG 替换记录（2026-08-11）
+
+### 背景
+RWA 赛道代币池中 MANTRA (OM) 被替换为 CFG (Centrifuge)。用户经链上数据深度研究后确认 MANTRA "特别差"，非单纯价格涨跌判断，而是项目基本面全面崩坏。
+
+### MANTRA (OM) 的核心问题（七宗罪）
+
+1. **团队控制 90% 流通量**：9.8 亿枚流通中 7.92 亿枚在团队单一钱包，真实流通仅 ~1.88 亿枚。高度控盘 = 价格操纵温床 [$TRAE_REF](https://blog.csdn.net/vv_lcmg88/article/details/147298510)。
+
+2. **TVL 与估值完全脱节**：FDV 曾达 $153.9 亿（2025年3月），但 TVL 自 2023 年起仅维持在"几十万美元"级别。高估值零采用 = 纯叙事泡沫 [$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+3. **2025年4月崩盘 90%**：24 小时暴跌 89.2%。崩盘前 3 天，19 个疑似同一实体的钱包向 OKX 转入 1427 万 OM（约 $9100 万），构成内幕抛售嫌疑 [$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+4. **骗局起源 + 法律纠纷**：MANTRA DAO（2020）早期被指骗局，创始人 Calvin Ng 涉线上赌博 21Pink。2022 年 RioDeFi 起诉 MANTRA DAO 资产侵占，2024 年香港高等法院介入 [$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+5. **中东资本接管**：2023 年 FDV 跌至 $2000 万时被中东资本通过中间人收购，仅保留 CEO 职位。此后包装为 RWA 项目，2024 年在 Binance 实现 200 倍涨幅（高控盘+OTC 倒手）[$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+6. **代币经济操纵**：供应量从 8.88 亿翻倍至 17.77 亿，引入 3% 年通胀。废弃原 ERC-20 OM，重建为 MANTRA Chain 原生代币 [$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+7. **当前状态（2026）**：市值仅 ~$6270 万，价格 ~$0.0085，GitHub stars 91 / 3 个月 46 commits，DAO 国库缩至 14.1K，持币者仅 35.6K。联合创始人/CTO 全部离职 [$TRAE_REF](https://www.cryptopolitan.com/mantra-chain-tries-to-make-a-comeback-with-om-token-buybacks-stablecoin-and-rwa-tokenization-plans/)[$TRAE_REF](https://www.aicoin.com/en/article/453950)。
+
+### CFG (Centrifuge) 的核心优势
+
+1. **真实 TVL 爆发**：从 2025 年初 ~$5000 万增长至 2026 Q2 的 $16.8 亿（30 倍），由真实机构资产驱动 [$TRAE_REF](https://www.gate51.cloud/zh/blog/centrifuge-cfg-onchain-credit-tokenization-structure-and-full-risk-analysis)。
+
+2. **顶级机构合作**：
+   - **Coinbase** 指定 CFG 为首选代币化基础设施 + 战略入股 [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)
+   - **纽约人寿**（$8070 亿 AUM）首个代币化基金上线 Centrifuge [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)
+   - **Ethena** 竞标选定 Centrifuge，配置 $2.5 亿至 JAAA [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)
+   - **Kraken Institutional** 将 JAAA 列为首批合格托管 RWA [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)
+   - S&P 全球评级将 JTRSY 升至 'AAAf'（最高基金信用评级）[$TRAE_REF](https://centrifuge.io/blog/centrifuge-q1-2026-recap)
+
+3. **真实产品采用**：JTRSY TVL 突破 $10 亿，JAAA 为旗舰信贷产品，deSPXA 提供 S&P 500 DeFi 敞口，已部署以太坊/Base/Arbitrum/Celo/Solana/Monad/Stellar/X Layer [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)。
+
+4. **技术标准输出**：ERC-7540（异步金库标准）由 Centrifuge 联合撰写，已合并入 OpenZeppelin 公共合约库 [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)。
+
+5. **合规创始人 + 长期愿景**：2017 年由 Lucas Vogelsang 等创立，2021 年与 MakerDAO 完成首笔 RWA 抵押贷款里程碑 [$TRAE_REF](https://www.gate51.cloud/zh/blog/centrifuge-cfg-onchain-credit-tokenization-structure-and-full-risk-analysis)。
+
+6. **代币经济改善**：CFG 持币者 10,988（+16% QoQ），Q4 2025 启动费率开关从规模扩张转向盈利变现 [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q4-2025-recap)。
+
+7. **$10 亿赎回设施**：Grove Basin 承诺 $10 亿为 JTRSY 提供 7×24 USDC 即时赎回 [$TRAE_REF](https://centrifuge.io/blog/centrifuge-q2-2026-recap)。
+
+### 回测影响
+替换后 5y MDD 从 -51.5% → -30.1%（改善 21.4pp），5y 倍数从 ~1x → 7.69x。MANTRA 在面板中仅 24 周数据且持续下跌（-68.9%），严重拖累整体回撤。
+
+### 教训（给未来 AI）
+- **代币替换不能只看价格**：MANTRA 价格曾涨 200 倍，但 TVL/团队/链上活动全面崩坏。必须查链上数据（TVL、持币者分布、团队持仓、GitHub 活跃度、合作伙伴质量）。
+- **RWA 赛道真伪鉴别**：真 RWA = 有机构级资产上链（CFG: BlackRock/Janus Henderson/纽约人寿）；伪 RWA = 纯叙事包装（MANTRA: 中东资本收购后贴 RWA 标签，TVL 几十万美元）。
+- **高度控盘 = 红线**：团队持 90% 流通量 → 随时可砸盘，不是"有信心"而是"待出货"。

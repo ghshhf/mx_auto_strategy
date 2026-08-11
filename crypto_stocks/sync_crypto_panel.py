@@ -68,7 +68,7 @@ _CMC_ID_MAP = {
     'DYDX': 28324,   'DYM': 28932,   'ENS': 13855,    'ETH': 1027,
     'FET': 3773,     'FIL': 2280,    'GALA': 7080,    'HNT': 5665,
     'ILV': 8719,     'IMX': 10603,   'JUP': 29210,    'LDO': 8000,
-    'LINK': 1975,    'MANTA': 13631,  'MANTRA': 39611,  'MATIC': 3890,
+    'LINK': 1975,    'MANTA': 13631,  'CFG': 4160,      'MATIC': 3890,
     'METIS': 9640,   'MKR': 1518,    'NEAR': 6535,    'OKB': 3897,
     'ONDO': 21159,   'OP': 11840,    'PEAQ': 14588,   'PHB': 13969,
     'POLYX': 20362,  'RENDER': 5690, 'RIO': 4166,     'RNDR': 5690,

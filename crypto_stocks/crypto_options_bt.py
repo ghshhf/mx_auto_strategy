@@ -43,7 +43,7 @@ import crypto_adoption_v2 as ca2
 
 WARMUP = 52
 STABLE = 'STABLE'
-DEFENSE_CORE = ('BTC', 'ETH', 'OKB')   # 防御核(ca2.defense_weights 口径), 差别减仓时区别对待
+DEFENSE_CORE = ('BTC', 'ETH')   # 防御核(ca2.defense_weights 口径), 差别减仓时区别对待
 
 _ALT_RS_CACHE = {}
 
@@ -121,7 +121,11 @@ class CryptoOptionsConfig:
     enabled_short: bool = True    # 止盈后做空闭环
     enabled_ovl: bool = True      # 极度高估主动卖 call
     enabled_cooldown: bool = True # 冷却期
-    option_universe_only: bool = True  # 只选入有期权市场的13个币当进攻币 (实盘能写call/put的必要条件)
+    option_universe_only: bool = False # 已废弃: 用 option_filter_phases 替代(按相位动态控制)
+    # 期权约束按相位动态切换: 列出的相位要求进攻币有期权市场(能写call/put), 未列出的相位全放开
+    # 山寨周期与BTC减半同步: euphoria期山寨轮动最猛→放开抓涨幅; crash/bear_bottom→仓位已清零无影响
+    # accumulation/pre_halving保留约束: 熊市筑底/减半预热期小币流动性差, 有期权的币更稳健
+    option_filter_phases: tuple = ('accumulation', 'pre_halving')
 
     # ---- 止盈 covered call ----
     take_profit_pct: float = 2.0       # 默认+200%止盈（加密赢家常10-100x, 3x封顶会漏算上行; 4.5x-entry封顶已验证为诚实下限）
@@ -173,7 +177,10 @@ class CryptoOptionsConfig:
 
     # ---- 成本 & 进攻选币 ----
     cost_bps: float = 0.002                  # 单边20bps（加密小币价差大）
-    offense_n: int = 3                       # 进攻选币数（原版Top3）
+    offense_n: int = 3                       # 进攻选币数（默认3, 集中持仓受益于covered call）
+    offense_n_strong: int = 3                # strong市况动态选币数（消融实测: 增加币数→MDD恶化, 保持3）
+    offense_n_euphoria: int = 4              # euphoria期扩仓到4（消融最优: 10y+17.5%/5y+2.4%, MDD零代价）
+    offense_phase_selection: bool = True     # 分阶段选币(优化4): 按减半相位调整选币策略
     vol_target: float = None                 # 0.60 可开
     crash_guard: dict = None                 # {'thr':-0.15, 'floor':0.40} 可开（默认关）
 
@@ -204,16 +211,17 @@ class CryptoOptionsConfig:
     # 下行相位完全离场比留 30% 更优 —— 那 30% 在下行段是纯负贡献。
     # 相位边界(月, post-halving)。历史3轮验证: 预热启动≈减半前17月=减半后31月(4年周期)。
     # 31 实测显著优于保守的 36(10y: 24494x/-43.5% vs 9315x/-47.1%) —— 提前恢复满仓抓减半预热行情。
-    pre_halving_start_month: float = 31.0     # bear_bottom→pre_halving 转折点
+    # 30 vs 31: 网格扫描最优(10y 32912x vs 27698x, +18.8%, MDD零代价), 提前1月多吃减半预期行情
+    pre_halving_start_month: float = 30.0     # bear_bottom→pre_halving 转折点
     # ---- 差别减仓 (offense-first derisk) ----
     # 实证(2024轮): 山寨中位自周期顶 -89.4% vs BTC -48.2%; 且山寨见顶 post-halving 7.3月,
     # 比 BTC(17.2月)提前 9.9 个月 —— 时间刻一刀切减仓对山寨"迟到"。
-    # True = 下行相位优先砍进攻山寨仓, 保留 BTC/ETH/OKB 防御核(轮换到大盘而非全体撤退)。
+    # True = 下行相位优先砍进攻山寨仓, 保留 BTC/ETH 防御核(轮换到大盘而非全体撤退)。
     # ⚠ 实测结论: 本开关**无独立 alpha**。V4(山寨0/核心0.3)=38.5kx 恰好落在一刀切 0.05~0.1 之间,
     #   即其收益 100% 来自"总敞口更低", 结构性差别对待本身零贡献。保留仅供研究, 默认关。
     halving_derisk_offense_first: bool = False
     halving_offense_scale: float = 0.0        # offense_first 模式: 进攻山寨缩放(0=清空)
-    halving_defense_scale: float = 1.0        # offense_first 模式: 防御核(BTC/ETH/OKB)缩放
+    halving_defense_scale: float = 1.0        # offense_first 模式: 防御核(BTC/ETH)缩放
     # ---- 山寨相对强度门控 (非时间刻, 用市场信号) ----
     # 实证漏洞: 最大回撤发生在 accumulation 相位(2024轮 MDD -40.3%, 收益仅+26%),
     # 因该相位按时间刻应满仓, 但本轮山寨在 post-halving 7.3月就见顶后一路阴跌。
@@ -222,9 +230,17 @@ class CryptoOptionsConfig:
     # 单独边际(对照仅清仓): MDD t=+2.75 显著改善, 倍数 t=-1.22 无显著损失。
     # 效果: 全局 MDD 天花板从 -43.5% 打到 -32.4%(该 MDD 原发生在 pre_halving 2019, 时间刻层够不到)。
     alt_rs_gate: bool = True
-    alt_rs_ma: int = 20                       # ALT/BTC 比值的 N 周均线
+    alt_rs_ma: int = 22                       # ALT/BTC 比值的 N 周均线(网格扫描最优: 22 vs 20, +18.8% 10y, MDD零代价)
     alt_rs_scale: float = 0.0                 # 走弱时进攻仓缩到该比例
     alt_rs_to_defense: bool = True            # True=释放权重转防御核(轮换BTC); False=转现金(实测转BTC更优)
+    # ---- 山寨回升抄底信号 (bear_bottom期) ----
+    # 山寨周期与BTC减半同步但有偏差: 本轮山寨在 post-halving 7.3月就见顶, 比 BTC 早 9.9 月。
+    # bear_bottom期按时间刻已清零, 但山寨可能在筑底末期提前回升(ALT/BTC 突破MA)。
+    # 此时部分恢复仓位 → 抓山寨抄底行情, 而非死等 pre_halving 时间刻。
+    # 信号: ALT/BTC 比值 > N周MA = 山寨开始相对 BTC 走强 → 恢复到 recovery_scale 仓位
+    alt_rs_recovery: bool = False             # 启用山寨回升抄底(实测负贡献: bear_bottom期假信号多, 默认关)
+    alt_rs_recovery_ma: int = 20              # 回升判断均线周期(与 alt_rs_ma 一致)
+    alt_rs_recovery_scale: float = 0.5        # 回升后恢复的仓位比例(0.5=半仓抄底)
 
 
 DEFAULT_CFG = asdict(CryptoOptionsConfig())
@@ -500,6 +516,15 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                     risk_scale_eff = cfg.halving_crash_risk_scale
                 elif phase == 'bear_bottom':
                     risk_scale_eff = cfg.halving_bear_bottom_risk_scale
+                    # 山寨回升抄底: bear_bottom期, ALT/BTC比值从下方突破MA → 部分恢复仓位
+                    # 逻辑: 筑底末期山寨可能提前走强(ALT/BTC>MA), 此时恢复半仓抄底
+                    # 而非死等 pre_halving 时间刻(该层在 ph_start=31月才恢复满仓)
+                    if getattr(cfg, 'alt_rs_recovery', False) and t >= cfg.alt_rs_recovery_ma:
+                        _rs = _alt_rs_ratio(px)
+                        _cur = _rs.iloc[t]
+                        _mav = _rs.iloc[t - cfg.alt_rs_recovery_ma + 1: t + 1].mean()
+                        if pd.notna(_cur) and pd.notna(_mav) and _cur > _mav:
+                            risk_scale_eff = cfg.alt_rs_recovery_scale
 
         # ---- 1. 用上周权重 + 做空仓位 算本周组合收益 ----
         if w is None:
@@ -601,7 +626,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
 
             # --- 单币 put 赔付 ---
             for coin, cw in single_weights.items():
-                if coin in ('BTC', 'ETH', 'OKB'): continue
+                if coin in ('BTC', 'ETH'): continue
                 # 实盘: 只有13个有期权市场的币才能拿到单币 put 赔付; 小币无期权就不赔
                 if not has_option_market(coin): continue
                 p0 = prev.get(coin); p1 = cur.get(coin)
@@ -798,7 +823,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
             risky = sum(v for k, v in target.items() if k != STABLE)
             if risky > 0:
                 if getattr(cfg, 'halving_derisk_offense_first', False):
-                    # 差别减仓: 进攻山寨砍到 off_s, 防御核(BTC/ETH/OKB)砍到 def_s, 差额转现金
+                    # 差别减仓: 进攻山寨砍到 off_s, 防御核(BTC/ETH)砍到 def_s, 差额转现金
                     off_s = float(getattr(cfg, 'halving_offense_scale', 0.0))
                     def_s = float(getattr(cfg, 'halving_defense_scale', 1.0))
                     new_target, freed = {}, 0.0
@@ -930,7 +955,7 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
     else:
         cooldown_lock = set()
 
-    # 防御核（BTC/ETH/OKB），冷却不禁防御核
+    # 防御核（BTC/ETH），冷却不禁防御核
     dw = ca2.defense_weights()
     dw = {k: v for k, v in dw.items() if k in set(c for c in px.columns if pd.notna(px[c].iloc[t_idx]) and px[c].iloc[t_idx] not in (0, None))}
     s = sum(dw.values())
@@ -940,14 +965,26 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
 
     # 进攻 Top-N（冷却期的币直接不参与）
     valid_off = [c for c in ca2.OFFENSE_COINS if c in avail]
-    # 实盘约束: option_universe_only=True 时，进攻币必须在 OPTIONS_AVAILABLE_COINS 内（才能写call/put）
-    if getattr(cfg, 'option_universe_only', True):
+    # 分阶段选币: 先计算减半周期相位(无后视), 再根据相位决定期权约束+选币数
+    eff_n = cfg.offense_n
+    sel_phase = None
+    if getattr(cfg, 'halving_cycle_enabled', False) and getattr(cfg, 'offense_phase_selection', True):
+        sel_phase, _, _ = halving_cycle_phase(
+            date_t, pre_halving_start_month=cfg.pre_halving_start_month)
+        # euphoria期扩仓: 从3扩到offense_n_euphoria, 抓住山寨轮动行情
+        if sel_phase == 'euphoria' and getattr(cfg, 'offense_n_euphoria', None):
+            eff_n = cfg.offense_n_euphoria
+    # 期权约束按相位动态切换:
+    # euphoria(狂热)/crash(暴跌)/bear_bottom(筑底) → 全放开, 山寨周期同步
+    # accumulation(积累)/pre_halving(预热) → 保留期权约束, 小币流动性差需稳健
+    filter_phases = getattr(cfg, 'option_filter_phases', ())
+    if sel_phase in filter_phases:
         valid_off = [c for c in valid_off if c in OPTIONS_AVAILABLE_COINS]
     off_w = {}
     if alloc['offense'] > 0 and valid_off and t_idx >= WARMUP:
-        top = ca2.offense_top_n(year, n=cfg.offense_n, valid=set(valid_off),
-                                px=px, as_of=date_t)
-        top = [c for c in top if c in avail][:cfg.offense_n]
+        top = ca2.offense_top_n(year, n=eff_n, valid=set(valid_off),
+                                px=px, as_of=date_t, phase=sel_phase)
+        top = [c for c in top if c in avail][:eff_n]
         if top:
             each = alloc['offense'] / len(top)
             off_w = {c: each for c in top}

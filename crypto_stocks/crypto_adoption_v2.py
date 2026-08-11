@@ -5,9 +5,9 @@ crypto_adoption_v2.py - 加密 Crypto50 篮子定义 + 木头姐渗透率相位 
 对标 us_stocks/us_adoption.py (美股 US50) + tech_adoption.py (木头姐框架).
 
 篮子构成 (Crypto50):
-  - 3 防御代币: BTC (数字黄金), ETH (基础设施), OKB (平台币)
-  - 47 进攻代币: 按 12 个加密赛道分类, 覆盖 L1/L2/DeFi/游戏/AI/存储/隐私/社交等
-  - 从 47 进攻中选出 5 只长期持有 (类似 A 股 weekly_theme 选 Top2 题材)
+  - 2 防御代币: BTC (数字黄金), ETH (基础设施)
+  - 48 进攻代币: 按 12 个加密赛道分类, 覆盖 L1/L2/DeFi/游戏/AI/存储/隐私/社交等
+  - 从 48 进攻中选出 Top N 长期持有 (类似 A 股 weekly_theme 选题材)
 
 木头姐渗透率框架 (加密版):
   - 加密赛道也有 S 曲线: DeFi TVL渗透率 / L2 采用率 / RWA 上链率 等
@@ -116,14 +116,14 @@ _PHASE_MULT = {
 }
 
 
-# ========== Crypto50 篮子 (3 防御 + 47 进攻 = 50) ==========
+# ========== Crypto50 篮子 (2 防御 + 48 进攻 = 50) ==========
 
-# 防御代币 (3个) - 用户指定: OKB, BTC, ETH
-DEFENSE_COINS = ['BTC', 'ETH', 'OKB']
+# 防御代币 (2个) - 只有BTC数字黄金 + ETH基础设施; OKB/BNB是平台币属进攻
+DEFENSE_COINS = ['BTC', 'ETH']
 
 def defense_weights():
-    """防御端内部分配: BTC 数字黄金 50% + ETH 基础设施 30% + OKB 平台 20%."""
-    return {'BTC': 0.50, 'ETH': 0.30, 'OKB': 0.20}
+    """防御端内部分配: BTC 数字黄金 60% + ETH 基础设施 40%."""
+    return {'BTC': 0.60, 'ETH': 0.40}
 
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
@@ -133,19 +133,19 @@ THEME_COINS = {
     "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'CRV', '1INCH', 'JUP'],
-    "平台币":  ['BNB'],
+    "平台币":  ['BNB', 'OKB'],
     "链上永续交易所": ['DYDX', 'GMX'],
-    "基础设施": ['LINK', 'ENS', 'API3', 'GRT', 'TRB'],
+    "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
     "AI+加密": ['FET', 'RENDER', 'TAO', 'RNDR', 'AKT', 'PHB'],
-    "模块化":  ['TIA', 'DYM', 'PAS'],
+    "模块化":  ['TIA', 'PAS'],
     "DePIN":   ['HNT', 'RNDR', 'AKT', 'PEAQ'],
     "存储":    ['FIL', 'AR', 'BLZ'],
     "GameFi":  ['AXS', 'GALA', 'IMX', 'ILV', 'BEAM'],
     "隐私":    ['ZEC', 'DASH', 'SECRET'],
-    "RWA":     ['ONDO', 'MANTRA', 'POLYX', 'RIO'],
+    "RWA":     ['ONDO', 'CFG', 'POLYX', 'RIO'],
 }
 
-# 去重后的进攻代币列表 (47个)
+# 去重后的进攻代币列表 (48个)
 _OFFENSE_SET = set()
 for _coins in THEME_COINS.values():
     for c in _coins:
@@ -164,7 +164,7 @@ REGIME_ALLOC = {
         'defense': 0.20,   # 仅留 20% 防御底仓
         'offense': 0.00,   # 清空进攻
         'stable': 0.80,    # 80% 稳定币 (极端避险)
-        'desc': '极端防御: 80%稳定币 + 20%BTC/ETH/OKB',
+        'desc': '极端防御: 80%稳定币 + 20%BTC/ETH',
     },
     'weak': {
         'defense': 0.50,   # 50% 防御
@@ -264,11 +264,18 @@ def offense_weights_for_year(year, valid=None, mode='theme_first'):
         return {s: w / tot for s, w in wt.items()} if tot > 0 else None
 
 
-def offense_top_n(year, n=5, valid=None, px=None, as_of=None):
+def offense_top_n(year, n=5, valid=None, px=None, as_of=None, phase=None):
     """
     从进攻池选出 Top N 代币 (默认5).
     逻辑: 甜区赛道动量 × 相位乘子 排序 -> Top N.
     复刻 us_adoption.py 的 offense_two_positions (但选5个而非2个).
+
+    phase (优化4 分阶段选币):
+      - 'accumulation' / 'pre_halving': 赛道相位优先 (70%相位 + 30%动量)
+        → 熊市筑底/减半预热期, 选赛道叙事强的币, 动量信号噪音大
+      - 'euphoria': 动量优先 (30%相位 + 70%动量)
+        → 牛市狂热期, 跟随资金流向, 动量最强的币最可能继续涨
+      - 其他/None: 均衡 (原版逻辑, 相位基础分30% + 动量加权)
     """
     # 1. 获取该年赛道权重
     wt = offense_weights_for_year(year, valid=valid, mode='theme_first')
@@ -297,13 +304,36 @@ def offense_top_n(year, n=5, valid=None, px=None, as_of=None):
                         rel = r - bench_ret
                         mom[c] = (r + rel) / 2.0
 
-            # 动量 × 相位权重
-            scored = {}
-            for c, w in wt.items():
-                m = mom.get(c, 0.0)
-                scored[c] = max(m, 0.0) * w + w * 0.3  # 相位基础分 30% + 动量加权
-            ranked = sorted(scored, key=scored.get, reverse=True)
-            picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
+            # 分阶段选币: 根据减半周期相位调整相位/动量权重(优化4)
+            if phase in ('accumulation', 'pre_halving'):
+                # 赛道相位优先: 熊市筑底/减半预热, 动量噪音大, 信赛道叙事
+                phase_ratio, mom_ratio = 0.7, 0.3
+                scored = {}
+                for c, w in wt.items():
+                    m = mom.get(c, 0.0)
+                    scored[c] = w * phase_ratio + max(m, 0.0) * w * mom_ratio
+                ranked = sorted(scored, key=scored.get, reverse=True)
+                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
+            elif phase == 'euphoria':
+                # 动量优先 + 解耦赛道权重: 牛市狂热期, 冷门赛道也可能涨最猛
+                # 裸动量(不乘w)占主导, 赛道权重仅作小幅加权
+                phase_ratio, mom_ratio = 0.2, 0.8
+                scored = {}
+                for c, w in wt.items():
+                    m = mom.get(c, 0.0)
+                    # euphoria: 裸动量 * 0.8 + 赛道权重 * 0.2 (动量不被赛道权重压制)
+                    scored[c] = max(m, 0.0) * mom_ratio + w * phase_ratio
+                ranked = sorted(scored, key=scored.get, reverse=True)
+                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
+            else:
+                # 均衡(原版): 相位基础分 + 动量加权
+                phase_ratio, mom_ratio = 0.3, 1.0
+                scored = {}
+                for c, w in wt.items():
+                    m = mom.get(c, 0.0)
+                    scored[c] = w * phase_ratio + max(m, 0.0) * w * mom_ratio
+                ranked = sorted(scored, key=scored.get, reverse=True)
+                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
         else:
             ranked = sorted(wt, key=wt.get, reverse=True)
             picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
@@ -336,7 +366,7 @@ COIN_META = {
     # 防御
     'BTC': {'name': 'Bitcoin', 'role': 'defense', 'theme': 'L1公链', 'launch': 2009},
     'ETH': {'name': 'Ethereum', 'role': 'defense', 'theme': 'L1公链', 'launch': 2015},
-    'OKB': {'name': 'OKB', 'role': 'defense', 'theme': '交易所', 'launch': 2018},
+    'OKB': {'name': 'OKB', 'role': 'offense', 'theme': '平台币', 'launch': 2018},
     # L1
     'SOL': {'name': 'Solana', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'ADA': {'name': 'Cardano', 'role': 'offense', 'theme': 'L1公链', 'launch': 2017},
@@ -377,7 +407,6 @@ COIN_META = {
     'PHB': {'name': 'Phoenix', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
     # 模块化
     'TIA': {'name': 'Celestia', 'role': 'offense', 'theme': '模块化', 'launch': 2023},
-    'DYM': {'name': 'Dymension', 'role': 'offense', 'theme': '模块化', 'launch': 2024},
     'PAS': {'name': 'Passthrough', 'role': 'offense', 'theme': '模块化', 'launch': 2024},
     # DePIN
     'HNT': {'name': 'Helium', 'role': 'offense', 'theme': 'DePIN', 'launch': 2019},
@@ -398,7 +427,7 @@ COIN_META = {
     'SECRET': {'name': 'Secret', 'role': 'offense', 'theme': '隐私', 'launch': 2020},
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
-    'MANTRA': {'name': 'MANTRA', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
+    'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     'POLYX': {'name': 'Polymesh', 'role': 'offense', 'theme': 'RWA', 'launch': 2022},
     'RIO': {'name': 'Realio', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
@@ -406,7 +435,6 @@ COIN_META = {
     'GMX': {'name': 'GMX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
     'GRT': {'name': 'The Graph', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
-    'TRB': {'name': 'Tellor', 'role': 'offense', 'theme': '基础设施', 'launch': 2019},
 }
 
 
