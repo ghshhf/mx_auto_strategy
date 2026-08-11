@@ -113,6 +113,11 @@ class TestRunOptimizedTakeProfit(unittest.TestCase):
         self.assertGreater(stats["take_profit_count"], 0,
                            "应至少触发一次止盈")
 
+    def tearDown(self):
+        # 复位 series_proxy 全局, 防止合成面板泄漏污染后续真实引擎测试
+        # (如 test_us_truth 的 run_optimized 会读此全局取 SPY 基准)。
+        ubt.series_proxy = {}
+
 
 class TestRunOptimizedNoRegression(unittest.TestCase):
     """关闭止盈止损时(take_profit_pct=inf, stop_loss_pct=-inf), 结果接近原版。"""
@@ -137,6 +142,10 @@ class TestRunOptimizedNoRegression(unittest.TestCase):
         self.assertEqual(stats["cost_total"], 0.0)
         # NAV 应为正
         self.assertGreater(stats["multiple"], 0)
+
+    def tearDown(self):
+        # 复位 series_proxy 全局, 防止合成面板泄漏污染后续真实引擎测试。
+        ubt.series_proxy = {}
 
 
 class TestUsOptionsShell(unittest.TestCase):
