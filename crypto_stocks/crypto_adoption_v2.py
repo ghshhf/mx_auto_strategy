@@ -135,7 +135,7 @@ THEME_COINS = {
     "DEX":     ['UNI', 'CRV', '1INCH', 'JUP'],
     "平台币":  ['BNB'],
     "链上永续交易所": ['DYDX', 'GMX'],
-    "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
+    "基础设施": ['LINK', 'ENS', 'API3', 'GRT', 'TRB'],
     "AI+加密": ['FET', 'RENDER', 'TAO', 'RNDR', 'AKT', 'PHB'],
     "模块化":  ['TIA', 'DYM', 'PAS'],
     "DePIN":   ['HNT', 'RNDR', 'AKT', 'PEAQ'],
@@ -406,6 +406,7 @@ COIN_META = {
     'GMX': {'name': 'GMX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
     'GRT': {'name': 'The Graph', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
+    'TRB': {'name': 'Tellor', 'role': 'offense', 'theme': '基础设施', 'launch': 2019},
 }
 
 
