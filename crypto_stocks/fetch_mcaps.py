@@ -9,7 +9,7 @@ CG = {
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'UNI': 'uniswap', 'NEAR': 'near', 'APT': 'aptos',
     'ARB': 'arbitrum', 'OP': 'optimism', 'SUI': 'sui', 'FET': 'fetch-ai',
-    'MKR': 'maker', 'AAVE': 'aave', 'TIA': 'celestia', 'SEI': 'sei-network',
+    'MKR': 'maker', 'AAVE': 'aave', 'TIA': 'celestia',
     'IMX': 'immutable-x', 'GRT': 'the-graph', 'FIL': 'filecoin',
     'CRV': 'curve-dao-token', 'LDO': 'lido-dao', 'SNX': 'havven',
     'COMP': 'compound-governance-token', 'DYDX': 'dydx',
@@ -18,7 +18,7 @@ CG = {
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network', 'STRK': 'starknet',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
-    'AKT': 'akash-network', 'MANTA': 'manta-network',
+    'AKT': 'akash-network', 'MANTA': 'manta-network', 'XLM': 'stellar',
     '1INCH': '1inch', 'GMX': 'gmx', 'API3': 'api3',
     'RENDER': 'render-token',
 }

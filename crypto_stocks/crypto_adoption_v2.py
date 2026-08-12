@@ -128,7 +128,7 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'SEI', 'GRAM', 'TRX', 'INJ'],
+    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'GRAM', 'TRX', 'INJ', 'XLM'],
     "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA', 'STRK'],
     "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO', 'JOE'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
@@ -406,12 +406,12 @@ COIN_META = {
     'NEAR': {'name': 'NEAR Protocol', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'APT': {'name': 'Aptos', 'role': 'offense', 'theme': 'L1公链', 'launch': 2022},
     'SUI': {'name': 'Sui', 'role': 'offense', 'theme': 'L1公链', 'launch': 2023},
-    'SEI': {'name': 'Sei', 'role': 'offense', 'theme': 'L1公链', 'launch': 2023},
     # 2026-06-15 TON(Telegram Open Network 原生代币 Toncoin) 经社区投票(81.22%)更名为 Gram(GRAM),
     # 区块链仍叫 The Open Network, 代币 1:1 无迁移/无新合约. Binance 现货对 TONUSDT->GRAMUSDT.
     'GRAM': {'name': 'Gram', 'role': 'offense', 'theme': 'L1公链', 'launch': 2018},
     'TRX': {'name': 'TRON', 'role': 'offense', 'theme': 'L1公链', 'launch': 2017},
     'INJ': {'name': 'Injective', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
+    'XLM': {'name': 'Stellar', 'role': 'offense', 'theme': 'L1公链', 'launch': 2014},
     # L2
     'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},

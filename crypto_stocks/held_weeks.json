@@ -246,12 +246,6 @@
     "sector": "DeFi"
   },
   {
-    "sym": "SEI",
-    "held": 0,
-    "mcap_usd": 270483452,
-    "sector": "L1公链"
-  },
-  {
     "sym": "TIA",
     "held": 0,
     "mcap_usd": 293594202,
@@ -309,6 +303,12 @@
     "sym": "GRAM",
     "held": 0,
     "mcap_usd": null,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "XLM",
+    "held": 0,
+    "mcap_usd": 5479240637,
     "sector": "L1公链"
   }
 ]
