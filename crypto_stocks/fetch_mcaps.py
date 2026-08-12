@@ -16,7 +16,7 @@ CG = {
     'ENS': 'ethereum-name-service', 'GALA': 'gala', 'ZEC': 'zcash',
     'DASH': 'dash', 'AR': 'arweave', 'ILV': 'illuvium',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
-    'TON': 'toncoin', 'STRK': 'starknet',
+    'GRAM': 'the-open-network', 'STRK': 'starknet',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
     'RIO': 'realio-network',
     'BEAM': 'beam', 'AKT': 'akash-network', 'MANTA': 'manta-network',

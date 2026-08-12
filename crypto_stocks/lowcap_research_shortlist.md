@@ -46,7 +46,7 @@
 | UNI | 22.0 | DeFi | Uniswap，蓝筹 DEX 但 held=0 |
 | PAS | N/A | 模块化 | CoinGecko 无数据 |
 | PEAQ | N/A | DePIN | CoinGecko 无数据 |
-| TON | N/A | L1公链 | CoinGecko 无数据 |
+| GRAM | (原 TON, 2026-06-15 更名) | L1公链 | CoinGecko id=the-open-network(原 toncoin 已 404) |
 
 ### B 档：低市值 + 真被选中（held>0，删了会动回测）
 | 代币 | 市值(亿$) | held周 | 赛道 | 备注 |

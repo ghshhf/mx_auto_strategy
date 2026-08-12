@@ -12,6 +12,9 @@ crypto_hist_data.py - 加密历史周K线数据下载 (v2.0, 免费·多源·全
 覆盖:
   - 3 防御币 BTC/ETH/OKB (原 v1.0 逻辑保留, --only 兼容)
   - 47 进攻币 (由 crypto_adoption_v2.COIN_META 自动推导 Binance/OKX 符号)
+  - ⚠ 历史连续性: GRAM(原 TON) 在 Binance 的 GRAMUSDT 仅含 2026-06-15 更名后的周K(~7 周),
+    更名前的 TON 全历史已固化在 data/weekly_adjclose_crypto50*.csv 的 GRAM 列中; 切勿从零重拉 GRAMUSDT,
+    否则会丢失 2021→2026 的 TON 历史. 以后只追加 2026-08-14 之后的新周即可.
   - 上市前自然留空 (交易所无数据即空白, 绝不编造)
 
 加密特殊性:

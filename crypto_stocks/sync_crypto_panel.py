@@ -59,7 +59,7 @@ _CMC_KEY = (os.environ.get('CMC_API_KEY')
 
 # CMC symbol -> id 映射 (56/57 币; PAS 不在 CMC 上)
 # 来源: 2026-08-11 实时查询 pro-api.coinmarketcap.com
-# 注意: RENDER id=5690; TON 现名 GRAM(id=11419)
+# 注意: RENDER id=5690; GRAM(原 TON, 2026-06-15 更名, ticker TON->GRAM, id 不变=11419)
 _CMC_ID_MAP = {
     '1INCH': 8104,   'AAVE': 7278,   'ADA': 2010,    'AKT': 7431,
     'APT': 21794,    'AR': 5632,     'ARB': 11841,   'AVAX': 5805,
@@ -74,7 +74,7 @@ _CMC_ID_MAP = {
     'POLYX': 20362,  'RENDER': 5690, 'RIO': 4166,
     'SEI': 23149,   'SNX': 2586,     'SOL': 5426,
     'STRK': 22691,   'SUI': 20947,   'TAO': 22974,    'TIA': 22861,
-    'TON': 11419,    'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,    'JOE': 11396,
+    'GRAM': 11419,   'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,    'JOE': 11396,
 }
 
 
