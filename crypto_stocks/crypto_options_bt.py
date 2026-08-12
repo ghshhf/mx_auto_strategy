@@ -181,6 +181,17 @@ class CryptoOptionsConfig:
     offense_n_strong: int = 3                # strong市况动态选币数（消融实测: 增加币数→MDD恶化, 保持3）
     offense_n_euphoria: int = 4              # euphoria期扩仓到4（消融最优: 10y+17.5%/5y+2.4%, MDD零代价）
     offense_phase_selection: bool = True     # 分阶段选币(优化4): 按减半相位调整选币策略
+    # ---- 进攻权重模式 (优化: 替代朴素等权) ----
+    # 'equal'  : Top-N 等权 (原版, 默认, 保证基线可复现)
+    # 'score'  : 按选币综合分(赛道相位×动量)归一化加权 -> 高确定性币多拿仓位(动量加权)
+    # 'inv_vol': 逆波动率(风险平价)加权 -> 波动小的币多配, 压集中度风险, 抬 Sharpe/压 MDD
+    offense_weight_mode: str = 'equal'
+    # ---- 选股稳健性 (优化: 防删/加币触发重归一化漂移) ----
+    # 'avail' : 原版, 分母随可用币变化(删币会改剩余币分数, 选股对池子敏感)
+    # 'fixed' : 固定分母(全活跃主题相位和)+ 规范币数, 剩余币分数不随池子变化(选股稳健)
+    #   【2026-08-13 默认翻转为 'fixed'】消融: 全样本 3361→3481x(+3.6%), MDD 不变(-35.9%),
+    #   Sharpe 1.96→1.98, 多窗口 4/5 胜出且 Sharpe 一致向上 -> 真质量改善(非加杠杆), 已采纳为默认。
+    theme_weight_norm: str = 'fixed'
     vol_target: float = None                 # 0.60 可开
     crash_guard: dict = None                 # {'thr':-0.15, 'floor':0.40} 可开（默认关）
 
@@ -982,12 +993,38 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
         valid_off = [c for c in valid_off if c in OPTIONS_AVAILABLE_COINS]
     off_w = {}
     if alloc['offense'] > 0 and valid_off and t_idx >= WARMUP:
-        top = ca2.offense_top_n(year, n=eff_n, valid=set(valid_off),
-                                px=px, as_of=date_t, phase=sel_phase)
+        top, scores = ca2.offense_top_n(year, n=eff_n, valid=set(valid_off),
+                                        px=px, as_of=date_t, phase=sel_phase,
+                                        return_scores=True,
+                                        norm=getattr(cfg, 'theme_weight_norm', 'avail'))
         top = [c for c in top if c in avail][:eff_n]
         if top:
-            each = alloc['offense'] / len(top)
-            off_w = {c: each for c in top}
+            wmode = getattr(cfg, 'offense_weight_mode', 'equal')
+            if wmode == 'score':
+                # 分数加权: 用选币综合分(赛道相位×动量)归一化分配进攻仓, 高确定性币多拿仓位
+                raw = [max(float(scores.get(c, 0.0)), 0.0) for c in top]
+                s_sum = sum(raw)
+                if s_sum > 0:
+                    off_w = {c: alloc['offense'] * (rw / s_sum) for c, rw in zip(top, raw)}
+                else:
+                    each = alloc['offense'] / len(top)
+                    off_w = {c: each for c in top}
+            elif wmode == 'inv_vol':
+                # 逆波动率(风险平价)加权: 近52周收益波动率越小 -> 权重越大, 压小币集中风险
+                inv = []
+                for c in top:
+                    ser = px[c].iloc[max(0, t_idx - 52): t_idx + 1].dropna()
+                    if len(ser) >= 20:
+                        rets = ser.pct_change().dropna()
+                        v = float(rets.std()) if len(rets) else 1.0
+                    else:
+                        v = 1.0
+                    inv.append(1.0 / max(v, 1e-6))
+                s_sum = sum(inv)
+                off_w = {c: alloc['offense'] * (iv / s_sum) for c, iv in zip(top, inv)}
+            else:
+                each = alloc['offense'] / len(top)
+                off_w = {c: each for c in top}
 
     # 山寨相对强度门控: ALT/BTC 比值破 MA => 缩进攻仓 (只用 <=t 数据, 无前视)
     if getattr(cfg, 'alt_rs_gate', False) and off_w:

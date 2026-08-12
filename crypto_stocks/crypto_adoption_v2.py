@@ -228,21 +228,51 @@ def hot_themes_for_year(year):
             if get_adoption(th, year=year)["phase"] in ("accelerating", "early")]
 
 
-def offense_weights_for_year(year, valid=None, mode='theme_first'):
+def offense_weights_for_year(year, valid=None, mode='theme_first', norm='avail'):
     """
     该年所有进攻代币按赛道相位乘子 -> 权重 (归一化).
     复刻 us_adoption.py 的 offense_weights_for_year.
+
+    norm='avail' (默认, 原版):
+        仅统计「有可用币的主题」, 分母=这些主题相位和; 每币除「可用币数」。
+        → 删/加币会触发剩余币重归一化, 改变选股综合分(选股对池子敏感)。
+    norm='fixed' (稳健选股):
+        分母=全部活跃主题(相位>0)的相位和(固定, 不随可用币变化);
+        每币除「主题规范币数」(THEME_COINS 原始长度, 固定)。
+        → 剩余币分数只取决于自身叙事相位+动量, 与池中还剩几个兄弟币无关;
+          选股对删/加币不敏感(防清理池子时的分数漂移)。
     """
     if mode == 'theme_first':
+        # 主题相位权重(仅依赖叙事, 与池子无关)
+        theme_mult = {}
+        for th in THEME_COINS:
+            m = get_adoption(th, year=year)["multiplier"]
+            if m > 0:
+                theme_mult[th] = m
+        if not theme_mult:
+            return None
+        if norm == 'fixed':
+            tot = sum(theme_mult.values())          # 固定分母: 不随可用币变化
+            wt = {}
+            for theme, m in theme_mult.items():
+                share = m / tot
+                csz = len(THEME_COINS[theme])         # 规范币数(固定)
+                if csz <= 0:
+                    continue
+                for c in THEME_COINS[theme]:
+                    if valid and c not in valid:
+                        continue
+                    wt[c] = wt.get(c, 0.0) + share / csz
+            return wt
+        # 原版 avail: 仅统计有可用币的主题, 每币除可用币数
         theme_w = {}
-        for theme, coins in THEME_COINS.items():
-            ad = get_adoption(theme, year=year)
-            m = ad["multiplier"]
-            if m <= 0: continue
-            avail = [c for c in coins if (not valid or c in valid)]
-            if not avail: continue
+        for theme, m in theme_mult.items():
+            avail = [c for c in THEME_COINS[theme] if (not valid or c in valid)]
+            if not avail:
+                continue
             theme_w[theme] = (m, avail)
-        if not theme_w: return None
+        if not theme_w:
+            return None
         tot = sum(v[0] for v in theme_w.values())
         wt = {}
         for theme, (m, coins) in theme_w.items():
@@ -264,7 +294,7 @@ def offense_weights_for_year(year, valid=None, mode='theme_first'):
         return {s: w / tot for s, w in wt.items()} if tot > 0 else None
 
 
-def offense_top_n(year, n=5, valid=None, px=None, as_of=None, phase=None):
+def offense_top_n(year, n=5, valid=None, px=None, as_of=None, phase=None, return_scores=False, norm='avail'):
     """
     从进攻池选出 Top N 代币 (默认5).
     逻辑: 甜区赛道动量 × 相位乘子 排序 -> Top N.
@@ -276,20 +306,30 @@ def offense_top_n(year, n=5, valid=None, px=None, as_of=None, phase=None):
       - 'euphoria': 动量优先 (30%相位 + 70%动量)
         → 牛市狂热期, 跟随资金流向, 动量最强的币最可能继续涨
       - 其他/None: 均衡 (原版逻辑, 相位基础分30% + 动量加权)
+
+    return_scores=True 时返回 (picked_list, scored_dict):
+      scored_dict 含全部候选币的「赛道相位×动量」综合分, 供 _build_target
+      做分数加权(替代朴素等权)使用; 默认 False 维持原 list 返回以兼容既有调用。
     """
     # 1. 获取该年赛道权重
-    wt = offense_weights_for_year(year, valid=valid, mode='theme_first')
+    wt = offense_weights_for_year(year, valid=valid, mode='theme_first', norm=norm)
     if not wt:
-        return []
+        return ([], {}) if return_scores else []
 
-    # 2. 如果有价格数据, 叠加动量
+    # 默认(无价格/短数据): 综合分 = 赛道相位权重
+    scored = dict(wt)
+    picked = sorted(wt, key=wt.get, reverse=True)
+
+    # 2. 有价格数据则叠加动量, 重算综合分
     if px is not None and len(px) > 52:
         mom = {}
         bench = 'BTC'
         idx = None
         if as_of is not None:
-            try: idx = px.index.get_loc(as_of)
-            except: idx = len(px) - 1
+            try:
+                idx = px.index.get_loc(as_of)
+            except Exception:
+                idx = len(px) - 1
         else:
             yr_rows = px[px.index.year == year]
             idx = px.index.get_loc(yr_rows.index[-1]) if len(yr_rows) > 0 else len(px) - 1
@@ -308,40 +348,31 @@ def offense_top_n(year, n=5, valid=None, px=None, as_of=None, phase=None):
             if phase in ('accumulation', 'pre_halving'):
                 # 赛道相位优先: 熊市筑底/减半预热, 动量噪音大, 信赛道叙事
                 phase_ratio, mom_ratio = 0.7, 0.3
-                scored = {}
-                for c, w in wt.items():
-                    m = mom.get(c, 0.0)
-                    scored[c] = w * phase_ratio + max(m, 0.0) * w * mom_ratio
-                ranked = sorted(scored, key=scored.get, reverse=True)
-                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
             elif phase == 'euphoria':
                 # 动量优先 + 解耦赛道权重: 牛市狂热期, 冷门赛道也可能涨最猛
                 # 裸动量(不乘w)占主导, 赛道权重仅作小幅加权
                 phase_ratio, mom_ratio = 0.2, 0.8
-                scored = {}
-                for c, w in wt.items():
-                    m = mom.get(c, 0.0)
-                    # euphoria: 裸动量 * 0.8 + 赛道权重 * 0.2 (动量不被赛道权重压制)
-                    scored[c] = max(m, 0.0) * mom_ratio + w * phase_ratio
-                ranked = sorted(scored, key=scored.get, reverse=True)
-                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
             else:
                 # 均衡(原版): 相位基础分 + 动量加权
                 phase_ratio, mom_ratio = 0.3, 1.0
-                scored = {}
-                for c, w in wt.items():
-                    m = mom.get(c, 0.0)
+            scored = {}
+            for c, w in wt.items():
+                m = mom.get(c, 0.0)
+                if phase == 'euphoria':
+                    # 裸动量 * 0.8 + 赛道权重 * 0.2 (动量不被赛道权重压制)
+                    scored[c] = max(m, 0.0) * mom_ratio + w * phase_ratio
+                else:
                     scored[c] = w * phase_ratio + max(m, 0.0) * w * mom_ratio
-                ranked = sorted(scored, key=scored.get, reverse=True)
-                picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
-        else:
-            ranked = sorted(wt, key=wt.get, reverse=True)
-            picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
-    else:
-        ranked = sorted(wt, key=wt.get, reverse=True)
-        picked = [c for c in ranked if c in (valid or set())][:n] if valid else ranked[:n]
+            picked = sorted(scored, key=scored.get, reverse=True)
 
-    return picked[:n]
+    # 3. 按 valid 过滤 + 取 Top N
+    if valid:
+        picked = [c for c in picked if c in valid]
+    picked = picked[:n]
+
+    if return_scores:
+        return picked, scored
+    return picked
 
 
 def detect_regime(btc_price, btc_ma, params=None):
