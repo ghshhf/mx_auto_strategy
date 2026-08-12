@@ -59,23 +59,22 @@ _CMC_KEY = (os.environ.get('CMC_API_KEY')
 
 # CMC symbol -> id 映射 (56/57 币; PAS 不在 CMC 上)
 # 来源: 2026-08-11 实时查询 pro-api.coinmarketcap.com
-# 注意: RNDR 与 RENDER 共用 id=5690(合并); TON 现名 GRAM(id=11419)
+# 注意: RENDER id=5690; TON 现名 GRAM(id=11419)
 _CMC_ID_MAP = {
     '1INCH': 8104,   'AAVE': 7278,   'ADA': 2010,    'AKT': 7431,
     'APT': 21794,    'AR': 5632,     'ARB': 11841,   'AVAX': 5805,
     'BTC': 1,       'BEAM': 28298,
     'COMP': 5692,    'CRV': 6538,    'DASH': 131,     'DOT': 6636,
-    'DYDX': 28324,   'DYM': 28932,   'ENS': 13855,    'ETH': 1027,
+    'DYDX': 28324,   'ENS': 13855,    'ETH': 1027,
     'FET': 3773,     'FIL': 2280,    'GALA': 7080,    'HNT': 5665,
     'ILV': 8719,     'IMX': 10603,   'JUP': 29210,    'LDO': 8000,
-    'LINK': 1975,    'MANTA': 13631,  'CFG': 4160,      'MATIC': 3890,
+    'LINK': 1975,    'MANTA': 13631,  'CFG': 4160,      'POL': 6690,
     'METIS': 9640,   'MKR': 1518,    'NEAR': 6535,    'OKB': 3897,
     'ONDO': 21159,   'OP': 11840,    'PEAQ': 14588,   'PHB': 13969,
-    'POLYX': 20362,  'RENDER': 5690, 'RIO': 4166,     'RNDR': 5690,
+    'POLYX': 20362,  'RENDER': 5690, 'RIO': 4166,
     'SECRET': 5604,  'SEI': 23149,   'SNX': 2586,     'SOL': 5426,
     'STRK': 22691,   'SUI': 20947,   'TAO': 22974,    'TIA': 22861,
     'TON': 11419,    'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,
-    'TRB': 4944,
 }
 
 

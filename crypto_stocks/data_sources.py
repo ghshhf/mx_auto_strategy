@@ -71,11 +71,11 @@ def align_friday(ts_ms):
 COINGECKO_IDS = {
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'XRP': 'ripple', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
-    'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'MATIC': 'matic-network',
+    'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'ATOM': 'cosmos', 'UNI': 'uniswap', 'LTC': 'litecoin',
     'NEAR': 'near', 'APT': 'aptos', 'ARB': 'arbitrum', 'OP': 'optimism',
     'SUI': 'sui', 'FET': 'fetch-ai', 'MKR': 'maker', 'AAVE': 'aave',
-    'INJ': 'injective', 'TIA': 'celestia', 'SEI': 'sei-network', 'RNDR': 'render-token',
+    'INJ': 'injective', 'TIA': 'celestia', 'SEI': 'sei-network',
     'IMX': 'immutable-x', 'GRT': 'the-graph', 'FIL': 'filecoin', 'CRV': 'curve-dao-token',
     'LDO': 'lido-dao', 'SNX': 'havven', 'COMP': 'compound-governance-token',
     'SAND': 'the-sandbox', 'MANA': 'decentraland',
@@ -83,9 +83,9 @@ COINGECKO_IDS = {
     'DASH': 'dash', 'AR': 'arweave', 'HNT': 'helium', 'ILV': 'illuvium',
     'JUP': 'jupiter', 'TAO': 'bittensor', 'ONDO': 'ondo-finance', 'TON': 'toncoin',
     'STRK': 'starknet', 'METIS': 'metis-token',
-    'MANTRA': 'mantra-dao', 'CFG': 'centrifuge', 'POLYX': 'polymesh', 'PHB': 'phoenix-global',
+    'CFG': 'centrifuge', 'POLYX': 'polymesh', 'PHB': 'phoenix-global',
     'PEAQ': 'peaq', 'RIO': 'realio-network', 'SECRET': 'secret', 'BEAM': 'beam',
-    'DYM': 'dymension', 'AKT': 'akash-network', 'MANTA': 'manta-network',
+    'AKT': 'akash-network', 'MANTA': 'manta-network',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
 }
 
@@ -94,14 +94,14 @@ COINGECKO_IDS = {
 CMC_IDS = {
     '1INCH': 8104, 'AAVE': 7278, 'ADA': 2010, 'AKT': 7431, 'APT': 21794, 'AR': 5632,
     'ARB': 11841, 'AVAX': 5805, 'BTC': 1, 'BEAM': 28298,
-    'COMP': 5692, 'CRV': 6538, 'DASH': 131, 'DOT': 6636, 'DYDX': 28324, 'DYM': 28932,
+    'COMP': 5692, 'CRV': 6538, 'DASH': 131, 'DOT': 6636, 'DYDX': 28324,
     'ENS': 13855, 'ETH': 1027, 'FET': 3773, 'FIL': 2280, 'GALA': 7080, 'HNT': 5665,
     'ILV': 8719, 'IMX': 10603, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'MANTA': 13631,
-    'MANTRA': 39611, 'CFG': 4160, 'MATIC': 3890, 'METIS': 9640, 'MKR': 1518, 'NEAR': 6535,
+    'CFG': 4160, 'POL': 6690, 'METIS': 9640, 'MKR': 1518, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'PEAQ': 14588, 'PHB': 13969,
-    'POLYX': 20362, 'RENDER': 5690, 'RIO': 4166, 'RNDR': 5690, 'SECRET': 5604,
+    'POLYX': 20362, 'RENDER': 5690, 'RIO': 4166, 'SECRET': 5604,
     'SEI': 23149, 'SNX': 2586, 'SOL': 5426, 'STRK': 22691, 'SUI': 20947, 'TAO': 22974,
-    'TIA': 22861, 'TON': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437, 'TRB': 4944,
+    'TIA': 22861, 'TON': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
 }
 
 

@@ -109,10 +109,10 @@
 | 赛道 | 渗透率 | 相位 | 权重乘子 | 代表代币 |
 |---|---|---|---|---|
 | L1 公链 | 25% | 加速 | 1.35x | SOL, ADA, AVAX, NEAR |
-| L2 扩容 | 18% | 加速 | 1.35x | ARB, OP, MATIC |
+| L2 扩容 | 18% | 加速 | 1.35x | ARB, OP, POL |
 | DeFi | 12% | 加速 | 1.35x | UNI, LINK, AAVE, MKR |
 | AI+加密 | 3% | 加速 | 1.35x | FET, RENDER, TAO |
-| 模块化 | 8% | 加速 | 1.35x | TIA, DYM |
+| 模块化 | 8% | 加速 | 1.35x | TIA, PAS |
 | RWA | 1% | 加速 | 1.35x | ONDO, POLYX |
 | DePIN | 2% | 早期 | 1.15x | HNT, PEAQ |
 | 存储 | 5% | 早期 | 1.15x | FIL, AR |

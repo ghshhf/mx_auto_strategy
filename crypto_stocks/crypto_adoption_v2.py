@@ -129,16 +129,16 @@ def defense_weights():
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'SEI', 'TON', 'TRX'],
-    "L2扩容":  ['ARB', 'OP', 'MATIC', 'MANTA', 'STRK', 'METIS'],
+    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA', 'STRK', 'METIS'],
     "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'CRV', '1INCH', 'JUP'],
     "平台币":  ['BNB', 'OKB'],
     "链上永续交易所": ['DYDX', 'GMX'],
     "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
-    "AI+加密": ['FET', 'RENDER', 'TAO', 'RNDR', 'AKT', 'PHB'],
+    "AI+加密": ['FET', 'RENDER', 'TAO', 'AKT', 'PHB'],
     "模块化":  ['TIA', 'PAS'],
-    "DePIN":   ['HNT', 'RNDR', 'AKT', 'PEAQ'],
+    "DePIN":   ['HNT', 'RENDER', 'AKT', 'PEAQ'],
     "存储":    ['FIL', 'AR'],
     "GameFi":  ['GALA', 'IMX', 'ILV', 'BEAM'],
     "隐私":    ['ZEC', 'DASH', 'SECRET'],
@@ -381,7 +381,7 @@ COIN_META = {
     # L2
     'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
-    'MATIC': {'name': 'Polygon', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
+    'POL':   {'name': 'Polygon (POL)', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
     'MANTA': {'name': 'Manta', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     'STRK': {'name': 'StarkNet', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     'METIS': {'name': 'Metis', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
@@ -399,10 +399,9 @@ COIN_META = {
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     # AI
-    'FET': {'name': 'Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
+    'FET': {'name': 'ASI / Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
     'RENDER': {'name': 'Render', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
     'TAO': {'name': 'Bittensor', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2023},
-    'RNDR': {'name': 'Render Token', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
     'AKT': {'name': 'Akash', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
     'PHB': {'name': 'Phoenix', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
     # 模块化
