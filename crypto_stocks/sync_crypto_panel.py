@@ -63,7 +63,7 @@ _CMC_KEY = (os.environ.get('CMC_API_KEY')
 _CMC_ID_MAP = {
     '1INCH': 8104,   'AAVE': 7278,   'ADA': 2010,    'AKT': 7431,
     'APT': 21794,    'AR': 5632,     'ARB': 11841,   'AVAX': 5805,
-    'BTC': 1,       'BEAM': 28298,
+    'BTC': 1,
     'COMP': 5692,    'CRV': 6538,    'DASH': 131,     'DOT': 6636,
     'DYDX': 28324,   'ENS': 13855,    'ETH': 1027,
     'FET': 3773,     'FIL': 2280,    'GALA': 7080,
@@ -71,7 +71,7 @@ _CMC_ID_MAP = {
     'LINK': 1975,    'MANTA': 13631,  'CFG': 4160,      'POL': 6690,
     'MKR': 1518,    'NEAR': 6535,    'OKB': 3897,
     'ONDO': 21159,   'OP': 11840,
-    'POLYX': 20362,  'RENDER': 5690, 'RIO': 4166,
+    'POLYX': 20362,  'RENDER': 5690,
     'SEI': 23149,   'SNX': 2586,     'SOL': 5426,
     'STRK': 22691,   'SUI': 20947,   'TAO': 22974,    'TIA': 22861,
     'GRAM': 11419,   'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,    'JOE': 11396,

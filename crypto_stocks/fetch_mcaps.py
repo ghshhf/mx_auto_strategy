@@ -18,9 +18,8 @@ CG = {
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network', 'STRK': 'starknet',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
-    'RIO': 'realio-network',
-    'BEAM': 'beam', 'AKT': 'akash-network', 'MANTA': 'manta-network',
-    '1INCH': '1inch', 'GMX': 'gmx', 'PAS': 'pas', 'API3': 'api3',
+    'AKT': 'akash-network', 'MANTA': 'manta-network',
+    '1INCH': '1inch', 'GMX': 'gmx', 'API3': 'api3',
     'RENDER': 'render-token',
 }
 

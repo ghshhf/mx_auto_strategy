@@ -137,12 +137,12 @@ THEME_COINS = {
     "链上永续交易所": ['DYDX', 'GMX'],
     "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
     "AI+加密": ['FET', 'RENDER', 'TAO', 'AKT'],
-    "模块化":  ['TIA', 'PAS'],
+    "模块化":  ['TIA'],
     "DePIN":   ['RENDER', 'AKT'],
     "存储":    ['FIL', 'AR'],
-    "GameFi":  ['GALA', 'IMX', 'ILV', 'BEAM'],
+    "GameFi":  ['GALA', 'IMX', 'ILV'],
     "隐私":    ['ZEC', 'DASH'],
-    "RWA":     ['ONDO', 'CFG', 'POLYX', 'RIO'],
+    "RWA":     ['ONDO', 'CFG', 'POLYX'],
 }
 
 # 去重后的进攻代币列表 (48个)
@@ -420,15 +420,15 @@ COIN_META = {
     'STRK': {'name': 'StarkNet', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     # DeFi
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
+    'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'MKR': {'name': 'Maker', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
     'SNX': {'name': 'Synthetix', 'role': 'offense', 'theme': 'DeFi', 'launch': 2018},
     'COMP': {'name': 'Compound', 'role': 'offense', 'theme': 'DeFi', 'launch': 2018},
     'CRV': {'name': 'Curve', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
+    'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     '1INCH': {'name': '1inch', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'ENS': {'name': 'ENS', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
+    'ENS': {'name': 'ENS', 'role': 'offense', 'theme': '基础设施', 'launch': 2021},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     'JOE': {'name': 'Trader Joe (JOE)', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
@@ -439,7 +439,6 @@ COIN_META = {
     'AKT': {'name': 'Akash', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
     # 模块化
     'TIA': {'name': 'Celestia', 'role': 'offense', 'theme': '模块化', 'launch': 2023},
-    'PAS': {'name': 'Passthrough', 'role': 'offense', 'theme': '模块化', 'launch': 2024},
     # DePIN
     # 存储
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
@@ -448,7 +447,6 @@ COIN_META = {
     'GALA': {'name': 'Gala Games', 'role': 'offense', 'theme': 'GameFi', 'launch': 2020},
     'IMX': {'name': 'Immutable', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     'ILV': {'name': 'Illuvium', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
-    'BEAM': {'name': 'Beam', 'role': 'offense', 'theme': 'GameFi', 'launch': 2022},
     # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
     'DASH': {'name': 'Dash', 'role': 'offense', 'theme': '隐私', 'launch': 2014},
@@ -456,7 +454,6 @@ COIN_META = {
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     'POLYX': {'name': 'Polymesh', 'role': 'offense', 'theme': 'RWA', 'launch': 2022},
-    'RIO': {'name': 'Realio', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'GMX': {'name': 'GMX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},

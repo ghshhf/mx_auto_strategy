@@ -84,7 +84,6 @@ COINGECKO_IDS = {
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
     'STRK': 'starknet',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
-    'RIO': 'realio-network', 'BEAM': 'beam',
     'AKT': 'akash-network', 'MANTA': 'manta-network',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
 }
@@ -99,7 +98,7 @@ CMC_IDS = {
     'ILV': 8719, 'IMX': 10603, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'MANTA': 13631,
     'CFG': 4160, 'POL': 6690, 'MKR': 1518, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646,
-    'POLYX': 20362, 'RENDER': 5690, 'RIO': 4166,
+    'POLYX': 20362, 'RENDER': 5690,
     'SEI': 23149, 'SNX': 2586, 'SOL': 5426, 'STRK': 22691, 'SUI': 20947, 'TAO': 22974,
     'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437, 'JOE': 11396,
 }

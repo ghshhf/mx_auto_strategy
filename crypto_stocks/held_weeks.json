@@ -138,12 +138,6 @@
     "sector": "L1公链"
   },
   {
-    "sym": "BEAM",
-    "held": 0,
-    "mcap_usd": 1617894,
-    "sector": "GameFi"
-  },
-  {
     "sym": "RIO",
     "held": 0,
     "mcap_usd": 3381421,
@@ -310,12 +304,6 @@
     "held": 0,
     "mcap_usd": 2198987664,
     "sector": "DeFi"
-  },
-  {
-    "sym": "PAS",
-    "held": 0,
-    "mcap_usd": null,
-    "sector": "模块化"
   },
   {
     "sym": "GRAM",

@@ -112,7 +112,7 @@
 | L2 扩容 | 18% | 加速 | 1.35x | ARB, OP, POL |
 | DeFi | 12% | 加速 | 1.35x | UNI, LINK, AAVE, MKR |
 | AI+加密 | 3% | 加速 | 1.35x | FET, RENDER, TAO |
-| 模块化 | 8% | 加速 | 1.35x | TIA, PAS |
+| 模块化 | 8% | 加速 | 1.35x | TIA |
 | RWA | 1% | 加速 | 1.35x | ONDO, POLYX |
 | DePIN | 2% | 早期 | 1.15x | RENDER, AKT |
 | 存储 | 5% | 早期 | 1.15x | FIL, AR |
