@@ -140,7 +140,7 @@ THEME_COINS = {
     "模块化":  ['TIA', 'PAS'],
     "DePIN":   ['HNT', 'RNDR', 'AKT', 'PEAQ'],
     "存储":    ['FIL', 'AR'],
-    "GameFi":  ['AXS', 'GALA', 'IMX', 'ILV', 'BEAM'],
+    "GameFi":  ['GALA', 'IMX', 'ILV', 'BEAM'],
     "隐私":    ['ZEC', 'DASH', 'SECRET'],
     "RWA":     ['ONDO', 'CFG', 'POLYX', 'RIO'],
 }
@@ -415,7 +415,6 @@ COIN_META = {
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
     'AR': {'name': 'Arweave', 'role': 'offense', 'theme': '存储', 'launch': 2020},
     # GameFi
-    'AXS': {'name': 'Axie Infinity', 'role': 'offense', 'theme': 'GameFi', 'launch': 2018},
     'GALA': {'name': 'Gala Games', 'role': 'offense', 'theme': 'GameFi', 'launch': 2020},
     'IMX': {'name': 'Immutable', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     'ILV': {'name': 'Illuvium', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},

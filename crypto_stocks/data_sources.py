@@ -78,7 +78,7 @@ COINGECKO_IDS = {
     'INJ': 'injective', 'TIA': 'celestia', 'SEI': 'sei-network', 'RNDR': 'render-token',
     'IMX': 'immutable-x', 'GRT': 'the-graph', 'FIL': 'filecoin', 'CRV': 'curve-dao-token',
     'LDO': 'lido-dao', 'SNX': 'havven', 'COMP': 'compound-governance-token',
-    'AXS': 'axie-infinity', 'SAND': 'the-sandbox', 'MANA': 'decentraland',
+    'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'ENS': 'ethereum-name-service', 'GALA': 'gala', 'ZEC': 'zcash',
     'DASH': 'dash', 'AR': 'arweave', 'HNT': 'helium', 'ILV': 'illuvium',
     'JUP': 'jupiter', 'TAO': 'bittensor', 'ONDO': 'ondo-finance', 'TON': 'toncoin',
@@ -93,7 +93,7 @@ COINGECKO_IDS = {
 # 迁移完成后旧文件里的副本可删)。
 CMC_IDS = {
     '1INCH': 8104, 'AAVE': 7278, 'ADA': 2010, 'AKT': 7431, 'APT': 21794, 'AR': 5632,
-    'ARB': 11841, 'AVAX': 5805, 'AXS': 6783, 'BTC': 1, 'BEAM': 28298,
+    'ARB': 11841, 'AVAX': 5805, 'BTC': 1, 'BEAM': 28298,
     'COMP': 5692, 'CRV': 6538, 'DASH': 131, 'DOT': 6636, 'DYDX': 28324, 'DYM': 28932,
     'ENS': 13855, 'ETH': 1027, 'FET': 3773, 'FIL': 2280, 'GALA': 7080, 'HNT': 5665,
     'ILV': 8719, 'IMX': 10603, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'MANTA': 13631,
