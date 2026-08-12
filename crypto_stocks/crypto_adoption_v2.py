@@ -128,20 +128,20 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'SEI', 'TON', 'TRX'],
-    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA', 'STRK', 'METIS'],
-    "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO'],
+    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'SEI', 'TON', 'TRX', 'INJ'],
+    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA', 'STRK'],
+    "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO', 'JOE'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'CRV', '1INCH', 'JUP'],
+    "DEX":     ['UNI', 'CRV', '1INCH', 'JUP', 'JOE'],
     "平台币":  ['BNB', 'OKB'],
     "链上永续交易所": ['DYDX', 'GMX'],
     "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
-    "AI+加密": ['FET', 'RENDER', 'TAO', 'AKT', 'PHB'],
+    "AI+加密": ['FET', 'RENDER', 'TAO', 'AKT'],
     "模块化":  ['TIA', 'PAS'],
-    "DePIN":   ['HNT', 'RENDER', 'AKT', 'PEAQ'],
+    "DePIN":   ['RENDER', 'AKT'],
     "存储":    ['FIL', 'AR'],
     "GameFi":  ['GALA', 'IMX', 'ILV', 'BEAM'],
-    "隐私":    ['ZEC', 'DASH', 'SECRET'],
+    "隐私":    ['ZEC', 'DASH'],
     "RWA":     ['ONDO', 'CFG', 'POLYX', 'RIO'],
 }
 
@@ -409,13 +409,13 @@ COIN_META = {
     'SEI': {'name': 'Sei', 'role': 'offense', 'theme': 'L1公链', 'launch': 2023},
     'TON': {'name': 'Toncoin', 'role': 'offense', 'theme': 'L1公链', 'launch': 2018},
     'TRX': {'name': 'TRON', 'role': 'offense', 'theme': 'L1公链', 'launch': 2017},
+    'INJ': {'name': 'Injective', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
     # L2
     'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'POL':   {'name': 'Polygon (POL)', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
     'MANTA': {'name': 'Manta', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     'STRK': {'name': 'StarkNet', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
-    'METIS': {'name': 'Metis', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     # DeFi
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
@@ -429,18 +429,16 @@ COIN_META = {
     'ENS': {'name': 'ENS', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
+    'JOE': {'name': 'Trader Joe (JOE)', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
     # AI
     'FET': {'name': 'ASI / Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
     'RENDER': {'name': 'Render', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
     'TAO': {'name': 'Bittensor', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2023},
     'AKT': {'name': 'Akash', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
-    'PHB': {'name': 'Phoenix', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2021},
     # 模块化
     'TIA': {'name': 'Celestia', 'role': 'offense', 'theme': '模块化', 'launch': 2023},
     'PAS': {'name': 'Passthrough', 'role': 'offense', 'theme': '模块化', 'launch': 2024},
     # DePIN
-    'HNT': {'name': 'Helium', 'role': 'offense', 'theme': 'DePIN', 'launch': 2019},
-    'PEAQ': {'name': 'Peaq', 'role': 'offense', 'theme': 'DePIN', 'launch': 2024},
     # 存储
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
     'AR': {'name': 'Arweave', 'role': 'offense', 'theme': '存储', 'launch': 2020},
@@ -452,7 +450,6 @@ COIN_META = {
     # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
     'DASH': {'name': 'Dash', 'role': 'offense', 'theme': '隐私', 'launch': 2014},
-    'SECRET': {'name': 'Secret', 'role': 'offense', 'theme': '隐私', 'launch': 2020},
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},

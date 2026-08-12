@@ -1,0 +1,326 @@
+[
+  {
+    "sym": "ETH",
+    "held": 461,
+    "mcap_usd": 227700091283,
+    "sector": "防御"
+  },
+  {
+    "sym": "BTC",
+    "held": 461,
+    "mcap_usd": 1272877019519,
+    "sector": "防御"
+  },
+  {
+    "sym": "BNB",
+    "held": 115,
+    "mcap_usd": 81256261664,
+    "sector": "平台币"
+  },
+  {
+    "sym": "LINK",
+    "held": 95,
+    "mcap_usd": 6556740222,
+    "sector": "基础设施"
+  },
+  {
+    "sym": "ADA",
+    "held": 90,
+    "mcap_usd": 6832507968,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "SOL",
+    "held": 50,
+    "mcap_usd": 44207309906,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "OKB",
+    "held": 33,
+    "mcap_usd": 2023717359,
+    "sector": "平台币"
+  },
+  {
+    "sym": "POL",
+    "held": 22,
+    "mcap_usd": 798872406,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "CRV",
+    "held": 16,
+    "mcap_usd": 415515705,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "OP",
+    "held": 15,
+    "mcap_usd": 204850207,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "RENDER",
+    "held": 15,
+    "mcap_usd": 653053026,
+    "sector": "AI+加密"
+  },
+  {
+    "sym": "ZEC",
+    "held": 14,
+    "mcap_usd": 8386083289,
+    "sector": "隐私"
+  },
+  {
+    "sym": "SUI",
+    "held": 13,
+    "mcap_usd": 2789826971,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "CFG",
+    "held": 12,
+    "mcap_usd": 80000000.0,
+    "sector": "RWA"
+  },
+  {
+    "sym": "DASH",
+    "held": 12,
+    "mcap_usd": 390506364,
+    "sector": "隐私"
+  },
+  {
+    "sym": "AVAX",
+    "held": 12,
+    "mcap_usd": 2744308581,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "FIL",
+    "held": 5,
+    "mcap_usd": 570766443,
+    "sector": "存储"
+  },
+  {
+    "sym": "AAVE",
+    "held": 5,
+    "mcap_usd": 1375593427,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "AR",
+    "held": 4,
+    "mcap_usd": 116994785,
+    "sector": "存储"
+  },
+  {
+    "sym": "TRX",
+    "held": 4,
+    "mcap_usd": 31853881779,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "FET",
+    "held": 3,
+    "mcap_usd": 299924134,
+    "sector": "AI+加密"
+  },
+  {
+    "sym": "ARB",
+    "held": 1,
+    "mcap_usd": 518685116,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "INJ",
+    "held": 1,
+    "mcap_usd": null,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "BEAM",
+    "held": 0,
+    "mcap_usd": 1617894,
+    "sector": "GameFi"
+  },
+  {
+    "sym": "RIO",
+    "held": 0,
+    "mcap_usd": 3381421,
+    "sector": "RWA"
+  },
+  {
+    "sym": "METIS",
+    "held": 0,
+    "mcap_usd": 18929335,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "ILV",
+    "held": 0,
+    "mcap_usd": 24062144,
+    "sector": "GameFi"
+  },
+  {
+    "sym": "API3",
+    "held": 0,
+    "mcap_usd": 27343542,
+    "sector": "基础设施"
+  },
+  {
+    "sym": "MANTA",
+    "held": 0,
+    "mcap_usd": 27347692,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "POLYX",
+    "held": 0,
+    "mcap_usd": 39350418,
+    "sector": "RWA"
+  },
+  {
+    "sym": "GMX",
+    "held": 0,
+    "mcap_usd": 68501633,
+    "sector": "链上永续交易所"
+  },
+  {
+    "sym": "GALA",
+    "held": 0,
+    "mcap_usd": 83818471,
+    "sector": "GameFi"
+  },
+  {
+    "sym": "IMX",
+    "held": 0,
+    "mcap_usd": 98991881,
+    "sector": "GameFi"
+  },
+  {
+    "sym": "DYDX",
+    "held": 0,
+    "mcap_usd": 100000000.0,
+    "sector": "链上永续交易所"
+  },
+  {
+    "sym": "1INCH",
+    "held": 0,
+    "mcap_usd": 116631221,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "SNX",
+    "held": 0,
+    "mcap_usd": 116947231,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "GRT",
+    "held": 0,
+    "mcap_usd": 149041564,
+    "sector": "基础设施"
+  },
+  {
+    "sym": "AKT",
+    "held": 0,
+    "mcap_usd": 154834858,
+    "sector": "AI+加密"
+  },
+  {
+    "sym": "STRK",
+    "held": 0,
+    "mcap_usd": 157661528,
+    "sector": "L2扩容"
+  },
+  {
+    "sym": "COMP",
+    "held": 0,
+    "mcap_usd": 162517981,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "ENS",
+    "held": 0,
+    "mcap_usd": 173600493,
+    "sector": "基础设施"
+  },
+  {
+    "sym": "LDO",
+    "held": 0,
+    "mcap_usd": 241564325,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "SEI",
+    "held": 0,
+    "mcap_usd": 270483452,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "TIA",
+    "held": 0,
+    "mcap_usd": 293594202,
+    "sector": "模块化"
+  },
+  {
+    "sym": "APT",
+    "held": 0,
+    "mcap_usd": 479210739,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "JUP",
+    "held": 0,
+    "mcap_usd": 620000000.0,
+    "sector": "DEX"
+  },
+  {
+    "sym": "MKR",
+    "held": 0,
+    "mcap_usd": 1200000000.0,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "DOT",
+    "held": 0,
+    "mcap_usd": 1332702453,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "ONDO",
+    "held": 0,
+    "mcap_usd": 1628242052,
+    "sector": "RWA"
+  },
+  {
+    "sym": "TAO",
+    "held": 0,
+    "mcap_usd": 1922628777,
+    "sector": "AI+加密"
+  },
+  {
+    "sym": "NEAR",
+    "held": 0,
+    "mcap_usd": 2149039018,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "UNI",
+    "held": 0,
+    "mcap_usd": 2198987664,
+    "sector": "DeFi"
+  },
+  {
+    "sym": "PAS",
+    "held": 0,
+    "mcap_usd": null,
+    "sector": "模块化"
+  },
+  {
+    "sym": "TON",
+    "held": 0,
+    "mcap_usd": null,
+    "sector": "L1公链"
+  }
+]
