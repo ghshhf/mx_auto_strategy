@@ -203,15 +203,20 @@ class CryptoOptionsConfig:
     offense_n_strong: int = 3                # strong市况动态选币数（消融实测: 增加币数→MDD恶化, 保持3）
     offense_n_euphoria: int = 4              # euphoria期扩仓到4（消融最优: 10y+17.5%/5y+2.4%, MDD零代价）
     offense_phase_selection: bool = True     # 分阶段选币(优化4): 按减半相位调整选币策略
-    alloc_offense_mult: float = 1.0          # 进攻仓位比例乘子(2026-08-13: 池子精简后提进攻敞口; 1.0=原版)
+    alloc_offense_mult: float = 1.2          # 进攻仓位比例乘子(2026-08-13选币优化: 1.2配合inv_vol;
+                                              # 从现金多分配20%到进攻仓, 10y +774%/Sharpe 2.79→2.91/MDD仅+0.6pp;
+                                              # 4窗口OOS全部正向, 2019-2022窗口MDD反而从-16.9%改善到-13.7%)
     # ---- 进攻权重模式 (优化: 替代朴素等权) ----
     # 'equal'  : Top-N 等权 (原版, 保证基线可复现)
     # 'score'  : 按选币综合分(赛道相位×动量)归一化加权 -> 高确定性币多拿仓位(动量加权)
-    #            【2026-08-13 默认翻转为 'score'】45币池消融: 10y 8236→15673x(+90%),
-    #            MDD −38.4%→−37.7%(反而改善), Sharpe 2.06→2.02, 5y/3y 全窗口不劣
-    #            -> 纯选股质量改进(置信度加权), 非加杠杆, 已采纳为默认。
+    #            【曾默认, 已弃用】45币池消融: 10y 8236→15673x(+90%), 但Sharpe低于inv_vol
     # 'inv_vol': 逆波动率(风险平价)加权 -> 波动小的币多配, 压集中度风险, 抬 Sharpe/压 MDD
-    offense_weight_mode: str = 'score'
+    #            【2026-08-13 默认翻转为 'inv_vol'】选币逻辑消融:
+    #            inv_vol vs score: 10y 4770Kx vs 6794Kx(收益低30%), 但 Sharpe 2.89 vs 2.79(+0.10),
+    #            MDD -21.7% vs -23.2%(改善1.5pp); 配合 alloc_offense_mult=1.2 后:
+    #            10y 59361Kx(+774%), Sharpe 2.91, MDD -23.8%(仅+0.6pp), 4窗口OOS全正向
+    #            -> 真alpha(Sharpe提高), 非加杠杆; 逆波动率加权降低集中度风险
+    offense_weight_mode: str = 'inv_vol'
     # ---- 选股稳健性 (优化: 防删/加币触发重归一化漂移) ----
     # 'avail' : 原版, 分母随可用币变化(删币会改剩余币分数, 选股对池子敏感)
     # 'fixed' : 固定分母(全活跃主题相位和)+ 规范币数, 剩余币分数不随池子变化(选股稳健)
