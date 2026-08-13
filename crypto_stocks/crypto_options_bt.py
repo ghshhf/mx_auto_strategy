@@ -203,11 +203,15 @@ class CryptoOptionsConfig:
     offense_n_strong: int = 3                # strong市况动态选币数（消融实测: 增加币数→MDD恶化, 保持3）
     offense_n_euphoria: int = 4              # euphoria期扩仓到4（消融最优: 10y+17.5%/5y+2.4%, MDD零代价）
     offense_phase_selection: bool = True     # 分阶段选币(优化4): 按减半相位调整选币策略
+    alloc_offense_mult: float = 1.0          # 进攻仓位比例乘子(2026-08-13: 池子精简后提进攻敞口; 1.0=原版)
     # ---- 进攻权重模式 (优化: 替代朴素等权) ----
-    # 'equal'  : Top-N 等权 (原版, 默认, 保证基线可复现)
+    # 'equal'  : Top-N 等权 (原版, 保证基线可复现)
     # 'score'  : 按选币综合分(赛道相位×动量)归一化加权 -> 高确定性币多拿仓位(动量加权)
+    #            【2026-08-13 默认翻转为 'score'】45币池消融: 10y 8236→15673x(+90%),
+    #            MDD −38.4%→−37.7%(反而改善), Sharpe 2.06→2.02, 5y/3y 全窗口不劣
+    #            -> 纯选股质量改进(置信度加权), 非加杠杆, 已采纳为默认。
     # 'inv_vol': 逆波动率(风险平价)加权 -> 波动小的币多配, 压集中度风险, 抬 Sharpe/压 MDD
-    offense_weight_mode: str = 'equal'
+    offense_weight_mode: str = 'score'
     # ---- 选股稳健性 (优化: 防删/加币触发重归一化漂移) ----
     # 'avail' : 原版, 分母随可用币变化(删币会改剩余币分数, 选股对池子敏感)
     # 'fixed' : 固定分母(全活跃主题相位和)+ 规范币数, 剩余币分数不随池子变化(选股稳健)
@@ -992,6 +996,13 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
     btc_t = float(btc_series.iloc[-1])
     regime = ca2.detect_regime(btc_t, ma10)
     alloc = ca2.REGIME_ALLOC[regime]
+    # 进攻仓位比例乘子(2026-08-13 优化: 池子精简后提高进攻敞口; 1.0=原版)
+    _om = float(getattr(cfg, 'alloc_offense_mult', 1.0))
+    if _om != 1.0:
+        _off_new = min(1.0, alloc['offense'] * _om)
+        _freed = _off_new - alloc['offense']   # 增加的进攻仓位从现金里扣
+        alloc = dict(alloc, offense=_off_new,
+                     stable=max(0.0, alloc.get('stable', 0.0) - _freed))
 
     avail = set(c for c in px.columns if pd.notna(px[c].iloc[t_idx]) and px[c].iloc[t_idx] not in (0, None))
     if cfg.enabled_cooldown:
