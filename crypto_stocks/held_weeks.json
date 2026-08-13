@@ -162,18 +162,6 @@
     "sector": "基础设施"
   },
   {
-    "sym": "MANTA",
-    "held": 0,
-    "mcap_usd": 27347692,
-    "sector": "L2扩容"
-  },
-  {
-    "sym": "POLYX",
-    "held": 0,
-    "mcap_usd": 39350418,
-    "sector": "RWA"
-  },
-  {
     "sym": "GMX",
     "held": 0,
     "mcap_usd": 68501633,
@@ -186,34 +174,10 @@
     "sector": "GameFi"
   },
   {
-    "sym": "IMX",
-    "held": 0,
-    "mcap_usd": 98991881,
-    "sector": "GameFi"
-  },
-  {
     "sym": "DYDX",
     "held": 0,
     "mcap_usd": 100000000.0,
     "sector": "链上永续交易所"
-  },
-  {
-    "sym": "1INCH",
-    "held": 0,
-    "mcap_usd": 116631221,
-    "sector": "DeFi"
-  },
-  {
-    "sym": "SNX",
-    "held": 0,
-    "mcap_usd": 116947231,
-    "sector": "DeFi"
-  },
-  {
-    "sym": "GRT",
-    "held": 0,
-    "mcap_usd": 149041564,
-    "sector": "基础设施"
   },
   {
     "sym": "AKT",
@@ -222,17 +186,16 @@
     "sector": "AI+加密"
   },
   {
-    "sym": "SUI",  {
+    "sym": "SUI",
+    "held": 0,
+    "mcap_usd": 2785146264,
+    "sector": "L1公链"
+  },
+  {
     "sym": "COMP",
     "held": 0,
     "mcap_usd": 162517981,
     "sector": "DeFi"
-  },
-  {
-    "sym": "ENS",
-    "held": 0,
-    "mcap_usd": 173600493,
-    "sector": "基础设施"
   },
   {
     "sym": "LDO",
@@ -259,9 +222,9 @@
     "sector": "DEX"
   },
   {
-    "sym": "MKR",
+    "sym": "SKY",
     "held": 0,
-    "mcap_usd": 1200000000.0,
+    "mcap_usd": 1300000000.0,
     "sector": "DeFi"
   },
   {
@@ -311,5 +274,11 @@
     "held": 0,
     "mcap_usd": 3470081388,
     "sector": "L1公链"
+  },
+  {
+    "sym": "RON",
+    "held": 0,
+    "mcap_usd": null,
+    "sector": "GameFi"
   }
 ]

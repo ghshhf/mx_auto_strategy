@@ -129,20 +129,20 @@ def defense_weights():
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'GRAM', 'TRX', 'INJ', 'XLM', 'LTC'],
-    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA'],
-    "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO', 'JOE'],
+    "L2扩容":  ['ARB', 'OP', 'POL'],
+    "DeFi":    ['UNI', 'AAVE', 'SKY', 'COMP', 'CRV', 'LDO', 'JOE'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'CRV', '1INCH', 'JUP', 'JOE'],
+    "DEX":     ['UNI', 'CRV', 'JUP', 'JOE'],
     "平台币":  ['BNB', 'OKB'],
     "链上永续交易所": ['DYDX', 'GMX'],
-    "基础设施": ['LINK', 'ENS', 'API3', 'GRT'],
+    "基础设施": ['LINK', 'API3'],
     "AI+加密": ['FET', 'RENDER', 'TAO', 'AKT'],
     "模块化":  ['TIA'],
     "DePIN":   ['RENDER', 'AKT'],
     "存储":    ['FIL', 'AR'],
-    "GameFi":  ['GALA', 'IMX', 'ILV'],
+    "GameFi":  ['GALA', 'ILV', 'RON'],
     "隐私":    ['ZEC', 'DASH'],
-    "RWA":     ['ONDO', 'CFG', 'POLYX'],
+    "RWA":     ['ONDO', 'CFG'],
 }
 
 # 去重后的进攻代币列表 (48个)
@@ -151,8 +151,8 @@ for _coins in THEME_COINS.values():
     for c in _coins:
         _OFFENSE_SET.add(c)
 OFFENSE_COINS = sorted(_OFFENSE_SET)
-# 确保总数
-assert len(OFFENSE_COINS) >= 45, f"进攻代币不足 45, 当前 {len(OFFENSE_COINS)}"
+# 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 引擎每轮只选 3-4 个)
+assert len(OFFENSE_COINS) >= 40, f"进攻代币不足 40, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -417,18 +417,14 @@ COIN_META = {
     'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'POL':   {'name': 'Polygon (POL)', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
-    'MANTA': {'name': 'Manta', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     # DeFi
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'MKR': {'name': 'Maker', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
-    'SNX': {'name': 'Synthetix', 'role': 'offense', 'theme': 'DeFi', 'launch': 2018},
+    'SKY': {'name': 'Sky', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
     'COMP': {'name': 'Compound', 'role': 'offense', 'theme': 'DeFi', 'launch': 2018},
     'CRV': {'name': 'Curve', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
-    '1INCH': {'name': '1inch', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'ENS': {'name': 'ENS', 'role': 'offense', 'theme': '基础设施', 'launch': 2021},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     'JOE': {'name': 'Trader Joe (JOE)', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
@@ -445,7 +441,7 @@ COIN_META = {
     'AR': {'name': 'Arweave', 'role': 'offense', 'theme': '存储', 'launch': 2020},
     # GameFi
     'GALA': {'name': 'Gala Games', 'role': 'offense', 'theme': 'GameFi', 'launch': 2020},
-    'IMX': {'name': 'Immutable', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
+    'RON': {'name': 'Ronin', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     'ILV': {'name': 'Illuvium', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
@@ -453,12 +449,10 @@ COIN_META = {
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
-    'POLYX': {'name': 'Polymesh', 'role': 'offense', 'theme': 'RWA', 'launch': 2022},
     # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'GMX': {'name': 'GMX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
-    'GRT': {'name': 'The Graph', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
 }
 
 
