@@ -150,12 +150,6 @@
     "sector": "L2扩容"
   },
   {
-    "sym": "ILV",
-    "held": 0,
-    "mcap_usd": 24062144,
-    "sector": "GameFi"
-  },
-  {
     "sym": "API3",
     "held": 0,
     "mcap_usd": 27343542,
@@ -178,12 +172,6 @@
     "held": 0,
     "mcap_usd": 100000000.0,
     "sector": "链上永续交易所"
-  },
-  {
-    "sym": "AKT",
-    "held": 0,
-    "mcap_usd": 154834858,
-    "sector": "AI+加密"
   },
   {
     "sym": "SUI",
@@ -280,5 +268,11 @@
     "held": 0,
     "mcap_usd": null,
     "sector": "GameFi"
+  },
+  {
+    "sym": "XRP",
+    "held": 0,
+    "mcap_usd": null,
+    "sector": "支付链"
   }
 ]

@@ -14,13 +14,13 @@ CG = {
     'CRV': 'curve-dao-token', 'LDO': 'lido-dao',
     'COMP': 'compound-governance-token', 'DYDX': 'dydx',
     'GALA': 'gala', 'ZEC': 'zcash',
-    'DASH': 'dash', 'AR': 'arweave', 'ILV': 'illuvium',
+    'DASH': 'dash', 'AR': 'arweave',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network',
     'CFG': 'centrifuge',
-    'AKT': 'akash-network', 'XLM': 'stellar', 'LTC': 'litecoin',
+    'XLM': 'stellar', 'LTC': 'litecoin',
     'GMX': 'gmx', 'API3': 'api3',
-    'RENDER': 'render-token', 'RON': 'ronin',
+    'RENDER': 'render-token', 'RON': 'ronin', 'XRP': 'ripple',
 }
 
 # 读取面板实际币种

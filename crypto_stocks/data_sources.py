@@ -80,23 +80,23 @@ COINGECKO_IDS = {
     'LDO': 'lido-dao', 'COMP': 'compound-governance-token',
     'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'GALA': 'gala', 'ZEC': 'zcash',
-    'DASH': 'dash', 'AR': 'arweave', 'ILV': 'illuvium',
+    'DASH': 'dash', 'AR': 'arweave',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',     'GRAM': 'the-open-network',
     'CFG': 'centrifuge',
-    'AKT': 'akash-network', 'XLM': 'stellar',
+    'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
 }
 
 # CMC id 映射 (从 sync_crypto_panel._CMC_ID_MAP 迁来, 自此以本模块为唯一真相源;
 # 迁移完成后旧文件里的副本可删)。
 CMC_IDS = {
-    'AAVE': 7278, 'ADA': 2010, 'AKT': 7431, 'APT': 21794, 'AR': 5632,
+    'AAVE': 7278, 'ADA': 2010, 'APT': 21794, 'AR': 5632,
     'ARB': 11841, 'AVAX': 5805, 'BTC': 1, 'XLM': 512,
     'COMP': 5692, 'CRV': 6538, 'DASH': 131, 'DOT': 6636, 'DYDX': 28324,
     'ETH': 1027, 'FET': 3773, 'FIL': 2280, 'GALA': 7080,
-    'ILV': 8719, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'LTC': 2,
+    'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'LTC': 2,
     'CFG': 4160, 'POL': 6690, 'SKY': 33038, 'NEAR': 6535,
-    'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646,
+    'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'RON': 14101,
     'SOL': 5426, 'SUI': 20947, 'TAO': 22974,
     'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437, 'JOE': 11396,

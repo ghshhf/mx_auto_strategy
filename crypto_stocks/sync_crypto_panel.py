@@ -61,20 +61,20 @@ _CMC_KEY = (os.environ.get('CMC_API_KEY')
 # 来源: 2026-08-11 实时查询 pro-api.coinmarketcap.com
 # 注意: RENDER id=5690; GRAM(原 TON, 2026-06-15 更名, ticker TON->GRAM, id 不变=11419)
 _CMC_ID_MAP = {
-    'AAVE': 7278,   'ADA': 2010,    'AKT': 7431,
+    'AAVE': 7278,   'ADA': 2010,
     'APT': 21794,    'AR': 5632,     'ARB': 11841,   'AVAX': 5805,
     'BTC': 1,       'XLM': 512,
     'COMP': 5692,    'CRV': 6538,    'DASH': 131,     'DOT': 6636,
     'DYDX': 28324,    'ETH': 1027,
     'FET': 3773,     'FIL': 2280,    'GALA': 7080,
-    'ILV': 8719,     'JUP': 29210,    'LDO': 8000,
+    'JUP': 29210,    'LDO': 8000,
     'LINK': 1975,    'LTC': 2,       'CFG': 4160,      'POL': 6690,
     'SKY': 33038,    'NEAR': 6535,    'OKB': 3897,
     'ONDO': 21159,   'OP': 11840,
     'RENDER': 5690,    'RON': 14101,
     'SOL': 5426,
     'SUI': 20947,   'TAO': 22974,    'TIA': 22861,
-    'GRAM': 11419,   'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,    'JOE': 11396,
+    'GRAM': 11419,   'TRX': 1958,    'UNI': 7083,     'ZEC': 1437,    'JOE': 11396,   'XRP': 52,
 }
 
 
