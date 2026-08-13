@@ -1,0 +1,150 @@
+{
+  "base_old": {
+    "10y": {
+      "multiple": 11881,
+      "mdd": -0.32,
+      "sharpe": 2.0
+    },
+    "5y": {
+      "multiple": 8.0,
+      "mdd": -0.312,
+      "sharpe": 1.27
+    },
+    "3y": {
+      "multiple": 2.9,
+      "mdd": -0.31,
+      "sharpe": 1.22
+    }
+  },
+  "base_new": {
+    "10y": {
+      "multiple": 6793600,
+      "mdd": -0.232,
+      "sharpe": 2.79
+    },
+    "5y": {
+      "multiple": 20.5,
+      "mdd": -0.235,
+      "sharpe": 1.61
+    },
+    "3y": {
+      "multiple": 4.4,
+      "mdd": -0.166,
+      "sharpe": 1.54
+    }
+  },
+  "params": [
+    {
+      "param": "take_profit_pct",
+      "old": "2.0",
+      "new": "1.5",
+      "delta_10y_pct": 54,
+      "delta_mdd_pp": 2.4,
+      "delta_sharpe": 0.08
+    },
+    {
+      "param": "call_strike_otm",
+      "old": "1.5",
+      "new": "1.7",
+      "delta_10y_pct": 29,
+      "delta_mdd_pp": 0.0,
+      "delta_sharpe": 0.03
+    },
+    {
+      "param": "short_proactive_ma",
+      "old": "20",
+      "new": "15",
+      "delta_10y_pct": 3,
+      "delta_mdd_pp": -0.7,
+      "delta_sharpe": -0.03
+    },
+    {
+      "param": "alt_rs_ma",
+      "old": "22",
+      "new": "26",
+      "delta_10y_pct": 79,
+      "delta_mdd_pp": 0.0,
+      "delta_sharpe": 0.14
+    },
+    {
+      "param": "ovl_mom26",
+      "old": "1.5",
+      "new": "1.0",
+      "delta_10y_pct": 73,
+      "delta_mdd_pp": 0.0,
+      "delta_sharpe": -0.02
+    },
+    {
+      "param": "short_cycle_exit_ma",
+      "old": "40",
+      "new": "30",
+      "delta_10y_pct": 86,
+      "delta_mdd_pp": 1.1,
+      "delta_sharpe": 0.05
+    },
+    {
+      "param": "put_bigcap_crash",
+      "old": "0.12",
+      "new": "0.08",
+      "delta_10y_pct": 548,
+      "delta_mdd_pp": 3.1,
+      "delta_sharpe": 0.4
+    },
+    {
+      "param": "put_bigcap_payout_ratio",
+      "old": "0.3",
+      "new": "0.5",
+      "delta_10y_pct": 106,
+      "delta_mdd_pp": 0.7,
+      "delta_sharpe": 0.13
+    },
+    {
+      "param": "put_cost_weekly_bps",
+      "old": "30",
+      "new": "80",
+      "delta_10y_pct": -74,
+      "delta_mdd_pp": -4.8,
+      "delta_sharpe": -0.24
+    },
+    {
+      "param": "halving_derisk_offense_first",
+      "old": "False",
+      "new": "True",
+      "delta_10y_pct": -64,
+      "delta_mdd_pp": -20.9,
+      "delta_sharpe": -0.22
+    },
+    {
+      "param": "halving_crash_risk_scale",
+      "old": "0.0",
+      "new": "0.3",
+      "delta_10y_pct": -8,
+      "delta_mdd_pp": 1.1,
+      "delta_sharpe": -0.01
+    },
+    {
+      "param": "put_single_crash",
+      "old": "0.3",
+      "new": "0.2",
+      "delta_10y_pct": 17,
+      "delta_mdd_pp": 2.5,
+      "delta_sharpe": 0.04
+    },
+    {
+      "param": "ovl_premium_mult",
+      "old": "2.0",
+      "new": "3.0",
+      "delta_10y_pct": 29,
+      "delta_mdd_pp": 0.0,
+      "delta_sharpe": 0.04
+    },
+    {
+      "param": "short_proactive_cooldown",
+      "old": "13",
+      "new": "10",
+      "delta_10y_pct": 17,
+      "delta_mdd_pp": -14.7,
+      "delta_sharpe": -0.03
+    }
+  ]
+}
