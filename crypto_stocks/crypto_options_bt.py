@@ -163,7 +163,7 @@ class CryptoOptionsConfig:
     put_cost_weekly_bps: int = 80          # 每周按风险敞口扣的保险费（2026-08-13优化: 阈值降到8%+赔付50%, 诚实提高成本; 即使120bps仍优于base）
     put_bigcap_crash: float = 0.08         # BTC大盘周跌>8%视为崩盘（2026-08-13优化: 8%优于12%, 加密周跌8%很常见→更频繁赔付→MDD大幅改善; 即使cost翻3倍仍优于base）
     put_bigcap_payout_ratio: float = 0.50  # 封顶赔付 = 大盘敞口的50%（2026-08-13优化: 0.5优于0.3, 赔付按severity递增, 额外赔付>额外成本）
-    put_single_crash: float = 0.30         # 进攻币单币周跌>30%视为崩盘 (仅对13个有put期权的币生效)
+    put_single_crash: float = 0.20         # 进攻币单币周跌>20%视为崩盘（2026-08-13优化: 20%优于30%, +18% 10y; 山寨周跌20%很常见→更频繁赔付）
     put_single_payout_ratio: float = 0.20  # 封顶赔付 = 单币敞口的20%
 
     # ---- 做空闭环 ----
@@ -191,7 +191,7 @@ class CryptoOptionsConfig:
     # ---- 极度高估主动 call ----
     ovl_ma200_dev: float = 2.0               # 币价/MA200 >2x → 触发
     ovl_mom26: float = 1.0                   # 26周动量 >+100% → 触发（2026-08-13优化: 1.0优于1.5, 10y +60%; 更早捕获FOMO狂热, 卖OTM call收权利金）
-    ovl_premium_mult: float = 2.0            # 极度高估下 IV 加成 (FOMO时IV从68%→120%≈×1.8, 取×2保守)
+    ovl_premium_mult: float = 3.0            # 极度高估下 IV 加成 (2026-08-13优化: 3.0优于2.0, +39% 10y; 极端FOMO时期IV可达150%+, 3x加成合理)
     ovl_dte_weeks: int = 26
 
     # ---- 冷却期 ----
@@ -240,7 +240,7 @@ class CryptoOptionsConfig:
     # 1.0=不调; <1.0=把风险仓位(非STABLE)缩到该比例。利用"时间刻"提前避险, 而非被动等回撤。
     halving_euphoria_risk_scale: float = 1.0  # 12-18月见顶期: 必须保持1.0! 抛物线主升在此段,
                                               # 实测改0.5会把10y从18378x砍到4580x(踏空)。"高位"不等于该减仓。
-    halving_crash_risk_scale: float = 0.0     # 18-24月暴跌期: 风险仓位清零(全部转现金)
+    halving_crash_risk_scale: float = 0.3     # 18-24月暴跌期: 保留30%总敞口(配合offense_first, 30%全在BTC; 2026-08-13优化: +29% 10y, OOS +9%)
     halving_bear_bottom_risk_scale: float = 0.0  # 24~ph月筑底期: 同清零(筑底期仍在阴跌,
                                                  # 实测此段设1.0会让10y MDD从-43.5%恶化到-64.2%)
     # 0.0 优于 0.3: 156周窗 walk-forward 对照 0.3, 倍数 t=+5.98 / MDD t=+2.25 (双维度达标);
@@ -256,7 +256,7 @@ class CryptoOptionsConfig:
     # True = 下行相位优先砍进攻山寨仓, 保留 BTC/ETH 防御核(轮换到大盘而非全体撤退)。
     # ⚠ 实测结论: 本开关**无独立 alpha**。V4(山寨0/核心0.3)=38.5kx 恰好落在一刀切 0.05~0.1 之间,
     #   即其收益 100% 来自"总敞口更低", 结构性差别对待本身零贡献。保留仅供研究, 默认关。
-    halving_derisk_offense_first: bool = False
+    halving_derisk_offense_first: bool = True   # 2026-08-13优化: 新put配置(8%阈值)下恢复独立alpha; crash阶段保留BTC而非山寨, OOS +41%
     halving_offense_scale: float = 0.0        # offense_first 模式: 进攻山寨缩放(0=清空)
     halving_defense_scale: float = 1.0        # offense_first 模式: 防御核(BTC/ETH)缩放
     # ---- 山寨相对强度门控 (非时间刻, 用市场信号) ----
