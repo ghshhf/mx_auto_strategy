@@ -1,0 +1,54 @@
+{
+  "generated": "2026-08-13 07:59",
+  "pool": "current 50 coins",
+  "ab": [
+    {
+      "mode": "all",
+      "window": "10y",
+      "multiple": 21663.6,
+      "cagr": 1.7086,
+      "mdd": -0.3691,
+      "sharpe": 2.008
+    },
+    {
+      "mode": "all",
+      "window": "5y",
+      "multiple": 8.193,
+      "cagr": 0.5229,
+      "mdd": -0.3691,
+      "sharpe": 1.276
+    },
+    {
+      "mode": "all",
+      "window": "3y",
+      "multiple": 2.552,
+      "cagr": 0.3666,
+      "mdd": -0.3634,
+      "sharpe": 1.096
+    },
+    {
+      "mode": "held",
+      "window": "10y",
+      "multiple": 10676.737,
+      "cagr": 1.5239,
+      "mdd": -0.3635,
+      "sharpe": 1.917
+    },
+    {
+      "mode": "held",
+      "window": "5y",
+      "multiple": 6.047,
+      "cagr": 0.4332,
+      "mdd": -0.3356,
+      "sharpe": 1.147
+    },
+    {
+      "mode": "held",
+      "window": "3y",
+      "multiple": 2.56,
+      "cagr": 0.3681,
+      "mdd": -0.3297,
+      "sharpe": 1.103
+    }
+  ]
+}

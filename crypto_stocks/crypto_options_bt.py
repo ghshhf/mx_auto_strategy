@@ -48,12 +48,15 @@ DEFENSE_CORE = ('BTC', 'ETH')   # 防御核(ca2.defense_weights 口径), 差别�
 _ALT_RS_CACHE = {}
 
 
-def _alt_rs_ratio(px):
-    """山寨等权指数 / BTC 的相对强度序列。每周等权收益累乘, 只用当周有数据的币 → 无前视。"""
-    key = (id(px), len(px.columns), len(px))
+def _alt_rs_ratio(px, cols=None):
+    """山寨相对强度序列(等权篮 / BTC)。cols=None 用全面板山寨(原版); 传子集则只在该子集上算。
+    只用 <=t 数据 → 无前视。"""
+    if cols is None:
+        cols = [c for c in px.columns if c not in DEFENSE_CORE and c != STABLE]
+    key = (id(px), tuple(cols))
     if key in _ALT_RS_CACHE:
         return _ALT_RS_CACHE[key]
-    alts = [c for c in px.columns if c not in DEFENSE_CORE and c != STABLE]
+    alts = [c for c in cols if c in px.columns and c != STABLE and c not in DEFENSE_CORE]
     if not alts or 'BTC' not in px.columns:
         s = pd.Series(1.0, index=px.index)
     else:
@@ -63,6 +66,25 @@ def _alt_rs_ratio(px):
         s = idx / btc
     _ALT_RS_CACHE[key] = s
     return s
+
+
+def _timing_cols(px, cfg, prev_w=None):
+    """返回 alt_rs 时机篮子的列(list) 或 None(用全面板)。
+    'all'  = 原版全面板(默认, 基线可复现)
+    'held' = 上一周实际持仓的进攻币(非STABLE/非防御核); 死/占位币从不被选入 →
+             删/加它不再移动减仓时机(解耦"持仓宇宙"与"时机宇宙", 用户论点:
+             我研究的币才该驱动时机, 池里死重币的噪声不该拖累好币的择时)。
+             持仓进攻币 <3 时回退全面板(避免信号不稳, 如崩盘周清仓)。
+    """
+    if getattr(cfg, 'alt_rs_universe', 'all') != 'held':
+        return None
+    if not prev_w:
+        return None
+    held = [c for c, v in prev_w.items()
+            if v and v > 0 and c not in DEFENSE_CORE and c != STABLE and c in px.columns]
+    if len(held) < 3:
+        return None
+    return held
 MA200_WINDOW = 200   # MA200≈4年(周频)，用来算长期偏离度
 MOM26_WINDOW = 26    # 半年动量，用来检测FOMO狂热
 
@@ -244,6 +266,14 @@ class CryptoOptionsConfig:
     alt_rs_ma: int = 22                       # ALT/BTC 比值的 N 周均线(网格扫描最优: 22 vs 20, +18.8% 10y, MDD零代价)
     alt_rs_scale: float = 0.0                 # 走弱时进攻仓缩到该比例
     alt_rs_to_defense: bool = True            # True=释放权重转防御核(轮换BTC); False=转现金(实测转BTC更优)
+    # ---- 时机信号篮子(2026-08-13 优化: 解耦"持仓宇宙"与"时机宇宙") ----
+    # 原版 alt_rs_gate 用全面板等权平均算 ALT/BTC 强度, 含死重/占位币(从没涨过的) →
+    # 这些币的 ~0 收益拉偏减仓时机, 且池子增删随机移动信号(STRK删→−16.2%)。
+    # 'all'    = 原版全面板等权(默认, 基线可复现)
+    # 'active' = 排除全样本周收益波动率低于阈值的"死/平"币(只用已知特性, 非后视),
+    #            时机只由真实有市场行为的币驱动 → 增删币不再随机扰动减仓时机。
+    alt_rs_universe: str = 'all'             # 'all'=原版全面板(默认) | 'held'=时机只按上周实际持仓的进攻币算
+    alt_rs_verbose: bool = False              # True=打印 held 模式持仓篮(避免批量扫描刷屏)
     # ---- 山寨回升抄底信号 (bear_bottom期) ----
     # 山寨周期与BTC减半同步但有偏差: 本轮山寨在 post-halving 7.3月就见顶, 比 BTC 早 9.9 月。
     # bear_bottom期按时间刻已清零, 但山寨可能在筑底末期提前回升(ALT/BTC 突破MA)。
@@ -448,12 +478,13 @@ class WeekRecord:
     assigned_count: int = 0            # 本周被行权数
     ovl_count: int = 0                 # 本周高估主动call数
     cooldown_locked: int = 0           # 本周被冷却禁买数
+    held: dict = None                  # 本周持仓快照(record_holdings=True 时记录, 诊断用)
 
 
 # ========== 主回测引擎 ==========
 def run_bt(px, cfg_dict=None, label='V6_options', start=None,
            cycle_overlay=False, cycle_tilt=None, cycle_weights=None, cycle_asym=None,
-           return_recs=False):
+           return_recs=False, record_holdings=False):
     cfg = CryptoOptionsConfig(**(cfg_dict or {}))
     # 默认 tilt 从 specs.ENGINE_TILT["crypto"] 读取(让规格成为权威); 关闭 cycles 时不导入。
     if cycle_tilt is None:
@@ -531,7 +562,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                     # 逻辑: 筑底末期山寨可能提前走强(ALT/BTC>MA), 此时恢复半仓抄底
                     # 而非死等 pre_halving 时间刻(该层在 ph_start=31月才恢复满仓)
                     if getattr(cfg, 'alt_rs_recovery', False) and t >= cfg.alt_rs_recovery_ma:
-                        _rs = _alt_rs_ratio(px)
+                        _tk = _timing_cols(px, cfg, w)
+                        _rs = _alt_rs_ratio(px, _tk)
                         _cur = _rs.iloc[t]
                         _mav = _rs.iloc[t - cfg.alt_rs_recovery_ma + 1: t + 1].mean()
                         if pd.notna(_cur) and pd.notna(_mav) and _cur > _mav:
@@ -540,7 +572,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         # ---- 1. 用上周权重 + 做空仓位 算本周组合收益 ----
         if w is None:
             built = _build_target(px, t, cfg, coin_state, sectors,
-                                  cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt)
+                                  cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt, prev_w=w)
             if built is None:
                 nav[t] = nav[t - 1]
                 recs.append(rec); continue
@@ -822,7 +854,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
                 rec.cooldown_locked += 1
 
         built = _build_target(px, t, cfg, coin_state, sectors,
-                              cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt)
+                              cyc_scale_fn=_cyc_fn, cycle_tilt=cycle_tilt, prev_w=w)
         if built is None:
             recs.append(rec); continue
         target, regime = built
@@ -908,6 +940,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         cost = turnover * cfg.cost_bps
         nav[t] *= (1.0 - cost)
         w = target
+        if record_holdings:
+            rec.held = dict(w)
         rec.nav = nav[t]
         recs.append(rec)
 
@@ -947,7 +981,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
 
 
 def _build_target(px, t_idx, cfg, coin_state, sectors,
-                 cyc_scale_fn=None, cycle_tilt=0.5):
+                 cyc_scale_fn=None, cycle_tilt=0.5, prev_w=None):
     """构造 t_idx 的目标权重 (防御+进攻+稳定币)。严格只用<=t数据；冷却期的币不选入。"""
     date_t = px.index[t_idx]
     year = date_t.year
@@ -1030,7 +1064,8 @@ def _build_target(px, t_idx, cfg, coin_state, sectors,
     if getattr(cfg, 'alt_rs_gate', False) and off_w:
         _ma = int(getattr(cfg, 'alt_rs_ma', 20))
         if t_idx >= _ma:
-            _rs = _alt_rs_ratio(px)
+            _tk = _timing_cols(px, cfg, prev_w)
+            _rs = _alt_rs_ratio(px, _tk)
             _cur = _rs.iloc[t_idx]
             _mav = _rs.iloc[t_idx - _ma + 1: t_idx + 1].mean()
             if pd.notna(_cur) and pd.notna(_mav) and _cur < _mav:
