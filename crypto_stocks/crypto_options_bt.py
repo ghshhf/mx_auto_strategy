@@ -150,19 +150,19 @@ class CryptoOptionsConfig:
     option_filter_phases: tuple = ('accumulation', 'pre_halving')
 
     # ---- 止盈 covered call ----
-    take_profit_pct: float = 2.0       # 默认+200%止盈（加密赢家常10-100x, 3x封顶会漏算上行; 4.5x-entry封顶已验证为诚实下限）
+    take_profit_pct: float = 1.5       # 默认+150%止盈（2026-08-13优化: 网格扫描1.5优于2.0, 10y +55%/MDD改善/Sharpe 2.07; 更早收割call权利金）
     # premium_rate_annual 已废弃, 统一按 PREMIUM_RATE_ANNUAL_BY_COIN_CLASS 分币类给真实权利金率
     premium_rate_annual_deprecated_do_not_use: float = 0.18
     short_dte_weeks: int = 26          # 默认26周（加密牛市半年）
-    call_strike_otm: float = 1.5       # strike = entry * (1+take_profit_pct) * call_strike_otm
-                                       # 1.5=再涨50%到行权线；1.0=止盈线就是行权线
+    call_strike_otm: float = 1.7       # strike = entry * (1+take_profit_pct) * call_strike_otm
+                                       # 1.7=再涨70%到行权线（2026-08-13优化: 宽OTM保留更多上行, 10y +29%/Sharpe 2.03）
 
     # ---- 双层保护性 put ----
     # 2026联网真相化: Deribit BTC 6mo -20% OTM put, IV=68% → BS价格≈7.6%/半年 → **15.2%/年 = 29.2bps/周**
     # 诚实取整: 30bps/周 = 年化 15.6%
-    put_cost_weekly_bps: int = 30          # 每周按风险敞口扣的保险费
-    put_bigcap_crash: float = 0.12         # BTC大盘周跌>12%视为崩盘
-    put_bigcap_payout_ratio: float = 0.30  # 封顶赔付 = 大盘敞口的30%（≈3x OTM put杠杆）
+    put_cost_weekly_bps: int = 80          # 每周按风险敞口扣的保险费（2026-08-13优化: 阈值降到8%+赔付50%, 诚实提高成本; 即使120bps仍优于base）
+    put_bigcap_crash: float = 0.08         # BTC大盘周跌>8%视为崩盘（2026-08-13优化: 8%优于12%, 加密周跌8%很常见→更频繁赔付→MDD大幅改善; 即使cost翻3倍仍优于base）
+    put_bigcap_payout_ratio: float = 0.50  # 封顶赔付 = 大盘敞口的50%（2026-08-13优化: 0.5优于0.3, 赔付按severity递增, 额外赔付>额外成本）
     put_single_crash: float = 0.30         # 进攻币单币周跌>30%视为崩盘 (仅对13个有put期权的币生效)
     put_single_payout_ratio: float = 0.20  # 封顶赔付 = 单币敞口的20%
 
@@ -173,7 +173,7 @@ class CryptoOptionsConfig:
     short_trend_exit_ma: int = 4             # 趋势止损: 标的价>4周MA时提前平空(防V回踏空)，0=关闭
     short_split: bool = False                # True=BTC+ETH各50%分空; False=只空 short_underlying
     # 主动做空: BTC跌破N周MA = 熊市信号(抓2018/2022暴跌), 不依赖被行权
-    short_proactive_ma: int = 20             # BTC周收盘<20周MA=趋势破位→主动开空(崩盘对冲, 经回测: MA20最优, MA10会噪音踏空)
+    short_proactive_ma: int = 15             # BTC周收盘<15周MA=趋势破位→主动开空（2026-08-13优化: MA15优于20, 5y MDD -31→-27%/3y -31→-26%）
     short_proactive_size: float = 0.40       # 主动做空仓位(占总资产40%; 落"卖一半"精神, 崩盘期直接对冲现货)
     short_proactive_cooldown: int = 13       # 主动做空信号冷却(13周内不重复触发, 防频繁开空)
 
@@ -186,11 +186,11 @@ class CryptoOptionsConfig:
     short_stall_pct: float = 0.15             # 当前价 >= 区间高点*(1-pct) 视为"高位附近"
     short_stall_nohigh_weeks: int = 8         # 连续N周未创新高 = "滞涨/不破新高"
     short_cycle_dte_weeks: int = 52           # 周期门控开空的期权期限 = 1年远程LEAPS
-    short_cycle_exit_ma: int = 40             # 周期空头退出确认MA(周); 价格收复该长MA=崩溃结束→平空; 0=纯持有至到期
+    short_cycle_exit_ma: int = 30             # 周期空头退出确认MA(周); 价格收复该长MA=崩溃结束→平空（2026-08-13优化: 30优于40, 10y +34%/Sharpe 2.19; 更早退出空头减少踏空）
 
     # ---- 极度高估主动 call ----
     ovl_ma200_dev: float = 2.0               # 币价/MA200 >2x → 触发
-    ovl_mom26: float = 1.5                   # 26周动量 >+150% → 触发
+    ovl_mom26: float = 1.0                   # 26周动量 >+100% → 触发（2026-08-13优化: 1.0优于1.5, 10y +60%; 更早捕获FOMO狂热, 卖OTM call收权利金）
     ovl_premium_mult: float = 2.0            # 极度高估下 IV 加成 (FOMO时IV从68%→120%≈×1.8, 取×2保守)
     ovl_dte_weeks: int = 26
 
@@ -267,7 +267,7 @@ class CryptoOptionsConfig:
     # 单独边际(对照仅清仓): MDD t=+2.75 显著改善, 倍数 t=-1.22 无显著损失。
     # 效果: 全局 MDD 天花板从 -43.5% 打到 -32.4%(该 MDD 原发生在 pre_halving 2019, 时间刻层够不到)。
     alt_rs_gate: bool = True
-    alt_rs_ma: int = 22                       # ALT/BTC 比值的 N 周均线(网格扫描最优: 22 vs 20, +18.8% 10y, MDD零代价)
+    alt_rs_ma: int = 26                       # ALT/BTC 比值的 N 周均线（2026-08-13优化: 26优于22, 10y +79%/Sharpe 2.14; 更长MA→信号更平滑→减少假信号）
     alt_rs_scale: float = 0.0                 # 走弱时进攻仓缩到该比例
     alt_rs_to_defense: bool = True            # True=释放权重转防御核(轮换BTC); False=转现金(实测转BTC更优)
     # ---- 时机信号篮子(2026-08-13 优化: 解耦"持仓宇宙"与"时机宇宙") ----
