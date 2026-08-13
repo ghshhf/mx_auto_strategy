@@ -8,7 +8,7 @@ CG = {
     'BNB': 'binancecoin', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'UNI': 'uniswap', 'NEAR': 'near', 'APT': 'aptos',
-    'ARB': 'arbitrum', 'OP': 'optimism', 'SUI': 'sui', 'FET': 'fetch-ai',
+    'ARB': 'arbitrum', 'OP': 'optimism', 'SUI': 'sui', 'GLM': 'golem',
     'SKY': 'sky', 'AAVE': 'aave', 'TIA': 'celestia',
     'FIL': 'filecoin',
     'CRV': 'curve-dao-token', 'LDO': 'lido-dao',
@@ -19,7 +19,7 @@ CG = {
     'GRAM': 'the-open-network',
     'CFG': 'centrifuge',
     'XLM': 'stellar', 'LTC': 'litecoin',
-    'GMX': 'gmx', 'API3': 'api3',
+    'API3': 'api3',
     'RENDER': 'render-token', 'RON': 'ronin', 'XRP': 'ripple',
 }
 

@@ -120,12 +120,6 @@
     "sector": "L1公链"
   },
   {
-    "sym": "FET",
-    "held": 3,
-    "mcap_usd": 299924134,
-    "sector": "AI+加密"
-  },
-  {
     "sym": "ARB",
     "held": 1,
     "mcap_usd": 518685116,
@@ -154,12 +148,6 @@
     "held": 0,
     "mcap_usd": 27343542,
     "sector": "基础设施"
-  },
-  {
-    "sym": "GMX",
-    "held": 0,
-    "mcap_usd": 68501633,
-    "sector": "链上永续交易所"
   },
   {
     "sym": "GALA",
@@ -274,5 +262,11 @@
     "held": 0,
     "mcap_usd": null,
     "sector": "支付链"
+  },
+  {
+    "sym": "GLM",
+    "held": 0,
+    "mcap_usd": null,
+    "sector": "AI+加密"
   }
 ]
