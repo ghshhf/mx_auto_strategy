@@ -26,8 +26,8 @@ THEME_STOCKS = {
     "网络安全":    ["CRWD", "ZS", "PANW", "FTNT"],
     "机器人":      ["ISRG", "TER"],
     "Fintech":    ["MA", "PYPL", "COIN", "AXP", "V", "NU"],
-    "电商互联网":   ["META", "BABA", "BKNG", "DASH", "SPOT", "MELI", "SE", "SHOP"],
-    "流媒体娱乐":   ["NFLX"],
+    "电商互联网":   ["META", "BKNG", "DASH", "SPOT", "MELI", "SE", "SHOP"],
+    "流媒体娱乐":   ["NFLX", "DIS"],
     "算力基础设施":  ["EQIX", "VRT"],
     "前沿科技":     ["AAPL", "HOOD"],
 }
