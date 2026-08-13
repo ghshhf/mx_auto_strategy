@@ -1,0 +1,84 @@
+{
+  "generated": "2026-08-13 07:32",
+  "note": "halving_OFF=关BTC减半日历减仓(基线); halving_ON=开(比特币周期时间刻减仓)",
+  "windows": [
+    {
+      "window": "10y",
+      "mode": "halving_OFF",
+      "halving_cycle_enabled": false,
+      "multiple": 7930.107,
+      "cagr": 1.4501,
+      "mdd": -0.4437,
+      "sharpe": 1.739,
+      "btc_buyhold": 108.831,
+      "start": "2016-08-11",
+      "data_range": "2016-08-12~2026-08-07",
+      "n_weeks": 522
+    },
+    {
+      "window": "10y",
+      "mode": "halving_ON",
+      "halving_cycle_enabled": true,
+      "multiple": 21663.6,
+      "cagr": 1.7086,
+      "mdd": -0.3691,
+      "sharpe": 2.008,
+      "btc_buyhold": 108.831,
+      "start": "2016-08-11",
+      "data_range": "2016-08-12~2026-08-07",
+      "n_weeks": 522
+    },
+    {
+      "window": "5y",
+      "mode": "halving_OFF",
+      "halving_cycle_enabled": false,
+      "multiple": 3.268,
+      "cagr": 0.2672,
+      "mdd": -0.4279,
+      "sharpe": 0.796,
+      "btc_buyhold": 1.298,
+      "start": "2021-08-11",
+      "data_range": "2021-08-13~2026-08-07",
+      "n_weeks": 261
+    },
+    {
+      "window": "5y",
+      "mode": "halving_ON",
+      "halving_cycle_enabled": true,
+      "multiple": 8.193,
+      "cagr": 0.5229,
+      "mdd": -0.3691,
+      "sharpe": 1.276,
+      "btc_buyhold": 1.298,
+      "start": "2021-08-11",
+      "data_range": "2021-08-13~2026-08-07",
+      "n_weeks": 261
+    },
+    {
+      "window": "3y",
+      "mode": "halving_OFF",
+      "halving_cycle_enabled": false,
+      "multiple": 1.535,
+      "cagr": 0.1534,
+      "mdd": -0.4228,
+      "sharpe": 0.565,
+      "btc_buyhold": 2.441,
+      "start": "2023-08-11",
+      "data_range": "2023-08-11~2026-08-07",
+      "n_weeks": 157
+    },
+    {
+      "window": "3y",
+      "mode": "halving_ON",
+      "halving_cycle_enabled": true,
+      "multiple": 2.552,
+      "cagr": 0.3666,
+      "mdd": -0.3634,
+      "sharpe": 1.096,
+      "btc_buyhold": 2.441,
+      "start": "2023-08-11",
+      "data_range": "2023-08-11~2026-08-07",
+      "n_weeks": 157
+    }
+  ]
+}

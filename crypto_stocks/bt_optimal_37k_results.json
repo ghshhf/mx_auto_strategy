@@ -1,0 +1,40 @@
+{
+  "generated": "2026-08-13 07:36",
+  "config": "halving_ON + cr=bb=0.0 + alt_rs_gate + pre_halving_start_month=31.0",
+  "pool": "current 50 coins",
+  "windows": [
+    {
+      "window": "10y",
+      "multiple": 20393.24,
+      "cagr": 1.6923,
+      "mdd": -0.3691,
+      "sharpe": 2.003,
+      "btc_buyhold": 108.831,
+      "start": "2016-08-11",
+      "data_range": "2016-08-12~2026-08-07",
+      "n_weeks": 522
+    },
+    {
+      "window": "5y",
+      "multiple": 8.203,
+      "cagr": 0.5233,
+      "mdd": -0.3691,
+      "sharpe": 1.278,
+      "btc_buyhold": 1.298,
+      "start": "2021-08-11",
+      "data_range": "2021-08-13~2026-08-07",
+      "n_weeks": 261
+    },
+    {
+      "window": "3y",
+      "multiple": 2.552,
+      "cagr": 0.3666,
+      "mdd": -0.3634,
+      "sharpe": 1.096,
+      "btc_buyhold": 2.441,
+      "start": "2023-08-11",
+      "data_range": "2023-08-11~2026-08-07",
+      "n_weeks": 157
+    }
+  ]
+}

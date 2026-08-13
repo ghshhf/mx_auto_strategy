@@ -1,0 +1,242 @@
+{
+  "generated": "2026-08-13 07:42",
+  "pool": "current 50 coins",
+  "A_pre_halving_start_month": [
+    {
+      "php": 30,
+      "multiple": 21663.6,
+      "cagr": 1.7086,
+      "mdd": -0.3691,
+      "sharpe": 2.008
+    },
+    {
+      "php": 31,
+      "multiple": 20393.24,
+      "cagr": 1.6923,
+      "mdd": -0.3691,
+      "sharpe": 2.003
+    },
+    {
+      "php": 29,
+      "multiple": 20257.576,
+      "cagr": 1.6905,
+      "mdd": -0.4075,
+      "sharpe": 1.982
+    },
+    {
+      "php": 28,
+      "multiple": 20100.782,
+      "cagr": 1.6884,
+      "mdd": -0.3957,
+      "sharpe": 1.985
+    },
+    {
+      "php": 27,
+      "multiple": 16293.183,
+      "cagr": 1.6326,
+      "mdd": -0.4617,
+      "sharpe": 1.938
+    },
+    {
+      "php": 26,
+      "multiple": 15387.023,
+      "cagr": 1.6177,
+      "mdd": -0.4953,
+      "sharpe": 1.922
+    },
+    {
+      "php": 32,
+      "multiple": 13444.73,
+      "cagr": 1.5826,
+      "mdd": -0.3575,
+      "sharpe": 1.928
+    },
+    {
+      "php": 33,
+      "multiple": 10034.782,
+      "cagr": 1.5083,
+      "mdd": -0.3711,
+      "sharpe": 1.886
+    },
+    {
+      "php": 22,
+      "multiple": 9720.93,
+      "cagr": 1.5004,
+      "mdd": -0.5756,
+      "sharpe": 1.832
+    },
+    {
+      "php": 24,
+      "multiple": 9720.93,
+      "cagr": 1.5004,
+      "mdd": -0.5756,
+      "sharpe": 1.832
+    },
+    {
+      "php": 40,
+      "multiple": 8280.027,
+      "cagr": 1.4607,
+      "mdd": -0.3642,
+      "sharpe": 1.894
+    },
+    {
+      "php": 38,
+      "multiple": 7006.737,
+      "cagr": 1.42,
+      "mdd": -0.4385,
+      "sharpe": 1.862
+    },
+    {
+      "php": 34,
+      "multiple": 6881.094,
+      "cagr": 1.4156,
+      "mdd": -0.4163,
+      "sharpe": 1.834
+    },
+    {
+      "php": 36,
+      "multiple": 6608.56,
+      "cagr": 1.4059,
+      "mdd": -0.4804,
+      "sharpe": 1.848
+    },
+    {
+      "php": 42,
+      "multiple": 6161.179,
+      "cagr": 1.3891,
+      "mdd": -0.3691,
+      "sharpe": 1.857
+    },
+    {
+      "php": 35,
+      "multiple": 5329.194,
+      "cagr": 1.3548,
+      "mdd": -0.5417,
+      "sharpe": 1.802
+    }
+  ],
+  "B_alt_rs_ma": [
+    {
+      "ma": 21,
+      "multiple": 22821.151,
+      "mdd": -0.3691,
+      "sharpe": 2.018
+    },
+    {
+      "ma": 22,
+      "multiple": 21663.6,
+      "mdd": -0.3691,
+      "sharpe": 2.008
+    },
+    {
+      "ma": 23,
+      "multiple": 21472.244,
+      "mdd": -0.3691,
+      "sharpe": 2.007
+    },
+    {
+      "ma": 24,
+      "multiple": 21472.244,
+      "mdd": -0.3691,
+      "sharpe": 2.007
+    },
+    {
+      "ma": 20,
+      "multiple": 18731.558,
+      "mdd": -0.3691,
+      "sharpe": 1.985
+    }
+  ],
+  "C_crbb": [
+    {
+      "crbb": 0.0,
+      "multiple": 22821.151,
+      "mdd": -0.3691,
+      "sharpe": 2.018
+    },
+    {
+      "crbb": 0.05,
+      "multiple": 22744.945,
+      "mdd": -0.3691,
+      "sharpe": 2.012
+    },
+    {
+      "crbb": 0.1,
+      "multiple": 21338.43,
+      "mdd": -0.372,
+      "sharpe": 2.002
+    },
+    {
+      "crbb": 0.15,
+      "multiple": 20001.374,
+      "mdd": -0.3839,
+      "sharpe": 1.99
+    }
+  ],
+  "winner": {
+    "pre_halving_start_month": 30,
+    "alt_rs_ma": 21,
+    "crbb": 0.0,
+    "full_windows": [
+      {
+        "window": "10y",
+        "multiple": 22821.151,
+        "cagr": 1.7227,
+        "mdd": -0.3691,
+        "sharpe": 2.018,
+        "btc_buyhold": 108.831,
+        "range": "2016-08-12~2026-08-07"
+      },
+      {
+        "window": "5y",
+        "multiple": 8.396,
+        "cagr": 0.5304,
+        "mdd": -0.3691,
+        "sharpe": 1.289,
+        "btc_buyhold": 1.298,
+        "range": "2021-08-13~2026-08-07"
+      },
+      {
+        "window": "3y",
+        "multiple": 2.552,
+        "cagr": 0.3666,
+        "mdd": -0.3634,
+        "sharpe": 1.096,
+        "btc_buyhold": 2.441,
+        "range": "2023-08-11~2026-08-07"
+      }
+    ]
+  },
+  "baseline_37k_on_current_pool": {
+    "pre_halving_start_month": 31.0,
+    "full_windows": [
+      {
+        "window": "10y",
+        "multiple": 20393.24,
+        "cagr": 1.6923,
+        "mdd": -0.3691,
+        "sharpe": 2.003,
+        "btc_buyhold": 108.831,
+        "range": "2016-08-12~2026-08-07"
+      },
+      {
+        "window": "5y",
+        "multiple": 8.203,
+        "cagr": 0.5233,
+        "mdd": -0.3691,
+        "sharpe": 1.278,
+        "btc_buyhold": 1.298,
+        "range": "2021-08-13~2026-08-07"
+      },
+      {
+        "window": "3y",
+        "multiple": 2.552,
+        "cagr": 0.3666,
+        "mdd": -0.3634,
+        "sharpe": 1.096,
+        "btc_buyhold": 2.441,
+        "range": "2023-08-11~2026-08-07"
+      }
+    ]
+  }
+}

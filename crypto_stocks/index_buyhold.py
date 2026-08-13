@@ -34,6 +34,12 @@ def load():
     return px, mc
 
 
+def top_n_set(mc, n=10):
+    """当前市值快照排名前 n 的代币集合(剔除 mcap<=0)。"""
+    items = sorted(((s, m) for s, m in mc.items() if m > 0), key=lambda x: -x[1])
+    return set(s for s, _ in items[:n])
+
+
 def basket_weights(tradable, scheme, mc):
     if scheme == 'equal':
         return {c: 1.0 / len(tradable) for c in tradable}
@@ -45,9 +51,12 @@ def basket_weights(tradable, scheme, mc):
     return {c: caps[c] / tot for c in tradable}
 
 
-def nav_from(px, mc, t0_idx, scheme, hold_wks, rebal=False):
+def nav_from(px, mc, t0_idx, scheme, hold_wks, rebal=False, topn=None):
     t0 = px.index[t0_idx]
     tradable = [c for c in px.columns if pd.notna(px[c].iloc[t0_idx]) and px[c].iloc[t0_idx] > 0]
+    if topn:
+        top = top_n_set(mc, topn)
+        tradable = [c for c in tradable if c in top]
     if not tradable:
         return None
     w = basket_weights(tradable, scheme, mc)
@@ -85,10 +94,13 @@ def nav_from(px, mc, t0_idx, scheme, hold_wks, rebal=False):
     return nav, held_years, n
 
 
-def full_nav_series(px, mc, scheme, rebal=False, t0_idx=0):
+def full_nav_series(px, mc, scheme, rebal=False, t0_idx=0, topn=None):
     """从 t0_idx 买入、持有至终的 NAV 时间序列(重基=1)。"""
     t0 = px.index[t0_idx]
     tradable = [c for c in px.columns if pd.notna(px[c].iloc[t0_idx]) and px[c].iloc[t0_idx] > 0]
+    if topn:
+        top = top_n_set(mc, topn)
+        tradable = [c for c in tradable if c in top]
     w = basket_weights(tradable, scheme, mc)
     if rebal:
         # 周平衡等权(向量化): 每周组合收益 = 成分币周回报等权平均
@@ -123,16 +135,18 @@ def main():
     print('=' * 78)
 
     schemes = [
-        ('equal', '等权(统一购买, 不调仓)', False),
-        ('equal', '等权周平衡(每周调回等权)', True),
-        ('cap', '市值加权(按指数, 不调仓)', False),
+        ('equal', '等权(统一购买, 不调仓)', False, None),
+        ('equal', '等权周平衡(每周调回等权)', True, None),
+        ('cap', '市值加权(按指数, 不调仓)', False, None),
+        ('equal', '市值前10·等权(不调仓)', False, 10),
+        ('cap', '市值前10·市值加权(不调仓)', False, 10),
     ]
-    for scheme, label, rebal in schemes:
-        print(f'\n### {label} ###')
+    for scheme, label, rebal, topn in schemes:
+        print(f'\n### {label} ###' + (f'  [topn={topn}]' if topn else ''))
         for hlabel, wks in HORIZONS.items():
             rets = []
             for i in range(len(px)):
-                r = nav_from(px, mc, i, scheme, wks, rebal=rebal)
+                r = nav_from(px, mc, i, scheme, wks, rebal=rebal, topn=topn)
                 if r is None:
                     continue
                 nav, hy, n = r
@@ -151,7 +165,7 @@ def main():
                   f'最佳={mults.max():8.1f}x  最差={mults.min():7.2f}x{cap_note}')
 
         # 首日期买入持有至终
-        r = nav_from(px, mc, 0, scheme, 100000, rebal=rebal)
+        r = nav_from(px, mc, 0, scheme, 100000, rebal=rebal, topn=topn)
         if r:
             nav, hy, n = r
             tag = '周平衡' if rebal else '不调仓'
