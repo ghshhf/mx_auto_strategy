@@ -128,8 +128,8 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'GRAM', 'TRX', 'INJ', 'XLM'],
-    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA', 'STRK'],
+    "L1公链":  ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'SUI', 'GRAM', 'TRX', 'INJ', 'XLM', 'LTC'],
+    "L2扩容":  ['ARB', 'OP', 'POL', 'MANTA'],
     "DeFi":    ['UNI', 'AAVE', 'MKR', 'SNX', 'COMP', 'CRV', '1INCH', 'LDO', 'JOE'],
     "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'CRV', '1INCH', 'JUP', 'JOE'],
@@ -412,12 +412,12 @@ COIN_META = {
     'TRX': {'name': 'TRON', 'role': 'offense', 'theme': 'L1公链', 'launch': 2017},
     'INJ': {'name': 'Injective', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
     'XLM': {'name': 'Stellar', 'role': 'offense', 'theme': 'L1公链', 'launch': 2014},
+    'LTC': {'name': 'Litecoin', 'role': 'offense', 'theme': 'L1公链', 'launch': 2011},
     # L2
     'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'POL':   {'name': 'Polygon (POL)', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
     'MANTA': {'name': 'Manta', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
-    'STRK': {'name': 'StarkNet', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2024},
     # DeFi
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},

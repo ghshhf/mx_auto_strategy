@@ -1,0 +1,38 @@
+{
+  "generated": "2026-08-13 10:30",
+  "pool": "current 51 coins (50+LTC)",
+  "rows": [
+    {
+      "cfg": "默认档(php=30)",
+      "window": "10y",
+      "multiple": 10511.151,
+      "cagr": 1.52,
+      "mdd": -0.3942,
+      "sharpe": 2.103
+    },
+    {
+      "cfg": "默认档(php=30)",
+      "window": "5y",
+      "multiple": 7.966,
+      "cagr": 0.5144,
+      "mdd": -0.3942,
+      "sharpe": 1.261
+    },
+    {
+      "cfg": "默认档(php=30)",
+      "window": "3y",
+      "multiple": 2.453,
+      "cagr": 0.3486,
+      "mdd": -0.3887,
+      "sharpe": 1.053
+    },
+    {
+      "cfg": "最优档(php=30,ma=21)",
+      "window": "10y",
+      "multiple": 10095.457,
+      "cagr": 1.5098,
+      "mdd": -0.3942,
+      "sharpe": 2.098
+    }
+  ]
+}

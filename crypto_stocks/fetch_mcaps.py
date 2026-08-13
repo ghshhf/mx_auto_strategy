@@ -16,9 +16,9 @@ CG = {
     'ENS': 'ethereum-name-service', 'GALA': 'gala', 'ZEC': 'zcash',
     'DASH': 'dash', 'AR': 'arweave', 'ILV': 'illuvium',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
-    'GRAM': 'the-open-network', 'STRK': 'starknet',
+    'GRAM': 'the-open-network',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
-    'AKT': 'akash-network', 'MANTA': 'manta-network', 'XLM': 'stellar',
+    'AKT': 'akash-network', 'MANTA': 'manta-network', 'XLM': 'stellar', 'LTC': 'litecoin',
     '1INCH': '1inch', 'GMX': 'gmx', 'API3': 'api3',
     'RENDER': 'render-token',
 }

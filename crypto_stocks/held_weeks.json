@@ -222,12 +222,7 @@
     "sector": "AI+加密"
   },
   {
-    "sym": "STRK",
-    "held": 0,
-    "mcap_usd": 157661528,
-    "sector": "L2扩容"
-  },
-  {
+    "sym": "SUI",  {
     "sym": "COMP",
     "held": 0,
     "mcap_usd": 162517981,
@@ -309,6 +304,12 @@
     "sym": "XLM",
     "held": 0,
     "mcap_usd": 5479240637,
+    "sector": "L1公链"
+  },
+  {
+    "sym": "LTC",
+    "held": 0,
+    "mcap_usd": 3470081388,
     "sector": "L1公链"
   }
 ]

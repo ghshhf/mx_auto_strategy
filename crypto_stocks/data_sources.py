@@ -81,8 +81,7 @@ COINGECKO_IDS = {
     'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'ENS': 'ethereum-name-service', 'GALA': 'gala', 'ZEC': 'zcash',
     'DASH': 'dash', 'AR': 'arweave', 'ILV': 'illuvium',
-    'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
-    'STRK': 'starknet',
+    'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',     'GRAM': 'the-open-network',
     'CFG': 'centrifuge', 'POLYX': 'polymesh',
     'AKT': 'akash-network', 'MANTA': 'manta-network', 'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
@@ -95,11 +94,11 @@ CMC_IDS = {
     'ARB': 11841, 'AVAX': 5805, 'BTC': 1, 'XLM': 512,
     'COMP': 5692, 'CRV': 6538, 'DASH': 131, 'DOT': 6636, 'DYDX': 28324,
     'ENS': 13855, 'ETH': 1027, 'FET': 3773, 'FIL': 2280, 'GALA': 7080,
-    'ILV': 8719, 'IMX': 10603, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'MANTA': 13631,
+    'ILV': 8719, 'IMX': 10603, 'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'LTC': 2, 'MANTA': 13631,
     'CFG': 4160, 'POL': 6690, 'MKR': 1518, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646,
     'POLYX': 20362, 'RENDER': 5690,
-    'SNX': 2586, 'SOL': 5426, 'STRK': 22691, 'SUI': 20947, 'TAO': 22974,
+    'SNX': 2586, 'SOL': 5426, 'SUI': 20947, 'TAO': 22974,
     'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437, 'JOE': 11396,
 }
 
