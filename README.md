@@ -6,11 +6,11 @@
 
 ## 0. 30 秒上手（最重要）
 
-1. **Python 必须用量化 venv**，默认 `python` 没有 pandas，会立刻报 `ModuleNotFoundError`：
+1. **Python 必须用量化 venv**，默认 `python` 没有 pandas，会立刻报 `ModuleNotFoundError`**。⚠️ 解释器文件名必须带 `.exe` 扩展名（Git Bash 下省略会报 "No such file or directory"，脚本会静默失败）**：
    ```
-   G:/venv/quant/Scripts/python.exe
+   C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe
    ```
-2. **下载行情走本地代理** `http://127.0.0.1:3067`（Binance/OKX/CMC/腾讯可达；Binance 经本机代理偶发 451 地理封锁，靠 OKX/CMC 兜底）。
+2. **下载行情走本地代理** `http://127.0.0.1:1080`（socks5；Binance/OKX/CMC/腾讯可达；Git 操作 GitHub 也走此代理 `git -c http.proxy=socks5://127.0.0.1:1080`）。端口随本机代理软件变化，以实际监听为准。
 3. **Git Bash 下 Python 不认 `/e/` 挂载点**，一律用 Windows 绝对路径（如 `C:/Users/...` 或 `E:/xmanbian/...`）。
 4. 改完任何东西，先读 `PITFALLS.md`（本仓根目录）——里面是历年踩过的坑，能省你几小时。
 
@@ -36,19 +36,20 @@
 |---|---|---|
 | **A股** v6.18 | **18.185x** / CAGR 22.31% / MDD −33.31% | 2014-10-17~2026-08-06，749 周，含成本；基线 = momentum26 + 核心卫星 0.5 + 死叉，`use_tech=False + trend_filter=False` |
 | **美股** | 无杠杆 **22.48x / −48.4%**；20% 现金袖 **14.46x / −40.8%** | 155 列真实面板（2021-08 起） |
-| **加密 10y** | base **21,419x** / cycle(tilt=0.3) **28,092x** / MDD ≈−33% / Sharpe 2.01 | 621 周（2016-08 起），62 币（含 TRB）；同期 BTC 买入持有 108.8x |
+| **加密 10y** | 优化参数 **59,361,202x（≈59.36Mx）** / MDD −23.8% / Sharpe 2.91（12y 全面板为 427Mx） | 621 周（2016-08 起），**43 币**；同期 BTC 买入持有 108.8x。完整真值表见 `TRUTH_AUTHORITY.md` |
 
 > ⚠️ **旧口径 `24,493x / −43.5%` 已废弃**（2026-08-11 MDD 修复后 `DEFAULT_CFG` 演进）。不要把它和现在的 28,092x 直接并列对比。
+> 📌 加密倍率完整真值表（含窗口/引擎版本口径、为何历史数字对不上）见根目录 `TRUTH_AUTHORITY.md`。
 > ⚠️ A股真值 18.185x 含**幸存者偏差**（指数成分股幸存筛选）。
 
 ---
 
 ## 3. 各市场怎么跑（精确命令）
 
-### 加密（已含 TRB，62 币）
+### 加密（43 币）
 ```bash
 cd crypto_stocks
-G:/venv/quant/Scripts/python.exe run_windows_bt.py
+C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_windows_bt.py
 # 产出: crypto_windows_report.md + crypto_windows_results.json（10/5/3 年 × base/cycle 两档）
 ```
 引擎：`crypto_options_bt.py`；面板：`data/weekly_adjclose_crypto50.csv`（全样本）+ `data/weekly_adjclose_crypto50_10y.csv`（621 周）。引擎按周过滤"当周有非 NaN 非零价"的币，早期空缺列（如 TRB 2020-08 前）自动不可选，不会报错。
@@ -56,7 +57,7 @@ G:/venv/quant/Scripts/python.exe run_windows_bt.py
 ### A股
 ```bash
 cd ashare_backtest
-G:/venv/quant/Scripts/python.exe run_windows.py
+C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_windows.py
 # 产出: nav_windows.html + nav_windows.csv（3/5/10y trailing 窗口对比）
 ```
 ⚠️ **陷阱**：`run_windows.py` 硬编码 `use_tech=True`，而 v6.18 权威真值 18.185x 是 `use_tech=False + trend_filter=False`。直接跑 `run_windows.py` 得到的不是 18.185x。要复现真值，改 `run_windows.py` 里的 `cfg`（`use_tech=False, trend_filter=False`），或直接调 `backtest_engine.run(...)`。面板来源 `ashare_panel_close_em.csv`（活跃腾讯后复权数据）。
@@ -64,7 +65,7 @@ G:/venv/quant/Scripts/python.exe run_windows.py
 ### 美股
 ```bash
 cd us_stocks
-G:/venv/quant/Scripts/python.exe us_backtest_ai.py --no-ai
+C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe us_backtest_ai.py --no-ai
 # --no-ai: 关闭 AI 选股层，只跑 baseline + optimized（复现 22.48x 真值无需 LLM）
 # 默认还会跑 optimized；如需真接 LLM 加权加 --with-llm（需配置，否则 pass-through=1.0）
 ```
