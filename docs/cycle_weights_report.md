@@ -26,7 +26,7 @@
 
 - **A股** (key=`ashare`): 精选 = 信贷周期(credit)×0.529, 大宗商品周期(commodity)×0.471; 推荐 tilt = **0.3**
 - **美股** (key=`us`): 精选 = （空 -> 叠加层中性, 建议保持关闭）; 推荐 tilt = **0.0**
-- **加密** (key=`crypto`): 精选 = 联邦利率周期(fed_rate)×0.224, 流动性周期(liquidity)×0.307, 大宗商品周期(commodity)×0.227, 房地产周期(housing)×0.242; 推荐 tilt = **0.5**
+- **加密** (key=`crypto`): 精选 = 联邦利率周期(fed_rate)×0.224, 流动性周期(liquidity)×0.307, 大宗商品周期(commodity)×0.227, 房地产周期(housing)×0.242; 推荐 tilt = **0.3**
 
 ## 3. 最终效果: ON(精选权重) vs OFF 基线
 
