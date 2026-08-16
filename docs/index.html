@@ -14,41 +14,40 @@
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
     line-height:1.5;font-size:14px}
-  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  .wrap{max-width:1120px;margin:0 auto;padding:24px 20px 60px}
   header h1{font-size:24px;margin:0 0 4px;font-weight:700;letter-spacing:.3px}
   header .sub{color:var(--sub);font-size:13px;margin:0}
-  .banner{margin:16px 0;padding:10px 14px;border-radius:8px;font-size:12.5px;
+  .banner{margin:14px 0;padding:10px 14px;border-radius:8px;font-size:12.5px;
     background:#fffaf0;border:1px solid #f6e2bd;color:#7a5b15}
   .banner b{color:#8a4b00}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    box-shadow:var(--shadow);padding:20px;margin:18px 0}
+    box-shadow:var(--shadow);padding:20px;margin:16px 0}
   .card h2{font-size:16px;margin:0 0 14px;font-weight:700;display:flex;align-items:center;gap:8px}
   .card h2 .tag{font-size:11px;font-weight:600;color:#fff;background:var(--sub);
     padding:2px 8px;border-radius:20px}
-  /* truth table */
   table{border-collapse:collapse;width:100%;font-size:13px}
-  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-  th{font-weight:600;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;
-    background:#fafbfc}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;background:#fafbfc}
   td.metric{font-weight:600;color:var(--sub);white-space:nowrap}
   .mkt-head{font-size:15px;font-weight:700;border-bottom:2px solid var(--line)}
   .big{font-size:20px;font-weight:800;line-height:1.1}
   .sec{font-size:12px;color:var(--sub);margin-top:2px}
-  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;
-    margin-top:4px;vertical-align:middle}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;margin-top:4px;vertical-align:middle}
   .badge.ok{background:#e6fffa;color:var(--ok)}
   .badge.warn{background:#fef0e6;color:var(--warn)}
   .badge.sim{background:#f3e8ff;color:var(--usim)}
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
-  /* chart */
   .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+  .ctl-label{font-size:12px;color:var(--sub)}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  .seg button{border:none;background:#fff;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--sub)}
+  .seg button{border:none;background:#fff;padding:6px 13px;font-size:13px;cursor:pointer;color:var(--sub)}
   .seg button.active{background:var(--ink);color:#fff;font-weight:600}
   .toggles{display:flex;flex-wrap:wrap;gap:14px;margin-left:auto}
   .toggles label{display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;user-select:none}
   .chart-box{position:relative;width:100%}
-  canvas{width:100%;height:430px;display:block}
+  canvas{width:100%;display:block}
+  #ovChart{height:430px}
+  .mktChart{height:380px}
   .tip{position:absolute;pointer-events:none;background:rgba(31,41,51,.95);color:#fff;
     font-size:11.5px;padding:8px 10px;border-radius:6px;display:none;white-space:nowrap;z-index:5;
     box-shadow:0 4px 12px rgba(0,0,0,.25)}
@@ -57,8 +56,11 @@
   .legend .it{display:flex;align-items:center;gap:6px}
   .swatch{width:18px;height:3px;border-radius:2px;display:inline-block}
   .swatch.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)}
-  /* detail links */
-  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:14px 0}
+  .stat{background:#fafbfc;border:1px solid var(--line);border-radius:9px;padding:12px}
+  .stat .k{font-size:11.5px;color:var(--sub)}
+  .stat .v{font-size:19px;font-weight:800;margin-top:3px}
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
   .links a{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:9px;
     text-decoration:none;color:var(--ink);background:#fff;transition:.15s}
   .links a:hover{border-color:var(--us);box-shadow:var(--shadow)}
@@ -68,7 +70,13 @@
   .muted{color:var(--sub)}
   code{background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:12px}
   .err{color:#c0392b;font-size:13px;padding:10px;background:#fdecea;border-radius:8px}
-  @media(max-width:680px){.toggles{margin-left:0;width:100%}canvas{height:340px}}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
+  .tabs button{border:1px solid var(--line);background:#fff;padding:8px 16px;font-size:13.5px;
+    cursor:pointer;color:var(--sub);border-radius:9px}
+  .tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+  .view[hidden]{display:none}
+  .pos{color:var(--ok)} .neg{color:#c0392b}
+  @media(max-width:680px){.toggles{margin-left:0;width:100%}#ovChart,.mktChart{height:320px}}
 </style>
 </head>
 <body>
@@ -81,52 +89,60 @@
   <div class="banner">
     <b>研究性质声明：</b>本页所有数字均为<b>历史回测</b>结果，非未来收益承诺，不构成投资建议。
     <b>美股「期权模拟 ~100x」</b>为 BS 模型 LEAPS 假设推演（依赖隐含波动率假设），<b>非稳健真值</b>；
-    <b>加密 28,092x</b>含<b>幸存者偏差</b>（仅存活至今的币种入样）。请以各市场标注「稳健真值」一栏为准。
+    <b>加密</b>含<b>幸存者偏差</b>（仅存活至今的币种入样）。请以各市场标注「稳健真值」一栏为准。
   </div>
 
-  <div class="card">
-    <h2>真值对照表 <span class="tag">全量窗口</span></h2>
-    <div id="truthTable"><p class="muted">加载中…</p></div>
-    <p class="muted" style="font-size:11.5px;margin-top:12px">
-      CAGR 为日历年化（按首末日期实际天数）。A股真值 18.185x 为 v6.18 回归测试锁定口径（动量26+核心卫星0.5+死叉，use_tech=False）。
-      各市场面板与引擎版本独立，倍数不可直接横向相加。
-    </p>
+  <div class="tabs" id="tabs">
+    <button data-tab="overview" class="active">总览</button>
+    <button data-tab="ashare">A股</button>
+    <button data-tab="us">美股</button>
+    <button data-tab="crypto">加密</button>
+    <button data-tab="blend">组合</button>
+    <button data-tab="reports">报告中心</button>
   </div>
 
-  <div class="card">
-    <h2>净值增长曲线 <span class="tag">归一化至各窗口起点 = 1.0</span></h2>
-    <div class="controls">
-      <div class="seg" id="winSeg">
-        <button data-w="full" class="active">全量</button>
-        <button data-w="10y">近10年</button>
-        <button data-w="5y">近5年</button>
-        <button data-w="3y">近3年</button>
+  <!-- ============ OVERVIEW ============ -->
+  <div id="view-overview" class="view">
+    <div class="card">
+      <h2>真值对照表 <span class="tag">全量窗口</span></h2>
+      <div id="truthTable"><p class="muted">加载中…</p></div>
+      <p class="muted" style="font-size:11.5px;margin-top:12px">
+        CAGR 为日历年化（按首末日期实际天数）。A股真值 18.185x 为 v6.18 回归测试锁定口径（动量26+核心卫星0.5+死叉，use_tech=False）。
+        各市场面板与引擎版本独立，倍数不可直接横向相加。
+      </p>
+    </div>
+    <div class="card">
+      <h2>净值增长曲线 <span class="tag">归一化至各窗口起点 = 1.0</span></h2>
+      <div class="controls">
+        <div class="seg" id="winSeg">
+          <button data-w="full" class="active">全量</button>
+          <button data-w="10y">近10年</button>
+          <button data-w="5y">近5年</button>
+          <button data-w="3y">近3年</button>
+        </div>
+        <div class="toggles" id="toggles"></div>
       </div>
-      <div class="toggles" id="toggles"></div>
+      <div class="chart-box"><canvas id="ovChart"></canvas><div class="tip" id="ovTip"></div></div>
+      <div class="legend" id="ovLegend"></div>
+      <p class="muted" style="font-size:11.5px;margin-top:10px">
+        Y 轴为<b>对数刻度</b>（倍数跨 18x→2.8万x，线性坐标会淹没小值）。虚线为美股期权模拟层，用于对照「开期权模式」的放大效应。
+      </p>
     </div>
-    <div class="chart-box">
-      <canvas id="chart"></canvas>
-      <div class="tip" id="tip"></div>
-    </div>
-    <div class="legend" id="legend"></div>
-    <p class="muted" style="font-size:11.5px;margin-top:10px">
-      Y 轴为<b>对数刻度</b>（倍数跨 18x→2.8万x，线性坐标会淹没小值）。虚线为美股期权模拟层，用于对照「开期权模式」的放大效应。
-    </p>
   </div>
 
-  <div class="card">
-    <h2>分市场明细与原始报告</h2>
-    <div class="links">
-      <a href="curves.html"><div class="t">A股回测曲线</div><div class="d">腾讯后复权周线 · 基线/优化对照</div></a>
-      <a href="backtest_curves.html"><div class="t">A股回测明细</div><div class="d">逐年/分位/事件归因</div></a>
-      <a href="portfolio_curves.html"><div class="t">三市场组合曲线</div><div class="d">50/50 轮动与组合层</div></a>
-      <a href="portfolio_blend.html"><div class="t">组合配置</div><div class="d">portfolio_blend 可视化</div></a>
-      <a href="us-options-hedge-design.md"><div class="t">美股期权对冲设计</div><div class="d">options_sim / LEAPS 模拟层说明</div></a>
-      <a href="crypto_overlay_report.md"><div class="t">加密减半相位叠加</div><div class="d">cycle_overlay 归因报告</div></a>
-      <a href="TRUTH.md"><div class="t">真值清单 TRUTH</div><div class="d">各市场权威口径汇总</div></a>
-      <a href="data/nav.json"><div class="t">A股 NAV 数据 (JSON)</div><div class="d">docs/data/nav.json</div></a>
-      <a href="data/nav_us.json"><div class="t">美股 NAV 数据 (JSON)</div><div class="d">docs/data/nav_us.json</div></a>
-      <a href="data/nav_crypto.json"><div class="t">加密 NAV 数据 (JSON)</div><div class="d">docs/data/nav_crypto.json</div></a>
+  <!-- ============ MARKET DRILL-DOWN ============ -->
+  <div id="view-ashare" class="view" hidden></div>
+  <div id="view-us" class="view" hidden></div>
+  <div id="view-crypto" class="view" hidden></div>
+
+  <!-- ============ BLEND ============ -->
+  <div id="view-blend" class="view" hidden></div>
+
+  <!-- ============ REPORTS ============ -->
+  <div id="view-reports" class="view" hidden">
+    <div class="card">
+      <h2>原始报告与数据 <span class="tag">docs/</span></h2>
+      <div class="links" id="reportLinks"></div>
     </div>
   </div>
 
@@ -137,267 +153,416 @@
 "use strict";
 const WIN_ORDER = ["full","10y","5y","3y"];
 const WIN_LABEL = {full:"全量", "10y":"近10年", "5y":"近5年", "3y":"近3年"};
-let MODEL = null, curWin = "full";
 
-function fmtMult(v){ return (v>=1000? v.toLocaleString('en-US',{maximumFractionDigits:0})
-                                  : v.toFixed(2)) + "x"; }
-function fmtPct(v){ return (v>0?"+":"") + v.toFixed(1) + "%"; }
+const META = {
+  ashare:{ label:"A股", hex:"#e74c3c", file:"data/nav.json",
+    wins:["3y","5y","10y","full"], cfgs:["baseline","optimized"], orient:"wincfg",
+    note:"腾讯后复权周线 · 动量26+核心卫星0.5+死叉 (v6.18)" },
+  us:{ label:"美股", hex:"#2980b9", file:"data/nav_us.json",
+    wins:["full","10y","5y","3y"], cfgs:["optimized","options_sim"], orient:"cfgwin",
+    note:"真实面板 · 主题解相关 max2 · 无杠杆" },
+  crypto:{ label:"加密", hex:"#f39c12", file:"data/nav_crypto.json",
+    wins:["full","10y","5y","3y"], cfgs:["cycle"], orient:"cycle",
+    note:"10y 面板 · 减半相位叠加 tilt=0.3" },
+  blend:{ label:"组合", hex:"#8e44ad", file:"data/portfolio_blend.json", special:true }
+};
 
-async function loadAll(){
-  const [a,u,c] = await Promise.all([
-    fetch("data/nav.json").then(r=>r.json()),
-    fetch("data/nav_us.json").then(r=>r.json()),
-    fetch("data/nav_crypto.json").then(r=>r.json()),
-  ]);
-  return {a,u,c};
+const DATA = {};
+const state = {
+  ov:{win:"full", on:{ashare:true,us:true,usim:true,crypto:true}},
+  ashare:{win:"full", cfg:"optimized"},
+  us:{win:"full", cfg:"optimized"},
+  crypto:{win:"full"}
+};
+
+function fmtMult(v){ if(v==null||isNaN(v)) return "—";
+  return (v>=1000? v.toLocaleString('en-US',{maximumFractionDigits:0}) : v.toFixed(2)) + "x"; }
+function fmtPct(v){ if(v==null||isNaN(v)) return "—";
+  return (v>0?"+":"") + (v*100).toFixed(1) + "%"; }
+function fmtSharpe(v){ return (v==null||isNaN(v))? "—" : v.toFixed(2); }
+
+function block(mk, win, cfg){
+  const d = DATA[mk];
+  if(mk==="ashare") return d.windows[win][cfg];
+  if(mk==="us")     return d.windows[cfg][win];
+  if(mk==="crypto") return d.windows["cycle"][win];
+  return null;
 }
 
-function buildModel(d){
-  const a=d.a, u=d.u, c=d.c;
+/* ---------- load ---------- */
+async function loadAll(){
+  const files = {
+    ashare:"data/nav.json", us:"data/nav_us.json",
+    crypto:"data/nav_crypto.json", blend:"data/portfolio_blend.json"
+  };
+  const out = {};
+  await Promise.all(Object.entries(files).map(async ([k,f])=>{
+    try{ out[k] = await fetch(f).then(r=>r.json()); }
+    catch(e){ console.warn("load fail",k,e); out[k]=null; }
+  }));
+  return out;
+}
+
+/* ============ OVERVIEW ============ */
+function buildModel(){
+  const a=DATA.ashare,u=DATA.us,c=DATA.crypto;
   const aFull=a.windows.full.optimized.stats;
   return {
-    ashare:{ name:"A股", color:"var(--ashare)", hex:"#e74c3c",
-      pick:(w)=>a.windows[w].optimized,
-      truth:{mult:aFull.final_mult, cagr:aFull.cagr, mdd:aFull.mdd},
-      note:"腾讯后复权周线 · 动量26+核心卫星0.5+死叉 (v6.18)", robust:"ok",
-      src:a.source },
-    us:{ name:"美股", color:"var(--us)", hex:"#2980b9",
-      pick:(w)=>u.windows.optimized[w],
-      simPick:(w)=>u.windows.options_sim[w],
-      truth:u.truth,
-      note:"155列真实面板(westock-data) · 主题解相关max2 · 无杠杆", robust:"ok",
-      src:u.source },
-    crypto:{ name:"加密", color:"var(--crypto)", hex:"#f39c12",
-      pick:(w)=>c.windows.cycle[w],
-      truth:{mult:c.truth.cycle.final_mult, cagr:c.truth.cycle.cagr,
-             mdd:c.truth.cycle.mdd, sharpe:c.truth.cycle.sharpe},
-      note:"62币10y面板 · 减半相位叠加 tilt=0.3", robust:"warn",
-      src:c.source }
+    ashare:{ hex:"#e74c3c", pick:w=>a.windows[w].optimized,
+      truth:{mult:aFull.final_mult,cagr:aFull.cagr,mdd:aFull.mdd},
+      note:"腾讯后复权周线 · 动量26+核心卫星0.5+死叉 (v6.18)", src:a.source, robust:"ok"},
+    us:{ hex:"#2980b9", pick:w=>u.windows.optimized[w], simPick:w=>u.windows.options_sim[w],
+      truth:u.truth, note:"真实面板 · 主题解相关 max2 · 无杠杆", src:u.source, robust:"ok"},
+    crypto:{ hex:"#f39c12", pick:w=>c.windows.cycle[w],
+      truth:{mult:c.truth.cycle.final_mult,cagr:c.truth.cycle.cagr,mdd:c.truth.cycle.mdd,sharpe:c.truth.cycle.sharpe},
+      note:"10y 面板 · 减半相位叠加 tilt=0.3", src:c.source, robust:"warn"}
   };
 }
 
 function renderTruth(){
-  const m=MODEL;
-  const cells = (mk, tdFn)=> `<td>${tdFn(m[mk])}</td>`;
-  const ashareCell = (m)=>{
-    const t=m.truth;
-    return `<div class="big">${fmtMult(t.mult)}</div><div class="sec">CAGR ${fmtPct(t.cagr)}</div>
-            <div class="sec">MDD ${fmtPct(t.mdd)}</div>
-            <span class="badge ok">稳健真值</span>`;
-  };
-  const usCell = (m)=>{
-    const t=m.truth;
+  const m=buildModel();
+  const ashareCell = m0=>`<div class="big">${fmtMult(m0.truth.mult)}</div>
+      <div class="sec">CAGR ${fmtPct(m0.truth.cagr)}</div><div class="sec">MDD ${fmtPct(m0.truth.mdd)}</div>
+      <span class="badge ok">稳健真值</span>`;
+  const usCell = m0=>{const t=m0.truth;
     return `<div class="big">${fmtMult(t.no_options.final_mult)}</div>
-            <div class="sec">CAGR ${fmtPct(t.no_options.cagr)} · MDD ${fmtPct(t.no_options.mdd)}</div>
-            <div class="big" style="font-size:16px;color:var(--usim);margin-top:6px">${fmtMult(t.options_sim.final_mult)}</div>
-            <div class="sec">期权模拟 · CAGR ${fmtPct(t.options_sim.cagr)}</div>
-            <span class="badge sim">⚠ 假设依赖·非稳健</span>`;
-  };
-  const cryptoCell = (m)=>{
-    const t=m.truth;
+      <div class="sec">CAGR ${fmtPct(t.no_options.cagr)} · MDD ${fmtPct(t.no_options.mdd)}</div>
+      <div class="big" style="font-size:16px;color:var(--usim);margin-top:6px">${fmtMult(t.options_sim.final_mult)}</div>
+      <div class="sec">期权模拟 · CAGR ${fmtPct(t.options_sim.cagr)}</div>
+      <span class="badge sim">⚠ 假设依赖·非稳健</span>`;};
+  const cryptoCell = m0=>{const t=m0.truth;
     return `<div class="big">${fmtMult(t.mult)}</div>
-            <div class="sec">CAGR ${fmtPct(t.cagr)} · MDD ${fmtPct(t.mdd)}</div>
-            <div class="sec">Sharpe ${t.sharpe!=null?t.sharpe.toFixed(2):"—"}</div>
-            <span class="badge warn">含幸存者偏差</span>`;
-  };
-  const html = `
-  <table>
+      <div class="sec">CAGR ${fmtPct(t.cagr)} · MDD ${fmtPct(t.mdd)}</div>
+      <div class="sec">Sharpe ${fmtSharpe(t.sharpe)}</div>
+      <span class="badge warn">含幸存者偏差</span>`;};
+  document.getElementById("truthTable").innerHTML = `<table>
     <thead><tr><th class="metric">指标</th>
       <th class="mkt-head"><span class="dot" style="background:${m.ashare.hex}"></span>A股</th>
       <th class="mkt-head"><span class="dot" style="background:${m.us.hex}"></span>美股</th>
-      <th class="mkt-head"><span class="dot" style="background:${m.crypto.hex}"></span>加密</th>
-    </tr></thead>
+      <th class="mkt-head"><span class="dot" style="background:${m.crypto.hex}"></span>加密</th></tr></thead>
     <tbody>
       <tr><td class="metric">期末倍数 (全量)</td>${ashareCell(m.ashare)}${usCell(m.us)}${cryptoCell(m.crypto)}</tr>
       <tr><td class="metric">口径说明</td>
         <td>${m.ashare.note}<br><span class="muted" style="font-size:11px">${m.ashare.src}</span></td>
         <td>${m.us.note}<br><span class="muted" style="font-size:11px">${m.us.src}</span></td>
         <td>${m.crypto.note}<br><span class="muted" style="font-size:11px">${m.crypto.src}</span></td></tr>
-    </tbody>
-  </table>`;
-  document.getElementById("truthTable").innerHTML = html;
+    </tbody></table>`;
 }
 
-/* ---------- canvas log-scale chart ---------- */
-const cv = document.getElementById("chart");
-const ctx = cv.getContext("2d");
-const tip = document.getElementById("tip");
-let SERIES = []; // {key,label,color,hex,dash,pts:[{t,mult,date}]}
+const ovCv=document.getElementById("ovChart"), ovCtx=ovCv.getContext("2d"), ovTip=document.getElementById("ovTip");
+let OV={series:[],geom:null};
 
-function collectSeries(){
-  const m=MODEL, w=curWin;
-  const defs = [
-    {key:"ashare", label:"A股 (无期权)", hex:m.ashare.hex, dash:false,
-      get:()=>m.ashare.pick(w)},
-    {key:"us", label:"美股 (无期权)", hex:m.us.hex, dash:false,
-      get:()=>m.us.pick(w)},
-    {key:"usim", label:"美股·期权模拟 (~100x)", hex:"#8e44ad", dash:true,
-      get:()=>m.us.simPick(w)},
-    {key:"crypto", label:"加密 (减半叠加)", hex:m.crypto.hex, dash:false,
-      get:()=>m.crypto.pick(w)},
+function collectOv(){
+  const m=buildModel(), w=state.ov.win, on=state.ov.on;
+  const defs=[
+    {key:"ashare",label:"A股 (无期权)",hex:m.ashare.hex,dash:false,get:()=>m.ashare.pick(w)},
+    {key:"us",label:"美股 (无期权)",hex:m.us.hex,dash:false,get:()=>m.us.pick(w)},
+    {key:"usim",label:"美股·期权模拟 (~100x)",hex:"#8e44ad",dash:true,get:()=>m.us.simPick(w)},
+    {key:"crypto",label:"加密 (减半叠加)",hex:m.crypto.hex,dash:false,get:()=>m.crypto.pick(w)},
   ];
-  SERIES = defs.filter(d=>state[d.key]!==false).map(d=>{
-    const wd=d.get();
-    const pts=[];
-    for(let i=0;i<wd.dates.length;i++){
-      const v=wd.mult[i];
-      if(v==null||v<=0) continue;
-      pts.push({t:Date.parse(wd.dates[i]), mult:v, date:wd.dates[i]});
-    }
+  OV.series=defs.filter(d=>on[d.key]!==false).map(d=>{
+    const wd=d.get(); const pts=[];
+    for(let i=0;i<wd.dates.length;i++){const v=wd.mult[i]; if(v==null||v<=0)continue;
+      pts.push({t:Date.parse(wd.dates[i]),mult:v,date:wd.dates[i]});}
     return {key:d.key,label:d.label,hex:d.hex,dash:d.dash,pts};
   }).filter(s=>s.pts.length>0);
 }
 
-const state={ashare:true,us:true,usim:true,crypto:true};
-function buildToggles(){
-  const cfg=[["ashare","A股"],["us","美股(无期权)"],["usim","美股·期权模拟"],["crypto","加密"]];
-  const hexOf=k=> k==="usim" ? "#8e44ad" : MODEL[k].hex;
-  const box=document.getElementById("toggles");
-  box.innerHTML=cfg.map(([k,l])=>
-    `<label><input type="checkbox" data-k="${k}" ${state[k]?"checked":""}>
-     <span style="color:${hexOf(k)}">●</span>${l}</label>`
-  ).join("");
-  box.querySelectorAll("label").forEach((lab,i)=>{
-    const k=cfg[i][0];
-    lab.querySelector("input").addEventListener("change",e=>{
-      state[k]=e.target.checked; render();
-    });
-  });
-}
-function buildLegend(){
-  document.getElementById("legend").innerHTML = SERIES.map(s=>
-    `<div class="it"><span class="swatch ${s.dash?'dash':''}" style="background:${s.hex};color:${s.hex}"></span>${s.label}</div>`
-  ).join("");
-}
+function logTicks(min,max){const out=[];let e=Math.floor(Math.log10(min));const em=Math.ceil(Math.log10(max));
+  for(;e<=em;e++)for(const mm of [1,2,5]){const v=mm*Math.pow(10,e);
+    if(v>=min*0.999&&v<=max*1.001)out.push(v);}return out;}
 
-function logTicks(min,max){
-  const out=[]; let e=Math.floor(Math.log10(min));
-  const emax=Math.ceil(Math.log10(max));
-  for(;e<=emax;e++) for(const mm of [1,2,5]){
-    const v=mm*Math.pow(10,e);
-    if(v>=min*0.999 && v<=max*1.001) out.push(v);
-  }
-  return out;
-}
-
-function render(){
-  collectSeries();
-  buildLegend();
-  const wrap=cv.parentElement;
-  const dpr=window.devicePixelRatio||1;
-  const W=wrap.clientWidth, H=cv.clientHeight;
-  cv.width=W*dpr; cv.height=H*dpr;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,H);
-  if(SERIES.length===0){ctx.fillStyle="#616e7c";ctx.font="13px sans-serif";
-    ctx.fillText("无可显示序列",20,30);return;}
-
+function renderOv(){
+  collectOv();
+  document.getElementById("ovLegend").innerHTML=OV.series.map(s=>
+    `<div class="it"><span class="swatch ${s.dash?'dash':''}" style="background:${s.hex};color:${s.hex}"></span>${s.label}</div>`).join("");
+  const wrap=ovCv.parentElement,dpr=window.devicePixelRatio||1;
+  const W=wrap.clientWidth,H=ovCv.clientHeight;
+  ovCv.width=W*dpr;ovCv.height=H*dpr;ovCtx.setTransform(dpr,0,0,dpr,0,0);ovCtx.clearRect(0,0,W,H);
+  if(OV.series.length===0){ovCtx.fillStyle="#616e7c";ovCtx.font="13px sans-serif";ovCtx.fillText("无可显示序列",20,30);return;}
   const padL=58,padR=18,padT=16,padB=38;
   let tMin=Infinity,tMax=-Infinity,yMax=1;
-  SERIES.forEach(s=>s.pts.forEach(p=>{
-    if(p.t<tMin)tMin=p.t; if(p.t>tMax)tMax=p.t; if(p.mult>yMax)yMax=p.mult;}));
-  if(!isFinite(tMin)) return;
-  yMax*=1.12;
-  const yMin=1;
-  const lYmin=Math.log10(yMin), lYmax=Math.log10(yMax);
+  OV.series.forEach(s=>s.pts.forEach(p=>{if(p.t<tMin)tMin=p.t;if(p.t>tMax)tMax=p.t;if(p.mult>yMax)yMax=p.mult;}));
+  if(!isFinite(tMin))return; yMax*=1.12; const yMin=1, lYmin=Math.log10(yMin), lYmax=Math.log10(yMax);
   const xPix=t=>padL+(t-tMin)/(tMax-tMin)*(W-padR-padL);
-  const yPix=v=>{const lv=Math.log10(Math.max(v,yMin*0.999));
-    return (H-padB)-(lv-lYmin)/(lYmax-lYmin)*(H-padB-padT);};
-
-  // grid + y labels
-  ctx.font="11px sans-serif"; ctx.textBaseline="middle";
-  logTicks(yMin,yMax).forEach(v=>{
-    const y=yPix(v);
-    ctx.strokeStyle="#eef1f5"; ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
-    ctx.fillStyle="#9aa4b2";ctx.textAlign="right";
-    ctx.fillText(v>=1000?(v/1000)+"k":v+"x",padL-8,y);
-  });
-  // x ticks (years)
-  ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle="#9aa4b2";
-  const yr0=new Date(tMin).getFullYear(), yr1=new Date(tMax).getFullYear();
-  for(let y=yr0;y<=yr1;y+=2){
-    const t=Date.parse(y+"-01-01");
-    if(t<tMin||t>tMax) continue;
-    const x=xPix(t);
-    ctx.strokeStyle="#f3f5f8";ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,H-padB);ctx.stroke();
-    ctx.fillText(y,x,H-padB+6);
-  }
-  // lines
-  SERIES.forEach(s=>{
-    ctx.strokeStyle=s.hex;ctx.lineWidth=2;ctx.lineJoin="round";
-    if(s.dash) ctx.setLineDash([6,4]); else ctx.setLineDash([]);
-    ctx.beginPath();
-    s.pts.forEach((p,i)=>{const x=xPix(p.t),y=yPix(p.mult);
-      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
-    ctx.stroke();ctx.setLineDash([]);
-    // end dot
-    const last=s.pts[s.pts.length-1];
-    ctx.fillStyle=s.hex;ctx.beginPath();
-    ctx.arc(xPix(last.t),yPix(last.mult),2.6,0,7);ctx.fill();
-  });
-  // axes
-  ctx.strokeStyle="#cbd2d9";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,H-padB);ctx.lineTo(W-padR,H-padB);ctx.stroke();
-  cv._geom={tMin,tMax,yMin,yMax,xPix,yPix,padL,padR,padT,padB,W,H};
+  const yPix=v=>{const lv=Math.log10(Math.max(v,yMin*0.999));return (H-padB)-(lv-lYmin)/(lYmax-lYmin)*(H-padB-padT);};
+  ovCtx.font="11px sans-serif";ovCtx.textBaseline="middle";
+  logTicks(yMin,yMax).forEach(v=>{const y=yPix(v);ovCtx.strokeStyle="#eef1f5";ovCtx.lineWidth=1;
+    ovCtx.beginPath();ovCtx.moveTo(padL,y);ovCtx.lineTo(W-padR,y);ovCtx.stroke();
+    ovCtx.fillStyle="#9aa4b2";ovCtx.textAlign="right";ovCtx.fillText(v>=1000?(v/1000)+"k":v+"x",padL-8,y);});
+  ovCtx.textAlign="center";ovCtx.textBaseline="top";ovCtx.fillStyle="#9aa4b2";
+  const yr0=new Date(tMin).getFullYear(),yr1=new Date(tMax).getFullYear();
+  for(let y=yr0;y<=yr1;y+=2){const t=Date.parse(y+"-01-01");if(t<tMin||t>tMax)continue;
+    const x=xPix(t);ovCtx.strokeStyle="#f3f5f8";ovCtx.beginPath();ovCtx.moveTo(x,padT);ovCtx.lineTo(x,H-padB);ovCtx.stroke();
+    ovCtx.fillText(y,x,H-padB+6);}
+  OV.series.forEach(s=>{ovCtx.strokeStyle=s.hex;ovCtx.lineWidth=2;ovCtx.lineJoin="round";
+    if(s.dash)ovCtx.setLineDash([6,4]);else ovCtx.setLineDash([]);
+    ovCtx.beginPath();s.pts.forEach((p,i)=>{const x=xPix(p.t),y=yPix(p.mult);if(i===0)ovCtx.moveTo(x,y);else ovCtx.lineTo(x,y);});
+    ovCtx.stroke();ovCtx.setLineDash([]);
+    const last=s.pts[s.pts.length-1];ovCtx.fillStyle=s.hex;ovCtx.beginPath();ovCtx.arc(xPix(last.t),yPix(last.mult),2.6,0,7);ovCtx.fill();});
+  ovCtx.strokeStyle="#cbd2d9";ovCtx.lineWidth=1;ovCtx.beginPath();ovCtx.moveTo(padL,padT);ovCtx.lineTo(padL,H-padB);ovCtx.lineTo(W-padR,H-padB);ovCtx.stroke();
+  OV.geom={tMin,tMax,yMin,yMax,xPix,yPix,padL,padR,padT,padB,W,H};
+}
+ovCv.addEventListener("mousemove",e=>{
+  if(!OV.geom||OV.series.length===0)return;
+  const rect=ovCv.getBoundingClientRect(),mx=e.clientX-rect.left,g=OV.geom;
+  const t=g.tMin+(mx-g.padL)/(g.W-g.padR-g.padL)*(g.tMax-g.tMin);
+  let rows="";OV.series.forEach(s=>{let best=null,bd=Infinity;
+    s.pts.forEach(p=>{const d=Math.abs(p.t-t);if(d<bd){bd=d;best=p;}});
+    if(best)rows+=`<div class="tr"><span class="swatch ${s.dash?'dash':''}" style="background:${s.hex};color:${s.hex}"></span>${s.label}: <b>${fmtMult(best.mult)}</b></div>`;});
+  if(!rows)return; const x=g.xPix(t);
+  ovCtx.save();ovCtx.strokeStyle="#b0b8c1";ovCtx.setLineDash([3,3]);ovCtx.beginPath();ovCtx.moveTo(x,g.padT);ovCtx.lineTo(x,g.H-g.padB);ovCtx.stroke();ovCtx.restore();
+  ovTip.innerHTML=`<div style="margin-bottom:4px;color:#cbd2d9">${new Date(t).toISOString().slice(0,10)}</div>${rows}`;
+  ovTip.style.display="block";let lx=mx+14,ly=e.clientY-rect.top-10;if(lx+200>rect.width)lx=mx-214;
+  ovTip.style.left=lx+"px";ovTip.style.top=Math.max(4,ly)+"px";
+});
+ovCv.addEventListener("mouseleave",()=>{ovTip.style.display="none";renderOv();});
+document.getElementById("winSeg").addEventListener("click",e=>{
+  if(e.target.tagName!=="BUTTON")return;state.ov.win=e.target.dataset.w;
+  document.querySelectorAll("#winSeg button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");renderOv();
+});
+function buildOvToggles(){
+  const cfg=[["ashare","A股"],["us","美股(无期权)"],["usim","美股·期权模拟"],["crypto","加密"]];
+  const hexOf=k=>k==="usim"?"#8e44ad":buildModel()[k].hex;
+  const box=document.getElementById("toggles");
+  box.innerHTML=cfg.map(([k,l])=>`<label><input type="checkbox" data-k="${k}" ${state.ov.on[k]?"checked":""}>
+    <span style="color:${hexOf(k)}">●</span>${l}</label>`).join("");
+  box.querySelectorAll("label").forEach((lab,i)=>{const k=cfg[i][0];
+    lab.querySelector("input").addEventListener("change",ev=>{state.ov.on[k]=ev.target.checked;renderOv();});});
 }
 
-/* hover tooltip */
-cv.addEventListener("mousemove",e=>{
-  if(!cv._geom||SERIES.length===0)return;
-  const rect=cv.getBoundingClientRect();
-  const mx=e.clientX-rect.left;
-  const g=cv._geom;
-  let t=g.tMin+(mx-g.padL)/(g.W-g.padR-g.padL)*(g.tMax-g.tMin);
-  // find nearest point per series
-  let rows="";
-  SERIES.forEach(s=>{
-    let best=null,bd=Infinity;
-    s.pts.forEach(p=>{const d=Math.abs(p.t-t);if(d<bd){bd=d;best=p;}});
-    if(best){rows+=`<div class="tr"><span class="swatch ${s.dash?'dash':''}" style="background:${s.hex};color:${s.hex}"></span>
-      ${s.label}: <b>${fmtMult(best.mult)}</b></div>`;}
+/* ============ MARKET DRILL-DOWN ============ */
+function buildMarketView(mk){
+  const meta=META[mk];
+  const view=document.getElementById("view-"+mk);
+  const cfgSeg = meta.cfgs.length>1
+    ? `<div class="seg" id="${mk}-cfg">`+meta.cfgs.map(c=>
+        `<button data-c="${c}" class="${c===state[mk].cfg?'active':''}">${c==='baseline'?'基线':c==='optimized'?'优化':c==='options_sim'?'期权模拟':'周期'}</button>`).join("")+`</div>` : "";
+  view.innerHTML=`<div class="card">
+    <h2>${meta.label} 下钻 <span class="tag" style="background:${meta.hex}">${meta.label}</span></h2>
+    <div class="controls">
+      <span class="ctl-label">窗口</span>
+      <div class="seg" id="${mk}-win">`+meta.wins.map(w=>
+        `<button data-w="${w}" class="${w===state[mk].win?'active':''}">${WIN_LABEL[w]}</button>`).join("")+`</div>
+      ${cfgSeg}
+    </div>
+    <div class="chart-box"><canvas id="${mk}-chart" class="mktChart"></canvas><div class="tip" id="${mk}-tip"></div></div>
+    <div class="legend" id="${mk}-legend"></div>
+    <p class="muted" style="font-size:11.5px;margin-top:10px">实线＝净值倍数（对数刻度，左轴）；红色面积＝回撤深度（右轴）。悬停查看数值。</p>
+    <div class="stats" id="${mk}-stats"></div>
+    <div id="${mk}-table"></div>
+  </div>`;
+
+  view.querySelector("#"+mk+"-win").addEventListener("click",e=>{
+    if(e.target.tagName!=="BUTTON")return;state[mk].win=e.target.dataset.w;
+    view.querySelectorAll("#"+mk+"-win button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");renderMarket(mk);
   });
-  if(!rows)return;
-  const x=g.xPix(t);
-  ctx.save();ctx.strokeStyle="#b0b8c1";ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(x,g.padT);ctx.lineTo(x,g.H-g.padB);ctx.stroke();ctx.restore();
-  const dateStr=new Date(t).toISOString().slice(0,10);
-  tip.innerHTML=`<div style="margin-bottom:4px;color:#cbd2d9">${dateStr}</div>${rows}`;
-  tip.style.display="block";
-  let lx=mx+14, ly=e.clientY-rect.top-10;
-  if(lx+200>rect.width) lx=mx-214;
-  tip.style.left=lx+"px"; tip.style.top=Math.max(4,ly)+"px";
-});
-cv.addEventListener("mouseleave",()=>{tip.style.display="none";render();});
+  const cfgBox=view.querySelector("#"+mk+"-cfg");
+  if(cfgBox)cfgBox.addEventListener("click",e=>{
+    if(e.target.tagName!=="BUTTON")return;state[mk].cfg=e.target.dataset.c;
+    cfgBox.querySelectorAll("button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");renderMarket(mk);
+  });
+}
 
-/* window segment */
-document.getElementById("winSeg").addEventListener("click",e=>{
+function renderMarket(mk){
+  const meta=META[mk];
+  const win=state[mk].win, cfg=state[mk].cfg;
+  const blk=block(mk,win,cfg);
+  const view=document.getElementById("view-"+mk);
+  const cv=view.querySelector("#"+mk+"-chart"), ctx=cv.getContext("2d"), tip=view.querySelector("#"+mk+"tip");
+  const dates=blk.dates, mult=blk.mult, dd=blk.dd;
+  const wrap=cv.parentElement,dpr=window.devicePixelRatio||1,W=wrap.clientWidth,H=cv.clientHeight;
+  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const padL=58,padR=52,padT=16,padB=38;
+  // mult log axis
+  const mpos=mult.filter(v=>v>0); let mmin=Math.max(Math.min(...mpos),0.1),mmax=Math.max(...mult);
+  mmax*=1.12; const lmin=Math.floor(Math.log10(mmin)),lmax=Math.ceil(Math.log10(mmax));
+  // dd linear axis (right)
+  const ddmin=Math.min(...dd.filter(v=>isFinite(v))); let yMin=Math.min(ddmin*1.1,-5);
+  const tMin=Date.parse(dates[0]),tMax=Date.parse(dates[dates.length-1]);
+  const xPix=t=>padL+(t-tMin)/(tMax-tMin)*(W-padR-padL);
+  const yMult=v=>{const lv=Math.log10(Math.max(v,mmin*0.999));return (H-padB)-(lv-lmin)/(lmax-lmin)*(H-padB-padT);};
+  const yDd=v=>(H-padB)-(v/yMin)*(H-padB-padT);
+  // grid + mult labels
+  ctx.font="11px sans-serif";ctx.textBaseline="middle";
+  logTicks(mmin,mmax).forEach(v=>{const y=yMult(v);ctx.strokeStyle="#eef1f5";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle="#9aa4b2";ctx.textAlign="right";ctx.fillText(v>=1000?(v/1000)+"k":v+"x",padL-8,y);});
+  // dd labels
+  ctx.textAlign="left";ctx.fillStyle="#d98a8a";
+  for(let v=0;v>=yMin;v-=20){const y=yDd(v);if(y<padT)break;ctx.fillText(v+"%",W-padR+6,y);}
+  // x year ticks
+  ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle="#9aa4b2";
+  const yr0=new Date(tMin).getFullYear(),yr1=new Date(tMax).getFullYear();
+  for(let y=yr0;y<=yr1;y+=2){const t=Date.parse(y+"-01-01");if(t<tMin||t>tMax)continue;
+    const x=xPix(t);ctx.strokeStyle="#f3f5f8";ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,H-padB);ctx.stroke();ctx.fillText(y,x,H-padB+6);}
+  // dd area
+  ctx.fillStyle="rgba(192,57,43,.14)";ctx.beginPath();ctx.moveTo(xPix(tMin),yDd(0));
+  for(let i=0;i<dates.length;i++)ctx.lineTo(xPix(Date.parse(dates[i])),yDd(dd[i]));
+  ctx.lineTo(xPix(tMax),yDd(0));ctx.closePath();ctx.fill();
+  // mult line
+  ctx.strokeStyle=meta.hex;ctx.lineWidth=2;ctx.lineJoin="round";ctx.beginPath();
+  for(let i=0;i<dates.length;i++){const x=xPix(Date.parse(dates[i])),y=yMult(mult[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+  ctx.stroke();
+  // axes
+  ctx.strokeStyle="#cbd2d9";ctx.lineWidth=1;ctx.beginPath();
+  ctx.moveTo(padL,padT);ctx.lineTo(padL,H-padB);ctx.lineTo(W-padR,H-padB);
+  ctx.moveTo(W-padR,padT);ctx.lineTo(W-padR,H-padB);ctx.stroke();
+  // legend
+  view.querySelector("#"+mk+"-legend").innerHTML=
+    `<div class="it"><span class="swatch" style="background:${meta.hex}"></span>净值倍数 (对数)</div>
+     <div class="it"><span class="swatch" style="background:#c0392b"></span>回撤深度</div>`;
+  // stats
+  const s=blk.stats||{};
+  const sc=view.querySelector("#"+mk+"-stats");
+  sc.innerHTML=`
+    <div class="stat"><div class="k">期末倍数</div><div class="v">${fmtMult(s.final_mult)}</div></div>
+    <div class="stat"><div class="k">CAGR</div><div class="v">${fmtPct(s.cagr)}</div></div>
+    <div class="stat"><div class="k">最大回撤</div><div class="v neg">${fmtPct(s.mdd)}</div></div>
+    ${s.sharpe!=null?`<div class="stat"><div class="k">Sharpe</div><div class="v">${fmtSharpe(s.sharpe)}</div></div>`:""}
+    <div class="stat"><div class="k">样本周数</div><div class="v">${s.n_weeks!=null?s.n_weeks:dates.length}</div></div>`;
+  // yearly table (A股 has rows)
+  const tb=view.querySelector("#"+mk+"-table");
+  if(blk.rows&&blk.rows.length){
+    tb.innerHTML=`<h3 style="font-size:14px;margin:18px 0 8px">逐年收益</h3><table>
+      <thead><tr><th>年份</th><th>收益</th><th>最大回撤</th><th>期末倍数</th></tr></thead><tbody>
+      ${blk.rows.map(r=>`<tr><td>${r[0]}</td><td class="${r[1]>=0?'pos':'neg'}">${fmtPct(r[1])}</td>
+        <td class="neg">${fmtPct(r[2])}</td><td>${fmtMult(r[3])}</td></tr>`).join("")}</tbody></table>`;
+  } else tb.innerHTML="";
+  // hover
+  cv.onmousemove=ev=>{
+    const rect=cv.getBoundingClientRect(),mx=ev.clientX-rect.left;
+    const t=tMin+(mx-padL)/(W-padR-padL)*(tMax-tMin);
+    let bi=0,bd=Infinity;for(let i=0;i<dates.length;i++){const d=Math.abs(Date.parse(dates[i])-t);if(d<bd){bd=d;bi=i;}}
+    ctx.save();ctx.strokeStyle="#b0b8c1";ctx.setLineDash([3,3]);ctx.beginPath();
+    ctx.moveTo(xPix(Date.parse(dates[bi])),padT);ctx.lineTo(xPix(Date.parse(dates[bi])),H-padB);ctx.stroke();ctx.restore();
+    tip.innerHTML=`<div style="margin-bottom:3px;color:#cbd2d9">${dates[bi]}</div>
+      <div class="tr"><span class="swatch" style="background:${meta.hex}"></span>倍数 <b>${fmtMult(mult[bi])}</b></div>
+      <div class="tr"><span class="swatch" style="background:#c0392b"></span>回撤 <b>${fmtPct(dd[bi])}</b></div>`;
+    tip.style.display="block";let lx=mx+14,ly=ev.clientY-rect.top-10;if(lx+180>rect.width)lx=mx-194;
+    tip.style.left=lx+"px";tip.style.top=Math.max(4,ly)+"px";
+  };
+  cv.onmouseleave=()=>{tip.style.display="none";renderMarket(mk);};
+}
+
+/* ============ BLEND ============ */
+function renderBlend(){
+  const d=DATA.blend; if(!d){document.getElementById("view-blend").innerHTML=
+    `<div class="card"><div class="err">组合数据加载失败。</div></div>`;return;}
+  const single=d.single||{}, blends=d.blends||{};
+  const allNames=Object.keys(single).concat(Object.keys(blends));
+  const allMult=allNames.map(n=>(single[n]&&single[n].multiple)||(blends[n]&&blends[n].multiple)||1);
+  const view=document.getElementById("view-blend");
+  view.innerHTML=`<div class="card">
+    <h2>跨市场组合层 <span class="tag" style="background:var(--usim)">组合</span></h2>
+    <p class="muted" style="font-size:12.5px">共同窗口 ${d.common_window?d.common_window.join(" ~ "):"—"} · 样本周数 ${d.n_weeks||"—"}。
+      组合层为方法论证（分散配置压低回撤），非未来业绩承诺。</p>
+    <div class="stats" id="blend-stats"></div>
+    <h3 style="font-size:14px;margin:18px 0 8px">单品种（共同窗口）</h3>
+    <table><thead><tr><th>品种</th><th>倍数</th><th>CAGR</th><th>最大回撤</th></tr></thead><tbody>
+      ${Object.entries(single).map(([n,v])=>`<tr><td>${n}</td><td>${fmtMult(v.multiple)}</td>
+        <td>${fmtPct(v.cagr)}</td><td class="neg">${fmtPct(v.mdd)}</td></tr>`).join("")}</tbody></table>
+    <h3 style="font-size:14px;margin:18px 0 8px">组合方案</h3>
+    <table><thead><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>最大回撤</th><th>Sharpe</th></tr></thead><tbody>
+      ${Object.entries(blends).map(([n,v])=>`<tr><td>${n}</td><td>${fmtMult(v.multiple)}</td>
+        <td>${fmtPct(v.cagr)}</td><td class="neg">${fmtPct(v.mdd)}</td><td>${fmtSharpe(v.sharpe)}</td></tr>`).join("")}</tbody></table>
+    <h3 style="font-size:14px;margin:18px 0 8px">倍数对比（对数）</h3>
+    <div class="chart-box"><canvas id="blend-bar" class="mktChart"></canvas></div>
+    <p class="muted" style="font-size:11.5px;margin-top:10px">条形为各品种/组合期末倍数（对数刻度）。组合通过分散降低回撤，但倍数低于单一加密暴露。</p>
+  </div>`;
+  // bar chart (log)
+  const cv=view.querySelector("#blend-bar"),ctx=cv.getContext("2d");
+  const wrap=cv.parentElement,dpr=window.devicePixelRatio||1,W=wrap.clientWidth,H=cv.clientHeight;
+  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const padL=10,padR=10,padT=16,padB=70;
+  const mmax=Math.max(...allMult)*1.15, mmin=Math.max(Math.min(...allMult.filter(v=>v>0)),1);
+  const lmin=Math.floor(Math.log10(mmin)),lmax=Math.ceil(Math.log10(mmax));
+  const n=allNames.length,bw=(W-padL-padR)/n;
+  // grid
+  ctx.font="10px sans-serif";ctx.textBaseline="middle";
+  for(let e=lmin;e<=lmax;e++)for(const mm of [1,2,5]){const v=mm*Math.pow(10,e);if(v<mmin||v>mmax)continue;
+    const y=(H-padB)-(Math.log10(v)-lmin)/(lmax-lmin)*(H-padT-padB);
+    ctx.strokeStyle="#eef1f5";ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle="#9aa4b2";ctx.textAlign="right";ctx.fillText(v>=1000?(v/1000)+"k":v+"x",W-padR-2,y);}
+  allNames.forEach((nm,i)=>{
+    const v=allMult[i];const x=padL+i*bw+bw*0.18,bw2=bw*0.64;
+    const y0=(H-padB)-(0-lmin)/(lmax-lmin)*(H-padT-padB);
+    const yv=(H-padB)-(Math.log10(v)-lmin)/(lmax-lmin)*(H-padT-padB);
+    ctx.fillStyle=i<allNames.length-Object.keys(blends).length?"#7f8c9a":"var(--usim)";
+    ctx.fillStyle=i<3?"#b8c0cc":"#8e44ad";
+    ctx.fillRect(x,yv,bw2,y0-yv);
+    ctx.fillStyle="#1f2933";ctx.font="10px sans-serif";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.save();ctx.translate(x+bw2/2,H-padB+6);ctx.rotate(-Math.PI/4);ctx.textAlign="right";
+    ctx.fillText(nm.length>22?nm.slice(0,20)+"…":nm,0,0);ctx.restore();
+  });
+  // stats summary
+  view.querySelector("#blend-stats").innerHTML=Object.entries(blends).slice(0,1).map(([n,v])=>
+    `<div class="stat"><div class="k">推荐方案</div><div class="v" style="font-size:14px">${n}</div></div>
+     <div class="stat"><div class="k">倍数</div><div class="v">${fmtMult(v.multiple)}</div></div>
+     <div class="stat"><div class="k">CAGR</div><div class="v">${fmtPct(v.cagr)}</div></div>
+     <div class="stat"><div class="k">最大回撤</div><div class="v neg">${fmtPct(v.mdd)}</div></div>`).join("")
+     + `<div class="stat"><div class="k">共同窗口周数</div><div class="v">${d.n_weeks||"—"}</div></div>`;
+}
+
+/* ============ REPORTS ============ */
+function renderReports(){
+  const links=[
+    ["cycle_opt_report.md","周期优化报告","walk-forward 优化结果"],
+    ["cycle_weights_report.md","周期权重报告","周期权重实验"],
+    ["cycle_windows_report.md","周期窗口报告","窗口划分 / OOS 验证"],
+    ["crypto_overlay_report.md","加密减半相位叠加","cycle_overlay 归因"],
+    ["portfolio_blend.html","组合配置可视化","portfolio_blend 图形"],
+    ["portfolio_blend_report.md","组合层报告","跨市场组合论证"],
+    ["portfolio_curves.html","三市场组合曲线","50/50 轮动与组合层"],
+    ["curves.html","A股回测曲线","腾讯后复权周线对照"],
+    ["backtest_curves.html","A股回测明细","逐年/分位/事件归因"],
+    ["backtest_report.md","回测报告","总体结论"],
+    ["us-options-hedge-design.md","美股期权对冲设计","options_sim / LEAPS 说明"],
+    ["cycle_framework.md","周期框架","减半周期模型"],
+    ["CYCLE_DERISK.md","周期去风险","风险处置"],
+    ["THEME_SELECTION.md","主题选择","主题分层"],
+    ["README.md","项目手册","操作与口径"],
+    ["data/nav.json","A股 NAV (JSON)","docs/data/nav.json"],
+    ["data/nav_us.json","美股 NAV (JSON)","docs/data/nav_us.json"],
+    ["data/nav_crypto.json","加密 NAV (JSON)","docs/data/nav_crypto.json"],
+    ["data/portfolio_blend.json","组合 NAV (JSON)","docs/data/portfolio_blend.json"]
+  ];
+  document.getElementById("reportLinks").innerHTML=links.map(([h,t,d])=>
+    `<a href="${h}" target="_blank" rel="noopener"><div class="t">${t}</div><div class="d">${d}</div></a>`).join("");
+}
+
+/* ============ TABS ============ */
+document.getElementById("tabs").addEventListener("click",e=>{
   if(e.target.tagName!=="BUTTON")return;
-  curWin=e.target.dataset.w;
-  document.querySelectorAll("#winSeg button").forEach(b=>b.classList.remove("active"));
-  e.target.classList.add("active");
-  render();
+  const tab=e.target.dataset.tab;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");
+  ["overview","ashare","us","crypto","blend","reports"].forEach(t=>
+    document.getElementById("view-"+t).hidden=(t!==tab));
+  if(tab==="ashare"||tab==="us"||tab==="crypto")renderMarket(tab);
+  if(tab==="blend")renderBlend();
+  if(tab==="overview")renderOv();
 });
 
-/* ---------- boot ---------- */
+/* ============ BOOT ============ */
 (async function(){
   try{
-    const d=await loadAll();
-    MODEL=buildModel(d);
-    renderTruth();
-    buildToggles();
-    render();
-    const gen=[d.a.generated_at,d.u.generated_at,d.c.generated_at];
+    Object.assign(DATA, await loadAll());
+    if(!DATA.ashare||!DATA.us||!DATA.crypto){throw new Error("核心 NAV 数据缺失");}
+    renderTruth(); buildOvToggles(); renderOv();
+    ["ashare","us","crypto"].forEach(buildMarketView);
+    renderBlend(); renderReports();
+    const gen=[DATA.ashare.generated_at,DATA.us.generated_at,DATA.crypto.generated_at].filter(Boolean);
     document.getElementById("footer").innerHTML=
-      `A股生成 ${gen[0]} · 美股生成 ${gen[1]} · 加密生成 ${gen[2]} &nbsp;|&nbsp; `+
+      `A股生成 ${gen[0]||"—"} · 美股生成 ${gen[1]||"—"} · 加密生成 ${gen[2]||"—"} &nbsp;|&nbsp; `+
       `数据层 docs/data/*.json 与渲染分离，引擎重算后刷新即可，无需重建页面。<br>`+
       `mx_auto_strategy · 三市场量化回测研究引擎（非实盘，不构成投资建议）`;
-    window.addEventListener("resize",()=>render());
+    window.addEventListener("resize",()=>{renderOv();
+      ["ashare","us","crypto"].forEach(mk=>{if(!document.getElementById("view-"+mk).hidden)renderMarket(mk);});
+      if(!document.getElementById("view-blend").hidden)renderBlend();});
   }catch(err){
     document.getElementById("truthTable").innerHTML=
       `<div class="err">数据加载失败：${err.message}。请确认通过 HTTP 访问（GitHub Pages 或本地服务器），而非 file:// 直接打开。</div>`;
-    document.getElementById("footer").textContent="加载失败："+err.message;
-    console.error(err);
+    document.getElementById("footer").textContent="加载失败："+err.message;console.error(err);
   }
 })();
 </script>

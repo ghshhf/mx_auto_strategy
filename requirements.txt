@@ -1,0 +1,7 @@
+# mx_auto_strategy — 网页自动发布流水线依赖
+# 仅覆盖「离线重算 + 生成 docs」所需；实时行情拉取(akshare 等)不在 CI 内使用。
+pandas>=1.5
+numpy>=1.23
+matplotlib>=3.6
+plotly>=5.0
+requests>=2.28

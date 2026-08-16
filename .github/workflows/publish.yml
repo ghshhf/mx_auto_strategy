@@ -1,0 +1,86 @@
+name: Publish docs (web)
+
+# 自动把回测引擎跑出的结果重新生成到 docs/ 并由 GitHub Pages 发布。
+#
+# 关键约束（务必理解）:
+#   - GitHub Pages 仅静态托管；本工作流在 CI 中用「仓库内已提交的数据快照」运行引擎，
+#     重算并写回 docs/data/*.json 与各报告，再由 Pages 自动重发。
+#   - CI 运行器无本地代理，连不上腾讯/Binance/OKX/CMC，因此「实时行情」无法在云端拉取。
+#   - 故: 加密面板(weekly_adjclose_crypto50_10y.csv)与组合层可离线重算；
+#         A股/美股面板未提交(需本地代理生成)，其导出脚本在面板缺失时自动跳过，保留已提交结果。
+#   - 实时数据刷新请在本机走代理后运行 scripts/refresh_and_publish.sh。
+#
+# 触发: 推送到 main(引擎改动即自动重发) + 每周一定时(捕获遗漏) + 手动 workflow_dispatch。
+# 提交信息含 [skip ci]，避免文档提交再次触发本工作流造成死循环。
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"        # 每周一 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-docs
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Regenerate NAV data (面板存在才跑)
+        env:
+          PYTHONPATH: .
+        run: |
+          set -u
+          if [ -f crypto_stocks/data/weekly_adjclose_crypto50_10y.csv ]; then
+            python crypto_stocks/export_nav_crypto.py
+          fi
+          if [ -f ashare_backtest/data/ashare_panel_close_em.csv ]; then
+            python ashare_backtest/export_nav.py
+          fi
+          if [ -f us_stocks/data/weekly_adjclose_full_ext.csv ]; then
+            python us_stocks/export_nav_us.py
+          fi
+          # 组合层读已提交 nav.json + us_nav_ai.csv + 重算加密，始终可离线跑
+          python portfolio_blend.py
+
+      - name: Refresh report markdown (离线, best-effort)
+        continue-on-error: true
+        env:
+          PYTHONPATH: .
+        run: |
+          python build_cycle_report.py
+          python build_cycle_opt_report.py
+          python build_cycle_weights_report.py
+          python build_crypto_opt_report.py
+
+      - name: Commit & push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "docs/ 无变化，跳过提交。"
+          else
+            git commit -m "chore: auto-regenerate web docs [skip ci]"
+            git push
+          fi
