@@ -134,12 +134,12 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链":  ['SOL', 'ADA', 'AVAX', 'SUI', 'INJ', 'DOT', 'NEAR', 'APT'],
-    "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
+    "L1公链":  ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP'],
+    "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['ARB', 'OP', 'POL'],
-    "DeFi":    ['UNI', 'AAVE', 'SKY', 'COMP', 'CRV', 'LDO', 'JOE'],
-    "DeFi借贷": ['AAVE', 'COMP', 'CRV'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'CRV', 'JUP', 'JOE'],
+    "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO', 'JOE'],
+    "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
+    "DEX":     ['UNI', 'JUP', 'JOE'],
     "平台币":  ['BNB', 'OKB'],
     "链上永续交易所": ['DYDX'],
     "基础设施": ['LINK', 'API3'],
@@ -148,7 +148,7 @@ THEME_COINS = {
     "DePIN":   ['RENDER'],
     "存储":    ['FIL', 'AR'],
     "GameFi":  ['GALA', 'RON'],
-    "隐私":    ['ZEC', 'DASH'],
+    "隐私":    ['ZEC'],  # 2026-08-18 删DASH, 留ZEC押隐私beta
     "RWA":     ['ONDO', 'CFG'],
 }
 
@@ -158,8 +158,8 @@ for _coins in THEME_COINS.values():
     for c in _coins:
         _OFFENSE_SET.add(c)
 OFFENSE_COINS = sorted(_OFFENSE_SET)
-# 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 引擎每轮只选 3-4 个)
-assert len(OFFENSE_COINS) >= 40, f"进攻代币不足 40, 当前 {len(OFFENSE_COINS)}"
+# 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 再降至 38; 引擎每轮只选 3-4 个)
+assert len(OFFENSE_COINS) >= 38, f"进攻代币不足 38, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -412,7 +412,6 @@ COIN_META = {
     'DOT': {'name': 'Polkadot', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'NEAR': {'name': 'NEAR Protocol', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'APT': {'name': 'Aptos', 'role': 'offense', 'theme': 'L1公链', 'launch': 2022},
-    'SUI': {'name': 'Sui', 'role': 'offense', 'theme': 'L1公链', 'launch': 2023},
     # 2026-06-15 TON(Telegram Open Network 原生代币 Toncoin) 经社区投票(81.22%)更名为 Gram(GRAM),
     # 区块链仍叫 The Open Network, 代币 1:1 无迁移/无新合约. Binance 现货对 TONUSDT->GRAMUSDT.
     'GRAM': {'name': 'Gram', 'role': 'offense', 'theme': '支付链', 'launch': 2018},
@@ -430,8 +429,6 @@ COIN_META = {
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'SKY': {'name': 'Sky', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
-    'COMP': {'name': 'Compound', 'role': 'offense', 'theme': 'DeFi', 'launch': 2018},
-    'CRV': {'name': 'Curve', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
@@ -451,13 +448,14 @@ COIN_META = {
     'RON': {'name': 'Ronin', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
-    'DASH': {'name': 'Dash', 'role': 'offense', 'theme': '隐私', 'launch': 2014},
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
+    'BCH': {'name': 'Bitcoin Cash', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
+    'ICP': {'name': 'Internet Computer', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
 }
 
 

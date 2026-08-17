@@ -116,9 +116,9 @@
 | RWA | 1% | 加速 | 1.35x | ONDO, POLYX |
 | DePIN | 2% | 早期 | 1.15x | RENDER, AKT |
 | 存储 | 5% | 早期 | 1.15x | FIL, AR |
-| 隐私 | 3% | 早期 | 1.15x | ZEC, DASH |
-| DeFi 借贷 | 20% | 饱和 | 0.65x | AAVE, COMP |
-| DEX | 15% | 饱和 | 0.65x | UNI, CRV, JUP, JOE |
+| 隐私 | 3% | 早期 | 1.15x | ZEC |
+| DeFi 借贷 | 20% | 饱和 | 0.65x | AAVE |
+| DEX | 15% | 饱和 | 0.65x | UNI, JUP, JOE |
 | GameFi | 8% | 饱和 | 0.65x | AXS, GALA |
 
 > **已排除**: Meme 赛道（回测验证亏钱）、LSD 赛道（导致权重重复计算）

@@ -48,12 +48,6 @@
     "sector": "L2扩容"
   },
   {
-    "sym": "CRV",
-    "held": 16,
-    "mcap_usd": 415515705,
-    "sector": "DeFi"
-  },
-  {
     "sym": "OP",
     "held": 15,
     "mcap_usd": 204850207,
@@ -72,22 +66,10 @@
     "sector": "隐私"
   },
   {
-    "sym": "SUI",
-    "held": 13,
-    "mcap_usd": 2789826971,
-    "sector": "L1公链"
-  },
-  {
     "sym": "CFG",
     "held": 12,
     "mcap_usd": 80000000.0,
     "sector": "RWA"
-  },
-  {
-    "sym": "DASH",
-    "held": 12,
-    "mcap_usd": 390506364,
-    "sector": "隐私"
   },
   {
     "sym": "AVAX",
@@ -160,18 +142,6 @@
     "held": 0,
     "mcap_usd": 100000000.0,
     "sector": "链上永续交易所"
-  },
-  {
-    "sym": "SUI",
-    "held": 0,
-    "mcap_usd": 2785146264,
-    "sector": "L1公链"
-  },
-  {
-    "sym": "COMP",
-    "held": 0,
-    "mcap_usd": 162517981,
-    "sector": "DeFi"
   },
   {
     "sym": "LDO",
@@ -268,5 +238,17 @@
     "held": 0,
     "mcap_usd": null,
     "sector": "AI+加密"
+  },
+  {
+    "sym": "BCH",
+    "held": 0,
+    "mcap_usd": 4077510000.0,
+    "sector": "支付链"
+  },
+  {
+    "sym": "ICP",
+    "held": 0,
+    "mcap_usd": 1178840000.0,
+    "sector": "L1公链"
   }
 ]
