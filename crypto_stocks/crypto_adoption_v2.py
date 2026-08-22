@@ -137,13 +137,13 @@ THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['ARB', 'OP', 'POL'],
-    "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO', 'JOE'],
+    "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'JUP', 'JOE'],
-    "平台币":  ['BNB', 'OKB'],
+    "DEX":     ['UNI', 'JUP'],
+    "平台币":  ['BNB', 'OKB', 'GT'],
     "链上永续交易所": ['DYDX'],
-    "基础设施": ['LINK', 'API3'],
-    "AI+加密": ['RENDER', 'TAO', 'GLM'],
+    "基础设施": ['LINK'],
+    "AI+加密": ['RENDER', 'GLM', 'FET'],
     "模块化":  ['TIA'],
     "DePIN":   ['RENDER'],
     "存储":    ['FIL', 'AR'],
@@ -432,11 +432,11 @@ COIN_META = {
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
-    'JOE': {'name': 'Trader Joe (JOE)', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},
+    'FET': {'name': 'Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
+    'GT': {'name': 'GateToken', 'role': 'offense', 'theme': '平台币', 'launch': 2024},
     # AI
     'GLM': {'name': 'Golem', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2016},
     'RENDER': {'name': 'Render', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
-    'TAO': {'name': 'Bittensor', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2023},
     # 模块化
     'TIA': {'name': 'Celestia', 'role': 'offense', 'theme': '模块化', 'launch': 2023},
     # DePIN
@@ -453,7 +453,6 @@ COIN_META = {
     'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
     # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
-    'API3': {'name': 'API3', 'role': 'offense', 'theme': '基础设施', 'launch': 2020},
     'BCH': {'name': 'Bitcoin Cash', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
     'ICP': {'name': 'Internet Computer', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
 }

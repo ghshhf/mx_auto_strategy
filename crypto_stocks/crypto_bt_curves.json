@@ -1,0 +1,17 @@
+{
+  "base": {
+    "multiple": 16196400.5,
+    "cagr": 427.3,
+    "mdd": -31.8,
+    "sharpe": 2.85
+  },
+  "no_option": {
+    "multiple": 8105445.7,
+    "cagr": 391.9,
+    "mdd": -32.3,
+    "sharpe": 2.67
+  },
+  "btc": {
+    "multiple": 108.8
+  }
+}

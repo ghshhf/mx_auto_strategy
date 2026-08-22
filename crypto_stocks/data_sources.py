@@ -81,7 +81,8 @@ COINGECKO_IDS = {
     'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'GALA': 'gala', 'ZEC': 'zcash',
     'AR': 'arweave',
-    'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',     'GRAM': 'the-open-network',
+    'JUP': 'jupiter', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
+    'FET': 'fetch-ai', 'GT': 'gate-token',
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
     'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
@@ -98,8 +99,9 @@ CMC_IDS = {
     'CFG': 4160, 'POL': 6690, 'SKY': 33038, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'RON': 14101,
-    'SOL': 5426, 'TAO': 22974,
-    'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437, 'JOE': 11396,
+    'SOL': 5426,
+    'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
+    'FET': 3773, 'GT': 4269,
 }
 
 
