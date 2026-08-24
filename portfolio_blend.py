@@ -25,6 +25,11 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, 'crypto_stocks'))
 
+# 共同窗口锁定为 v6.18 官方真值窗口: 三市场对齐到 [2017-08-11, 2026-08-14] (471 周周五网格).
+# 原因: 各子面板数据会随刷新向前/向后延伸, 若任由 inner-join 动态决定起点, 共同窗口会漂移,
+# 导致组合端值静默改变(既定"真值"被改写)。锁定窗口后 CI 重算必然零差异、站点稳定。
+WIN0, WIN1 = "2017-08-11", "2026-08-14"
+
 
 def load_series():
     # ---- A股 (nav.json 引擎 export 实序列) ----
@@ -45,6 +50,8 @@ def load_series():
 
     raw = pd.concat([ash, us, cry], axis=1, sort=False)
     raw = raw.resample('W-FRI').last().ffill()
+    # 锁定共同窗口(见 WIN0/WIN1 注释), 防止数据刷新导致组合端值漂移
+    raw = raw.loc[WIN0:WIN1]
     df = raw.dropna()
     for c in df.columns:
         df[c] = df[c] / df[c].iloc[0]
@@ -205,7 +212,7 @@ td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
 A股序列来自 nav.json (v6.18 权威配置, 已与头条 18.185x 对齐)。本图仅作方法论演示, 非业绩承诺。</p></div>
 
 <script>
-const D = {{dates:D.dates, series:{series}, bnav:{bnav}}};
+const D = {{dates:dates, series:{series}, bnav:{bnav}}};
 Plotly.newPlot('c1', [
   {s_traces}
   {b_traces}
