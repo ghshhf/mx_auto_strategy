@@ -175,8 +175,14 @@ class OkxSource(BaseCryptoSource):
             after = int(time.time() * 1000)
             for _ in range(200):
                 url = f"https://www.okx.com/api/v5/market/candles?instId={inst}&bar=1W&after={after}&limit=100"
-                data, err = _http_get_json(url)
-                if err or not data:
+                payload, err = _http_get_json(url)
+                # OKX 返回带信封 {"code","msg","data":[...]}; code!="0" 视为失败
+                if err or not isinstance(payload, dict):
+                    break
+                if payload.get('code') != '0':
+                    break
+                data = payload.get('data') or []
+                if not data:
                     break
                 for x in data:
                     rows.append((int(x[0]), float(x[4])))
