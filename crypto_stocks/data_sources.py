@@ -74,7 +74,7 @@ COINGECKO_IDS = {
     'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'ATOM': 'cosmos', 'UNI': 'uniswap', 'LTC': 'litecoin',
     'NEAR': 'near', 'APT': 'aptos', 'ARB': 'arbitrum', 'OP': 'optimism',
-    'SKY': 'sky', 'GLM': 'golem', 'AAVE': 'aave',
+    'GLM': 'golem', 'AAVE': 'aave',
     'INJ': 'injective', 'TIA': 'celestia',
     'FIL': 'filecoin', 'RON': 'ronin',
     'LDO': 'lido-dao',
@@ -86,6 +86,8 @@ COINGECKO_IDS = {
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
     'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
+    'ETHFI': 'ether-fi', 'PENDLE': 'pendle', 'ONT': 'ontology',
+    'TAO': 'bittensor', 'RENDER': 'render-token',
 }
 
 # CMC id 映射 (从 sync_crypto_panel._CMC_ID_MAP 迁来, 自此以本模块为唯一真相源;
@@ -96,12 +98,12 @@ CMC_IDS = {
     'DOT': 6636, 'DYDX': 28324, 'ICP': 8916,
     'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'GALA': 7080,
     'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'LTC': 2,
-    'CFG': 4160, 'POL': 6690, 'SKY': 33038, 'NEAR': 6535,
+    'CFG': 4160, 'POL': 6690, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'RON': 14101,
     'SOL': 5426,
     'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
-    'FET': 3773, 'GT': 4269,
+    'FET': 3773, 'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, 'ONT': 2566, 'TAO': 22974,
 }
 
 
