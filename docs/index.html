@@ -70,6 +70,11 @@
   .muted{color:var(--sub)}
   code{background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:12px}
   .err{color:#c0392b;font-size:13px;padding:10px;background:#fdecea;border-radius:8px}
+  .skeleton{height:14px;border-radius:6px;margin:8px 0;
+    background:linear-gradient(90deg,#eef1f5 25%,#e2e7ee 37%,#eef1f5 63%);
+    background-size:400% 100%;animation:sk 1.3s ease infinite}
+  .skeleton.sm{width:42%} .skeleton.md{width:70%} .skeleton.lg{width:90%}
+  @keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
   .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
   .tabs button{border:1px solid var(--line);background:#fff;padding:8px 16px;font-size:13.5px;
     cursor:pointer;color:var(--sub);border-radius:9px}
@@ -105,7 +110,7 @@
   <div id="view-overview" class="view">
     <div class="card">
       <h2>真值对照表 <span class="tag">全量窗口</span></h2>
-      <div id="truthTable"><p class="muted">加载中…</p></div>
+      <div id="truthTable"><div class="skeleton lg"></div><div class="skeleton md"></div><div class="skeleton sm"></div><p class="muted" style="font-size:11.5px">正在拉取 NAV 数据…</p></div>
       <p class="muted" style="font-size:11.5px;margin-top:12px">
         CAGR 为日历年化（按首末日期实际天数）。A股真值 18.185x 为 v6.18 回归测试锁定口径（动量26+核心卫星0.5+死叉，use_tech=False）。
         各市场面板与引擎版本独立，倍数不可直接横向相加。
@@ -507,15 +512,16 @@ function renderBlend(){
 /* ============ REPORTS ============ */
 function renderReports(){
   const links=[
+    ["TRUTH.md","单一真值源","审计后验证真值汇总"],
+    ["portfolio_blend.html","组合配置可视化","portfolio_blend 图形"],
+    ["portfolio_curves.html","三市场组合曲线","50/50 轮动与组合层"],
+    ["curves.html","A股回测曲线","腾讯后复权周线对照"],
+    ["backtest_curves.html","A股回测明细","逐年/分位/事件归因"],
     ["cycle_opt_report.md","周期优化报告","walk-forward 优化结果"],
     ["cycle_weights_report.md","周期权重报告","周期权重实验"],
     ["cycle_windows_report.md","周期窗口报告","窗口划分 / OOS 验证"],
     ["crypto_overlay_report.md","加密减半相位叠加","cycle_overlay 归因"],
-    ["portfolio_blend.html","组合配置可视化","portfolio_blend 图形"],
     ["portfolio_blend_report.md","组合层报告","跨市场组合论证"],
-    ["portfolio_curves.html","三市场组合曲线","50/50 轮动与组合层"],
-    ["curves.html","A股回测曲线","腾讯后复权周线对照"],
-    ["backtest_curves.html","A股回测明细","逐年/分位/事件归因"],
     ["backtest_report.md","回测报告","总体结论"],
     ["us-options-hedge-design.md","美股期权对冲设计","options_sim / LEAPS 说明"],
     ["cycle_framework.md","周期框架","减半周期模型"],
@@ -526,7 +532,8 @@ function renderReports(){
     ["data/nav_us.json","美股 NAV (JSON)","docs/data/nav_us.json"],
     ["data/nav_crypto.json","加密 NAV (JSON)","docs/data/nav_crypto.json"],
     ["data/portfolio_blend.json","组合 NAV (JSON)","docs/data/portfolio_blend.json"]
-  ];
+  ].map(([h,t,d])=> h.endsWith('.md')
+      ? ["report.html?r="+h, t, d] : [h,t,d]);
   document.getElementById("reportLinks").innerHTML=links.map(([h,t,d])=>
     `<a href="${h}" target="_blank" rel="noopener"><div class="t">${t}</div><div class="d">${d}</div></a>`).join("");
 }
@@ -547,23 +554,41 @@ document.getElementById("tabs").addEventListener("click",e=>{
 (async function(){
   try{
     Object.assign(DATA, await loadAll());
-    if(!DATA.ashare||!DATA.us||!DATA.crypto){throw new Error("核心 NAV 数据缺失");}
-    renderTruth(); buildOvToggles(); renderOv();
-    ["ashare","us","crypto"].forEach(buildMarketView);
-    renderBlend(); renderReports();
-    const gen=[DATA.ashare.generated_at,DATA.us.generated_at,DATA.crypto.generated_at].filter(Boolean);
-    document.getElementById("footer").innerHTML=
-      `A股生成 ${gen[0]||"—"} · 美股生成 ${gen[1]||"—"} · 加密生成 ${gen[2]||"—"} &nbsp;|&nbsp; `+
-      `数据层 docs/data/*.json 与渲染分离，引擎重算后刷新即可，无需重建页面。<br>`+
-      `mx_auto_strategy · 三市场量化回测研究引擎（非实盘，不构成投资建议）`;
-    window.addEventListener("resize",()=>{renderOv();
-      ["ashare","us","crypto"].forEach(mk=>{if(!document.getElementById("view-"+mk).hidden)renderMarket(mk);});
-      if(!document.getElementById("view-blend").hidden)renderBlend();});
-  }catch(err){
+  }catch(err){ console.error("load partial error", err); }
+
+  const missing=[];
+  if(!DATA.ashare)missing.push("A股");
+  if(!DATA.us)missing.push("美股");
+  if(!DATA.crypto)missing.push("加密");
+  if(!DATA.blend)missing.push("组合");
+
+  function safe(fn){ try{ fn(); }catch(e){ console.error("render error", e); } }
+
+  if(missing.length===4){
     document.getElementById("truthTable").innerHTML=
-      `<div class="err">数据加载失败：${err.message}。请确认通过 HTTP 访问（GitHub Pages 或本地服务器），而非 file:// 直接打开。</div>`;
-    document.getElementById("footer").textContent="加载失败："+err.message;console.error(err);
+      `<div class="err">核心数据全部加载失败（缺失：${missing.join("、")}）。请确认通过 HTTP 访问（GitHub Pages 或本地服务器），而非 file:// 直接打开。</div>`;
+    document.getElementById("footer").textContent="加载失败：无可用数据";
+    return;
   }
+
+  safe(renderTruth); safe(buildOvToggles); safe(renderOv);
+  ["ashare","us","crypto"].forEach(mk=>{ if(DATA[mk]) safe(()=>buildMarketView(mk)); });
+  if(DATA.blend) safe(renderBlend);
+  safe(renderReports);
+
+  if(missing.length){
+    document.getElementById("truthTable").insertAdjacentHTML("beforeend",
+      `<div class="err" style="margin-top:12px">部分数据缺失（${missing.join("、")}），相关视图已跳过。其余视图正常。</div>`);
+  }
+
+  const gen=[DATA.ashare&&DATA.ashare.generated_at,DATA.us&&DATA.us.generated_at,DATA.crypto&&DATA.crypto.generated_at].filter(Boolean);
+  document.getElementById("footer").innerHTML=
+    `A股生成 ${gen[0]||"—"} · 美股生成 ${gen[1]||"—"} · 加密生成 ${gen[2]||"—"} &nbsp;|&nbsp; `+
+    `数据层 docs/data/*.json 与渲染分离，引擎重算后刷新即可，无需重建页面。<br>`+
+    `mx_auto_strategy · 三市场量化回测研究引擎（非实盘，不构成投资建议）`;
+  window.addEventListener("resize",()=>{ if(DATA.ashare)renderOv();
+    ["ashare","us","crypto"].forEach(mk=>{ if(DATA[mk]&&!document.getElementById("view-"+mk).hidden)renderMarket(mk); });
+    if(DATA.blend&&!document.getElementById("view-blend").hidden)renderBlend();});
 })();
 </script>
 </body>
