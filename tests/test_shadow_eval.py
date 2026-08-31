@@ -18,12 +18,16 @@ import shadow_eval
 
 
 # 模拟 K 线 (升序, 20根约1个月)
-def _make_mock_kl(start_price=100, days=30, trend=-0.5):
-    """生成模拟K线, trend=每日涨跌幅%"""
+def _make_mock_kl(start_price=100, days=30, trend=-0.5, start_date=None):
+    """生成模拟K线, trend=每日涨跌幅%
+
+    start_date 必须覆盖被测快照的日期，否则 _forward_return 会把最后一根 K 线
+    同时当作入场与出场，收益恒为 0，使断言失真（曾导致 evaluate 测试假通过）。
+    """
     kl = []
     price = start_price
     from datetime import datetime, timedelta
-    d = datetime(2026, 6, 1)
+    d = start_date or datetime(2026, 6, 1)
     for i in range(days):
         price *= (1 + trend / 100)
         # 跳过周末
@@ -141,9 +145,13 @@ class TestEvaluate(unittest.TestCase):
     @patch("market_data.get_kline")
     def test_evaluate_marks_evaluated(self, mock_kl):
         """评估后快照 evaluated=True, eval 非空"""
+        # 快照日期：45 天前，既满足 horizon 窗口，也作为 mock K 线的起点
+        from datetime import datetime, timedelta
+        old_dt = datetime.now() - timedelta(days=45)
+
         # rule 标的涨, ai 标的跌
-        kl_up = _make_mock_kl(start_price=100, days=30, trend=0.5)
-        kl_down = _make_mock_kl(start_price=100, days=30, trend=-0.5)
+        kl_up = _make_mock_kl(start_price=100, days=30, trend=0.5, start_date=old_dt)
+        kl_down = _make_mock_kl(start_price=100, days=30, trend=-0.5, start_date=old_dt)
 
         def mock_get_kline(code, *a, **kw):
             if "up" in code:
@@ -157,11 +165,10 @@ class TestEvaluate(unittest.TestCase):
         ai = [{"code": "down001", "final_score": 0.80, "ai_adjusted_score": 0.90, "ai_multiplier": 1.2}]
         shadow_eval.record("defensive", rule, ai, top_n=1)
 
-        # 手动设置快照日期为30天前
+        # 手动设置快照日期为45天前
         snaps = shadow_eval._load_snapshots()
-        from datetime import datetime, timedelta
-        old_date = (datetime.now() - timedelta(days=45)).strftime("%Y-%m-%d")
-        old_ts = (datetime.now() - timedelta(days=45)).strftime("%Y-%m-%d %H:%M:%S")
+        old_date = old_dt.strftime("%Y-%m-%d")
+        old_ts = old_dt.strftime("%Y-%m-%d %H:%M:%S")
         snaps[0]["date"] = old_date
         snaps[0]["ts"] = old_ts
         shadow_eval._save_snapshots(snaps)
@@ -172,12 +179,16 @@ class TestEvaluate(unittest.TestCase):
         self.assertTrue(snaps[0]["evaluated"])
         self.assertIsNotNone(snaps[0]["eval"])
         self.assertFalse(snaps[0]["eval"]["ai_wins"])  # AI选了跌的, 规则选了涨的
+        self.assertLess(snaps[0]["eval"]["diff"], 0)   # 差额必须为负, 否则是 0 收益假通过
 
     @patch("market_data.get_kline")
     def test_evaluate_ai_wins(self, mock_kl):
         """AI选了涨的, 规则选了跌的 -> AI胜"""
-        kl_up = _make_mock_kl(start_price=100, days=30, trend=0.5)
-        kl_down = _make_mock_kl(start_price=100, days=30, trend=-0.5)
+        from datetime import datetime, timedelta
+        old_dt = datetime.now() - timedelta(days=45)
+
+        kl_up = _make_mock_kl(start_price=100, days=30, trend=0.5, start_date=old_dt)
+        kl_down = _make_mock_kl(start_price=100, days=30, trend=-0.5, start_date=old_dt)
 
         def mock_get_kline(code, *a, **kw):
             if "up" in code:
@@ -191,8 +202,8 @@ class TestEvaluate(unittest.TestCase):
         shadow_eval.record("defensive", rule, ai, top_n=1)
 
         snaps = shadow_eval._load_snapshots()
-        from datetime import datetime, timedelta
-        old_date = (datetime.now() - timedelta(days=45)).strftime("%Y-%m-%d")
+        from datetime import datetime
+        old_date = old_dt.strftime("%Y-%m-%d")
         snaps[0]["date"] = old_date
         shadow_eval._save_snapshots(snaps)
 

@@ -120,9 +120,10 @@ def main():
     full = run_all(win_cfg)
     print(f"\n{'窗口':<5}{'倍数':>11}{'CAGR':>9}{'MDD':>9}{'Sharpe':>9}{'BTC持有':>10}   起止")
     for row in full:
+        btc_bh = '' if row['btc_buyhold'] is None else f"{row['btc_buyhold'] * 100:>8.0f}%"
         print(f"{row['window']:<5}{row['multiple']:>10.1f}x{row['cagr']*100:>8.1f}%"
               f"{row['mdd']*100:>8.1f}%{row['sharpe']:>9.2f}"
-              f"{('' if row['btc_buyhold'] is None else f'{row['btc_buyhold']*100:>8.0f}%')}   {row['range']}")
+              f"{btc_bh}   {row['range']}")
 
     # 对照：原始 37k 文档档(php=31) 在当前池
     base_now = run_all(base_cfg(pre_halving_start_month=31.0))
