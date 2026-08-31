@@ -137,7 +137,7 @@ THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['POL'],
-    "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO'],
+    "DeFi": ['UNI', 'AAVE', 'LDO'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'JUP', 'RAY'],  # 2026-08-31 加 RAY (Raydium, Solana AMM/DEX, 2021 上线, 熊市幸存)
     "平台币":  ['BNB', 'OKB', 'GT'],
@@ -427,7 +427,6 @@ COIN_META = {
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'SKY': {'name': 'Sky', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'HYPE': {'name': 'Hyperliquid', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2024},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},

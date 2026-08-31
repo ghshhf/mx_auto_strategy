@@ -7,7 +7,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 V3 = os.path.join(HERE, 'data', 'weekly_adjclose_crypto50_v3.csv')
 
-# 防御核(README V2 设计): BTC/ETH/OKB；其余为进攻。SKY=原MKR改名。
+# 防御核(README V2 设计): BTC/ETH/OKB；其余为进攻。(SKY 已于 2026-08-31 移除)
 DEFENSIVE = {'BTC', 'ETH', 'OKB'}
 
 CYCLES = [('C1_2017', '2016-08-11', '2020-05-11'),

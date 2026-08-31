@@ -9,7 +9,7 @@ CG = {
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'UNI': 'uniswap', 'NEAR': 'near', 'APT': 'aptos',
     'ARB': 'arbitrum', 'OP': 'optimism', 'GLM': 'golem',
-    'SKY': 'sky', 'AAVE': 'aave', 'TIA': 'celestia',
+    'AAVE': 'aave', 'TIA': 'celestia',
     'FIL': 'filecoin',
     'LDO': 'lido-dao', 'BCH': 'bitcoin-cash',
     'DYDX': 'dydx',
