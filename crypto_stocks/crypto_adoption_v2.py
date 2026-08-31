@@ -134,22 +134,22 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链":  ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP'],
+    "L1公链": ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP', 'HBAR'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['POL'],
-    "DeFi": ['UNI', 'AAVE', 'LDO'],
+    "DeFi": ['UNI', 'AAVE', 'PENDLE', 'ETHFI'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'JUP', 'RAY'],  # 2026-08-31 加 RAY (Raydium, Solana AMM/DEX, 2021 上线, 熊市幸存)
     "平台币":  ['BNB', 'OKB', 'GT'],
     "链上永续交易所": ['DYDX', 'HYPE'],
     "基础设施": ['LINK'],
-    "AI+加密": ['RENDER', 'GLM', 'FET'],
-    "模块化":  ['TIA'],
+    "AI+加密": ['RENDER', 'GLM'],
+    "模块化":   [],  # 2026-09-01 删 TIA(最后成员) 后赛道置空, 保留键以对齐 PHASE_HISTORY/引擎引用
     "DePIN":   ['RENDER'],
-    "存储":    ['FIL', 'AR'],
+    "存储": ['FIL'],
     "GameFi":  ['GALA', 'RON'],
     "隐私":    ['ZEC'],  # 2026-08-18 删DASH, 留ZEC押隐私beta
-    "RWA":     ['ONDO', 'CFG'],
+    "RWA": ['ONDO'],
 }
 
 # 去重后的进攻代币列表 (48个)
@@ -159,8 +159,9 @@ for _coins in THEME_COINS.values():
         _OFFENSE_SET.add(c)
 OFFENSE_COINS = sorted(_OFFENSE_SET)
 # 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 降至 38;
-# 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 再加 RAY(DEX) → 净 +1 = 38; 下限留 2 缓冲设 36; 引擎每轮只选 3-4 个)
-assert len(OFFENSE_COINS) >= 36, f"进攻代币不足 36, 当前 {len(OFFENSE_COINS)}"
+# 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 再加 RAY(DEX) → 净 +1 = 38; 下限留 2 缓冲设 36;
+# 2026-09-01 删 FET/TIA/AR(净 -3 = 35), 下限同步下调至 33 留 2 缓冲; 引擎每轮只选 3-4 个)
+assert len(OFFENSE_COINS) >= 33, f"进攻代币不足 33, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -402,6 +403,9 @@ def detect_regime(btc_price, btc_ma, params=None):
 
 # ========== 代币元信息 ==========
 COIN_META = {
+    'ETHFI': {'name': 'ether.fi', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},  # 2026-09-01 added via manage_token.py
+    'HBAR': {'name': 'Hedera', 'role': 'offense', 'theme': 'L1公链', 'launch': 2019},  # 2026-08-31 added via manage_token.py
+    'PENDLE': {'name': 'Pendle', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},  # 2026-08-31 added via manage_token.py
     # 防御
     'BTC': {'name': 'Bitcoin', 'role': 'defense', 'theme': 'L1公链', 'launch': 2009},
     'ETH': {'name': 'Ethereum', 'role': 'defense', 'theme': 'L1公链', 'launch': 2015},
@@ -429,29 +433,21 @@ COIN_META = {
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'HYPE': {'name': 'Hyperliquid', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2024},
-    'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     'RAY': {'name': 'Raydium', 'role': 'offense', 'theme': 'DEX', 'launch': 2021},
-    'FET': {'name': 'Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
     'GT': {'name': 'GateToken', 'role': 'offense', 'theme': '平台币', 'launch': 2024},
     # AI
     'GLM': {'name': 'Golem', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2016},
     'RENDER': {'name': 'Render', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
     # 模块化
-    'TIA': {'name': 'Celestia', 'role': 'offense', 'theme': '模块化', 'launch': 2023},
-    # DePIN
     # 存储
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
-    'AR': {'name': 'Arweave', 'role': 'offense', 'theme': '存储', 'launch': 2020},
-    # GameFi
     'GALA': {'name': 'Gala Games', 'role': 'offense', 'theme': 'GameFi', 'launch': 2020},
     'RON': {'name': 'Ronin', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
     # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
-    'CFG': {'name': 'Centrifuge', 'role': 'offense', 'theme': 'RWA', 'launch': 2021},
-    # 平台币 / 链上永续交易所 / 基础设施 (2026-08-11 扩充)
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'BCH': {'name': 'Bitcoin Cash', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
     'ICP': {'name': 'Internet Computer', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},

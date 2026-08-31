@@ -138,11 +138,15 @@ def has_option_market(coin):
 @dataclass
 class CryptoOptionsConfig:
     # ---- 三件套总开关 ----
-    enabled_call: bool = True     # 止盈 covered call
-    enabled_put: bool = True      # 双层保护性 put
-    enabled_short: bool = True    # 止盈后做空闭环
-    enabled_ovl: bool = True      # 极度高估主动卖 call
-    enabled_cooldown: bool = True # 冷却期
+    # ⚠ 2026-08-31 临时关闭期权三件套: 审计(2026-08-17)发现 put 保险层被建模为收益引擎 +
+    #   alloc_offense_mult=1.2 杠杆复利放大, 致基数虚高 5~6 个数量级 (FULL=49.97Mx).
+    #   暂时全部关闭, 引擎退化为"纯现货轮动 + 减半周期减仓" (等同 reconcile 的 NO_OPTS=4,533x),
+    #   待未来重做期权层(真对称赔付/样本外验证)再开启。halving_cycle 主干层保留不动。
+    enabled_call: bool = False    # 止盈 covered call  [临时关闭]
+    enabled_put: bool = False     # 双层保护性 put      [临时关闭]
+    enabled_short: bool = False   # 止盈后做空闭环      [临时关闭]
+    enabled_ovl: bool = False     # 极度高估主动卖 call [临时关闭]
+    enabled_cooldown: bool = True # 冷却期 (期权关闭后无生效路径, 保留无害)
     option_universe_only: bool = False # 已废弃: 用 option_filter_phases 替代(按相位动态控制)
     # 期权约束按相位动态切换: 列出的相位要求进攻币有期权市场(能写call/put), 未列出的相位全放开
     # 山寨周期与BTC减半同步: euphoria期山寨轮动最猛→放开抓涨幅; crash/bear_bottom→仓位已清零无影响
@@ -180,7 +184,7 @@ class CryptoOptionsConfig:
     # ---- 主动做空 - 比特币减半周期门控 (基于BTC确定性减半时间线) ----
     # 用法: 周期相位进入见顶/暴跌区时"武装"策略; 再用"高位+一段时期不破新高"确认后才开空。
     # 期权期限用1年远程LEAPS(short_cycle_dte_weeks=52), 吃完整暴跌段, 非杠杆暴露。
-    short_cycle_gate: bool = True             # 周期门控开空: True=只在 gate_phases 内 + 高位滞涨确认才开
+    short_cycle_gate: bool = False            # 周期门控开空: [2026-08-31 临时关闭] 属期权做空闭环, 随期权模块一并关; 重新启用期权时改回 True
     short_gate_phases: tuple = ('euphoria', 'crash')  # 允许开空的相位(12-24月post-halving=见顶到暴跌)
     short_stall_lookback: int = 12            # 高位判定回看周数(取区间高点)
     short_stall_pct: float = 0.15             # 当前价 >= 区间高点*(1-pct) 视为"高位附近"
@@ -807,7 +811,7 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         #   期权: 见顶区内开的所有空一律用 1年远程LEAPS(short_cycle_dte_weeks=52),
         #        持有穿越暴跌, 价格收复长MA(short_cycle_exit_ma=40周)才平(防被4周抖动洗掉)。
         #   见顶区外: 仅保留短DTE战术空(MA破位触发), 避免牛市早期假突破被挤空。
-        if proactive_short_cd <= 0:
+        if cfg.enabled_short and proactive_short_cd <= 0:
             armed = bool(cfg.short_cycle_gate and phase is not None and phase in cfg.short_gate_phases)
             # 路径A(趋势): BTC跌破N周MA = 熊市信号(抓2018/2022暴跌)
             ma_open = False

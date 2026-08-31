@@ -4,23 +4,23 @@ import csv, json, subprocess, sys, os
 PANEL = "data/weekly_adjclose_crypto50.csv"
 # CoinGecko id 映射 (取自 data_sources.py)
 CG = {
+    'ETHFI': 'ether-fi',  # 2026-09-01
+    'HBAR': 'hedera-hashgraph',  # 2026-08-31
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'UNI': 'uniswap', 'NEAR': 'near', 'APT': 'aptos',
-    'ARB': 'arbitrum', 'OP': 'optimism', 'GLM': 'golem',
-    'AAVE': 'aave', 'TIA': 'celestia',
-    'FIL': 'filecoin',
-    'LDO': 'lido-dao', 'BCH': 'bitcoin-cash',
+    'GLM': 'golem',
+    'AAVE': 'aave', 'FIL': 'filecoin',
+    'BCH': 'bitcoin-cash',
     'DYDX': 'dydx',
     'GALA': 'gala', 'ZEC': 'zcash',
-    'AR': 'arweave',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network',
-    'CFG': 'centrifuge',
     'XLM': 'stellar', 'LTC': 'litecoin', 'ICP': 'internet-computer',
     'API3': 'api3',
     'RENDER': 'render-token', 'RON': 'ronin', 'XRP': 'ripple',
+    'PENDLE': 'pendle',
 }
 
 # 读取面板实际币种

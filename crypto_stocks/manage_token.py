@@ -7,6 +7,7 @@
   运营池     crypto_adoption_v2.py  THEME_COINS + COIN_META
   市值映射   fetch_mcaps.py         CG id 映射 (可自动经 CoinGecko 解析)
   CMC 映射   sync_crypto_panel.py   _CMC_ID_MAP (可选 --cmc-id)
+  符号映射   data_sources.py        COINGECKO_IDS + CMC_IDS (加删币同步维护)
   筛查标注   _screen_pool_now.py    recent 集合
 
 对齐口径 (与面板既有数据严格一致, 已实证):
@@ -44,6 +45,7 @@ CA_FILE = os.path.join(HERE, 'crypto_adoption_v2.py')
 MCAP_FILE = os.path.join(HERE, 'fetch_mcaps.py')
 SYNC_FILE = os.path.join(HERE, 'sync_crypto_panel.py')
 SCREEN_FILE = os.path.join(HERE, '_screen_pool_now.py')
+DS_FILE = os.path.join(HERE, 'data_sources.py')
 
 PROXY = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
          or 'http://127.0.0.1:3067')
@@ -252,11 +254,13 @@ def pool_remove(sym):
             if mm and re.search(r"'%s'" % sym, mm.group(2)):
                 items = [i for i in re.findall(r"'(\w+)'", mm.group(2)) if i != sym]
                 changed = True
+                name = re.match(r'^\s*"([^"]+)"', line).group(1)
                 if not items:
-                    continue                     # 空赛道删行
-                out.append('%s"%s": %s%s' % (mm.group(1),
-                            re.match(r'^\s*"([^"]+)"', line).group(1),
-                            _fmt_list(items), mm.group(3)))
+                    # 空赛道: 保留空键 'X': [] 而非删行, 以对齐 PHASE_HISTORY/引擎引用
+                    out.append('%s"%s": []%s' % (mm.group(1), name, mm.group(3)))
+                else:
+                    out.append('%s"%s": %s%s' % (mm.group(1), name,
+                                    _fmt_list(items), mm.group(3)))
             else:
                 out.append(line)
         return '\n'.join(out) if changed else None
@@ -334,6 +338,45 @@ def cmcmap_remove(sym):
         return new if new != text else None
     return _edit_file(SYNC_FILE, fn)
 
+# data_sources.py 也维护 COINGECKO_IDS / CMC_IDS 两份映射, 须同步清理
+def ds_cgmap_add(sym, cg_id):
+    def fn(text):
+        m = re.search(r'COINGECKO_IDS\s*=\s*\{', text)
+        if not m or not cg_id:
+            return None
+        if re.search(r"^\s*'%s':\s*'" % sym, text, re.M):
+            return text
+        return (text[:m.end()] + "\n    '%s': '%s'," % (sym, cg_id)
+                + '  # %s' % TODAY + text[m.end():])
+    return _edit_file(DS_FILE, fn)
+
+def ds_cgmap_remove(sym):
+    def fn(text):
+        new = re.sub(r"'%s':\s*'[^']*',\s*" % sym, '', text)      # 行内/独立行(前缀)
+        new = re.sub(r",\s*'%s':\s*'[^']*'" % sym, '', new)      # 行尾
+        return new if new != text else None
+    return _edit_file(DS_FILE, fn)
+
+def ds_cmcmap_add(sym, cmc_id):
+    if not cmc_id:
+        return False
+    def fn(text):
+        m = re.search(r'CMC_IDS\s*=\s*\{', text)
+        if not m:
+            return None
+        if re.search(r"^\s*'%s':\s*\d+" % sym, text, re.M):
+            return text
+        return (text[:m.end()] + "\n    '%s': %d," % (sym, int(cmc_id))
+                + '  # %s' % TODAY + text[m.end():])
+    return _edit_file(DS_FILE, fn)
+
+def ds_cmcmap_remove(sym):
+    def fn(text):
+        new = re.sub(r"'%s':\s*\d+,\s*" % sym, '', text)          # 行内/独立行(前缀)
+        new = re.sub(r",\s*'%s':\s*\d+" % sym, '', new)           # 行尾
+        return new if new != text else None
+    return _edit_file(DS_FILE, fn)
+
 def recent_set(sym, add=True):
     """_screen_pool_now.py 的 recent 集合增删 (兼容单/双引号)."""
     def fn(text):
@@ -410,6 +453,11 @@ def cmd_add(args):
     if args.cmc_id:
         cmcmap_add(sym, args.cmc_id)
         print(f"  CMC id = {args.cmc_id}")
+    # data_sources.py 同步维护映射
+    if cg:
+        ds_cgmap_add(sym, cg)
+    if args.cmc_id:
+        ds_cmcmap_add(sym, args.cmc_id)
     recent_set(sym, add=True)
     print(f"[5/5] 校验...")
     r = subprocess.run([sys.executable, os.path.join(HERE, 'manage_token.py'),
@@ -430,8 +478,10 @@ def cmd_remove(args):
     print('  池:', '已移除' if pool_remove(sym) else '(不在池内)')
     print('  META:', '已移除' if meta_remove(sym) else '(无条目)')
     print(f"[3/4] 映射清理...")
-    print('  CG:', '已移除' if cgmap_remove(sym) else '(无)')
-    print('  CMC:', '已移除' if cmcmap_remove(sym) else '(无)')
+    print('  CG(fetch_mcaps):', '已移除' if cgmap_remove(sym) else '(无)')
+    print('  CMC(sync):', '已移除' if cmcmap_remove(sym) else '(无)')
+    print('  DS-CG(data_sources):', '已移除' if ds_cgmap_remove(sym) else '(无)')
+    print('  DS-CMC(data_sources):', '已移除' if ds_cmcmap_remove(sym) else '(无)')
     recent_set(sym, add=False)
     print(f"[4/4] 校验...")
     r = subprocess.run([sys.executable, os.path.join(HERE, 'manage_token.py'),

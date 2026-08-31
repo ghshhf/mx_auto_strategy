@@ -69,20 +69,17 @@ def align_friday(ts_ms):
 # ---------------- 符号映射 ----------------
 # CoinGecko 用 coin id (非 ticker); 此处为常用币映射, 未知币该源自动跳过。
 COINGECKO_IDS = {
+    'HBAR': 'hedera-hashgraph',  # 2026-08-31
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'XRP': 'ripple', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'ATOM': 'cosmos', 'UNI': 'uniswap', 'LTC': 'litecoin',
-    'NEAR': 'near', 'APT': 'aptos', 'ARB': 'arbitrum', 'OP': 'optimism',
-    'GLM': 'golem', 'AAVE': 'aave',
-    'INJ': 'injective', 'TIA': 'celestia',
-    'FIL': 'filecoin', 'RON': 'ronin',
-    'LDO': 'lido-dao',
+    'NEAR': 'near', 'APT': 'aptos', 'GLM': 'golem', 'AAVE': 'aave',
+    'INJ': 'injective', 'FIL': 'filecoin', 'RON': 'ronin',
     'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'GALA': 'gala', 'ZEC': 'zcash',
-    'AR': 'arweave',
     'JUP': 'jupiter', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
-    'FET': 'fetch-ai', 'GT': 'gate-token',
+    'GT': 'gate-token',
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
     'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
@@ -93,17 +90,17 @@ COINGECKO_IDS = {
 # CMC id 映射 (从 sync_crypto_panel._CMC_ID_MAP 迁来, 自此以本模块为唯一真相源;
 # 迁移完成后旧文件里的副本可删)。
 CMC_IDS = {
-    'AAVE': 7278, 'ADA': 2010, 'APT': 21794, 'AR': 5632,
-    'ARB': 11841, 'AVAX': 5805, 'BCH': 1831, 'BTC': 1, 'XLM': 512,
+    'HBAR': 4642,  # 2026-08-31
+    'AAVE': 7278, 'ADA': 2010, 'APT': 21794, 'AVAX': 5805, 'BCH': 1831, 'BTC': 1, 'XLM': 512,
     'DOT': 6636, 'DYDX': 28324, 'ICP': 8916,
     'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'GALA': 7080,
-    'JUP': 29210, 'LDO': 8000, 'LINK': 1975, 'LTC': 2,
+    'JUP': 29210, 'LINK': 1975, 'LTC': 2,
     'CFG': 4160, 'POL': 6690, 'NEAR': 6535,
-    'OKB': 3897, 'ONDO': 21159, 'OP': 11840, 'INJ': 20646, 'XRP': 52,
+    'OKB': 3897, 'ONDO': 21159, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'RON': 14101,
     'SOL': 5426,
-    'TIA': 22861, 'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
-    'FET': 3773, 'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, 'ONT': 2566, 'TAO': 22974,
+    'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
+    'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, 'ONT': 2566, 'TAO': 22974,
 }
 
 
