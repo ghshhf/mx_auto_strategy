@@ -31,6 +31,10 @@ tencent_hfq_rebuild.py
 """
 import os
 import sys
+
+# 代理统一走 net_config 解析 (存活探测 + 回退默认 3067, 规避沙箱注入坏代理)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 仓库根, 供 net_config
+import net_config  # noqa: E402
 import csv
 import json
 import time
@@ -58,7 +62,7 @@ END = "2026-12-31"
 MAX_COUNT = "1000"
 API = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
 
-PROXY_HOST = "http://127.0.0.1:3067"
+PROXY_HOST = net_config.proxy_url()
 
 # 指数(周线死叉 + 三档识别) 与 可转债(弱势进攻替代)
 INDICES = [("000300", "sh"), ("000905", "sh"), ("000001", "sh"),
