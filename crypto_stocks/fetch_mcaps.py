@@ -6,7 +6,7 @@
 2026-09-01 修复:
   1. 原脚本硬编码 socks5h://127.0.0.1:1080 —— 该端口实测未监听(HTTP 000), 脚本直接
      跑不通("解析失败: Expecting value: line 1 column 1")。改走 net_config 统一代理。
-  2. 补全缺失的 CoinGecko id: GT / INJ / ONT / RAY (均已实测校验市值可返回)。
+  2. 补全缺失的 CoinGecko id: GT / INJ / RAY (均已实测校验市值可返回; ONT 已于 2026-09-01 移出面板)。
   3. 移除僵尸映射 API3 / JOE (三面板均无此二币)。
   4. 去掉对外部 curl 的依赖, 改用 urllib (避免 curl 缺失/编码问题)。
 
@@ -41,7 +41,7 @@ CG = {
     'GT': 'gatechain-token',  # 2026-09-01
     'INJ': 'injective-protocol',  # 2026-09-01
     'RAY': 'raydium',  # 2026-09-01
-    'ONT': 'ontology',  # 2026-09-01
+    # 2026-09-01
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
