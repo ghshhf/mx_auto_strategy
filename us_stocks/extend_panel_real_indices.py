@@ -12,10 +12,13 @@
   3. 把 SOX 作为新列并入 weekly_adjclose_full_ext.csv(若已存在则覆盖)
   4. 打印年度收益交叉验证: 合成SEMI_INDEX vs 真实SOX, 合成TECH_INDEX vs 真实XLK(用年度锚点)
 """
-import os, csv, json
+import os, csv, json, sys
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from panel_align import align_asof  # noqa: E402  共享 as-of 对齐实现
+
 DATA = os.path.join(HERE, "data")
 PANEL = os.path.join(DATA, "weekly_adjclose_full_ext.csv")
 SOX_JSON = os.path.join(DATA, "raw_sox_historyofmarket.json")
@@ -42,19 +45,11 @@ def load_sox(path):
 
 
 def weekly_align(panel_dates, daily_map):
-    """面板周日期 -> 取该日期 <= 最近的 daily_map date; 前向填充."""
-    src_dates = sorted(daily_map)
-    j = 0
-    out = []
-    for d in panel_dates:
-        # 推进到 <= d 的最近 src date
-        while j + 1 < len(src_dates) and src_dates[j + 1] <= d:
-            j += 1
-        if src_dates and src_dates[j] <= d:
-            out.append(daily_map[src_dates[j]])
-        else:
-            out.append(None)
-    return out
+    """面板周日期 -> 取该日期 <= 最近的 daily_map date; 前向填充.
+
+    2026-09-01: 改委托共享实现 panel_align.align_asof (行为等价, 去除重复实现)。
+    """
+    return align_asof(panel_dates, daily_map)
 
 
 def annual_returns(dates, series, year_mask):

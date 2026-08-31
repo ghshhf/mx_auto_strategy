@@ -7,14 +7,19 @@ import os
 import sys
 import time
 
-# 必须在 import 任何读 env 的模块之前强制 3067
-os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:3067'
-os.environ['HTTP_PROXY'] = 'http://127.0.0.1:3067'
-os.environ['https_proxy'] = 'http://127.0.0.1:3067'
-os.environ['http_proxy'] = 'http://127.0.0.1:3067'
-
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))  # 仓库根
+sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))  # crypto_stocks/
+
+# 2026-09-01: 原逻辑用 os.environ[...] = '3067' **强制覆盖** 全部代理环境变量,
+# 那是为绕过沙箱注入的 61350 (对 Binance 返 502) 的临时手段, 但副作用是会盖掉
+# 用户/CI 已配好的有效代理。现 sync_crypto_panel / crypto_hist_data 已改由
+# net_config 存活探测解析, 本脚本只需补齐缺失的环境变量即可 (setdefault 语义)。
+import net_config  # noqa: E402
+
+net_config.apply_env(force=False)
+
 import sync_crypto_panel as sp  # noqa: E402
 import crypto_hist_data as chd  # noqa: E402
 

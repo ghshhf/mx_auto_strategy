@@ -10,10 +10,14 @@ DATA = os.path.join(BASE, "data")
 WK = os.path.join(DATA, "ashare_weekly_em")
 os.makedirs(WK, exist_ok=True)
 
+# 代理统一走 net_config 解析 (存活探测 + 回退默认 3067, 规避沙箱注入坏代理)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 仓库根, 供 net_config
+import net_config  # noqa: E402
+
 START = "20100101"
 END = "20260726"
 API = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
-PROXY = "http://127.0.0.1:3067"
+PROXY = net_config.proxy_url()
 
 # (code, market) —— 与 strategy_config.json candidate_pool 对齐
 HK = [("00700", "HK"), ("03690", "HK"), ("01810", "HK"), ("00941", "HK"), ("00388", "HK")]

@@ -7,10 +7,13 @@ extend_panel_gld.py - 把 westock-data 抓取的 GLD/JPM 真实周线并入美�
 
 运行: python extend_panel_gld.py
 """
-import os, csv, re
+import os, csv, re, sys
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from panel_align import align_asof  # noqa: E402  共享 as-of 对齐实现
+
 DATA = os.path.join(HERE, "data")
 SRC = os.path.join(DATA, "weekly_adjclose_full.csv")
 DST = os.path.join(DATA, "weekly_adjclose_full_ext.csv")
@@ -45,15 +48,12 @@ def parse_md(paths):
 
 
 def align(panel_dates, src_map):
-    """对面板每个日期, 取 src_map 中 <= 该日期的最新值(前向填充)。"""
-    src_dates = list(src_map.keys())
-    j = 0
-    out = []
-    for d in panel_dates:
-        while j + 1 < len(src_dates) and src_dates[j + 1] <= d:
-            j += 1
-        out.append(src_map[src_dates[j]] if src_dates and src_dates[j] <= d else None)
-    return out
+    """对面板每个日期, 取 src_map 中 <= 该日期的最新值(前向填充)。
+
+    2026-09-01: 改委托共享实现 panel_align.align_asof (源键强制排序;
+    原实现用 list(dict.keys()) 未排序, 源数据乱序时会静默错配)。
+    """
+    return align_asof(panel_dates, src_map)
 
 
 def main():

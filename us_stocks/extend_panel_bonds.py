@@ -16,9 +16,12 @@ extend_panel_bonds.py - 把债券 ETF(TLT/IEF/AGG/BND/SHY) 真实周线并入美
 对齐: 面板周频日期为基准, 对债券取"<=面板日的最新收盘价"(前向填充), 容忍 1 周错位。
 产物: data/weekly_adjclose_full_ext.csv (原列 + 债券列)
 """
-import os, csv, re
+import os, csv, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from panel_align import align_asof  # noqa: E402  共享 as-of 对齐实现
+
 DATA = os.path.join(HERE, "data")
 SRC = os.path.join(DATA, "weekly_adjclose_full_ext.csv")   # 在已有扩展面板上再扩
 DST = SRC
@@ -56,14 +59,9 @@ def parse_md(paths):
 
 
 def align(panel_dates, src_map):
-    src_dates = list(src_map.keys())
-    j = 0
-    out = []
-    for d in panel_dates:
-        while j + 1 < len(src_dates) and src_dates[j + 1] <= d:
-            j += 1
-        out.append(src_map[src_dates[j]] if src_dates and src_dates[j] <= d else None)
-    return out
+    """前向填充对齐到面板周日期。2026-09-01: 改委托共享实现 (源键强制排序,
+    原实现用 list(dict.keys()) 未排序, 源数据乱序时会静默错配)。"""
+    return align_asof(panel_dates, src_map)
 
 
 def main():
