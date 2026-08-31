@@ -85,7 +85,7 @@ COINGECKO_IDS = {
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
     'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
-    'ETHFI': 'ether-fi', 'PENDLE': 'pendle', 'TAO': 'bittensor', 'RENDER': 'render-token',
+    'ETHFI': 'ether-fi', 'PENDLE': 'pendle', 'RENDER': 'render-token',
 }
 
 # CMC id 映射 (从 sync_crypto_panel._CMC_ID_MAP 迁来, 自此以本模块为唯一真相源;
@@ -99,8 +99,7 @@ CMC_IDS = {
     'OKB': 3897, 'ONDO': 21159, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'SOL': 5426,
     'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
-    'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, 'TAO': 22974,
-}
+    'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, }
 
 
 # ---------------- 抽象基类 ----------------

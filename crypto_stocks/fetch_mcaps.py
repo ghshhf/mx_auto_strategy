@@ -51,7 +51,7 @@ CG = {
     'BCH': 'bitcoin-cash',
     'DYDX': 'dydx',
     'ZEC': 'zcash',
-    'JUP': 'jupiter', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
+    'JUP': 'jupiter', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network',
     'XLM': 'stellar', 'LTC': 'litecoin', 'ICP': 'internet-computer',
     'RENDER': 'render-token', 'XRP': 'ripple',
