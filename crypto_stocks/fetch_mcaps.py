@@ -4,6 +4,7 @@ import csv, json, subprocess, sys, os
 PANEL = "data/weekly_adjclose_crypto50.csv"
 # CoinGecko id 映射 (取自 data_sources.py)
 CG = {
+    'HYPE': 'hyperliquid',  # 2026-09-01
     'ETHFI': 'ether-fi',  # 2026-09-01
     'HBAR': 'hedera-hashgraph',  # 2026-08-31
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
@@ -14,12 +15,12 @@ CG = {
     'AAVE': 'aave', 'FIL': 'filecoin',
     'BCH': 'bitcoin-cash',
     'DYDX': 'dydx',
-    'GALA': 'gala', 'ZEC': 'zcash',
+    'ZEC': 'zcash',
     'JUP': 'jupiter', 'JOE': 'joe', 'TAO': 'bittensor', 'ONDO': 'ondo-finance',
     'GRAM': 'the-open-network',
     'XLM': 'stellar', 'LTC': 'litecoin', 'ICP': 'internet-computer',
     'API3': 'api3',
-    'RENDER': 'render-token', 'RON': 'ronin', 'XRP': 'ripple',
+    'RENDER': 'render-token', 'XRP': 'ripple',
     'PENDLE': 'pendle',
 }
 

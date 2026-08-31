@@ -42,7 +42,7 @@ for coin in ca2.OFFENSE_COINS + ca2.DEFENSE_COINS:
 
 # launch year to flag recently-added
 launch = getattr(ca2, "COIN_META", {})
-recent = {"LTC", "RON", "XRP", "GLM", "BCH", "GRAM", "PENDLE", "HBAR", "ETHFI"}  # 近期手工加的
+recent = {"LTC", "XRP", "GLM", "BCH", "GRAM", "PENDLE", "HBAR", "ETHFI", "HYPE"}  # 近期手工加的
 
 print(f"{'COIN':6} {'档':4} {'C1':>7} {'C2':>7} {'C3':>7}  备注")
 print("-"*60)
