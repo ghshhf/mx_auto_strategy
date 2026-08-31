@@ -1,13 +1,13 @@
 {
   "never": [
-    "ARB",
     "JUP",
     "RON",
     "GLM",
     "ICP",
     "ETHFI",
     "PENDLE",
-    "CFG"
+    "CFG",
+    "HYPE"
   ],
   "once": [
     "APT",
@@ -17,7 +17,6 @@
     "FIL",
     "GALA",
     "LDO",
-    "OP",
     "RENDER",
     "SOL",
     "TAO",
@@ -51,16 +50,6 @@
     "XRP"
   ],
   "detail": [
-    {
-      "coin": "ARB",
-      "def": "进攻",
-      "C1_2017": null,
-      "C2_2021": 1.38,
-      "C3_2024": 1.08,
-      "ge3x": 0,
-      "ge10x": 0,
-      "nobs": 295
-    },
     {
       "coin": "JUP",
       "def": "进攻",
@@ -210,16 +199,6 @@
       "ge3x": 1,
       "ge10x": 1,
       "nobs": 347
-    },
-    {
-      "coin": "OP",
-      "def": "进攻",
-      "C1_2017": null,
-      "C2_2021": 3.02,
-      "C3_2024": 1.1,
-      "ge3x": 1,
-      "ge10x": 0,
-      "nobs": 295
     },
     {
       "coin": "RENDER",
@@ -480,6 +459,16 @@
       "ge3x": 3,
       "ge10x": 1,
       "nobs": 460
+    },
+    {
+      "coin": "HYPE",
+      "def": "进攻",
+      "C1_2017": null,
+      "C2_2021": null,
+      "C3_2024": 13.5,
+      "ge3x": 0,
+      "ge10x": 0,
+      "nobs": 90
     }
   ]
 }

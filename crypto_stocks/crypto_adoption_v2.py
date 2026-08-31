@@ -136,12 +136,12 @@ def defense_weights():
 THEME_COINS = {
     "L1公链":  ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
-    "L2扩容":  ['ARB', 'OP', 'POL'],
+    "L2扩容":  ['POL'],
     "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
     "DEX":     ['UNI', 'JUP'],
     "平台币":  ['BNB', 'OKB', 'GT'],
-    "链上永续交易所": ['DYDX'],
+    "链上永续交易所": ['DYDX', 'HYPE'],
     "基础设施": ['LINK'],
     "AI+加密": ['RENDER', 'GLM', 'FET'],
     "模块化":  ['TIA'],
@@ -158,8 +158,9 @@ for _coins in THEME_COINS.values():
     for c in _coins:
         _OFFENSE_SET.add(c)
 OFFENSE_COINS = sorted(_OFFENSE_SET)
-# 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 再降至 38; 引擎每轮只选 3-4 个)
-assert len(OFFENSE_COINS) >= 38, f"进攻代币不足 38, 当前 {len(OFFENSE_COINS)}"
+# 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 降至 38;
+# 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 下限留 1 缓冲设 36; 引擎每轮只选 3-4 个)
+assert len(OFFENSE_COINS) >= 36, f"进攻代币不足 36, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -421,8 +422,6 @@ COIN_META = {
     'LTC': {'name': 'Litecoin', 'role': 'offense', 'theme': '支付链', 'launch': 2011},
     'XRP': {'name': 'XRP', 'role': 'offense', 'theme': '支付链', 'launch': 2012},
     # L2
-    'ARB': {'name': 'Arbitrum', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
-    'OP': {'name': 'Optimism', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2021},
     'POL':   {'name': 'Polygon (POL)', 'role': 'offense', 'theme': 'L2扩容', 'launch': 2017},
     # DeFi
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
@@ -430,6 +429,7 @@ COIN_META = {
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'SKY': {'name': 'Sky', 'role': 'offense', 'theme': 'DeFi', 'launch': 2017},
     'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
+    'HYPE': {'name': 'Hyperliquid', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2024},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     'FET': {'name': 'Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
