@@ -27,12 +27,16 @@ import json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'data')
+sys.path.insert(0, os.path.dirname(HERE))  # 仓库根, 供 net_config
 sys.path.insert(0, HERE)
 import crypto_hist_data as chd  # noqa: E402
 
-# ---------- 代理 ----------
-_PROXY = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
-          or 'http://127.0.0.1:3067')
+# ---------- 代理 (统一走 net_config 解析) ----------
+# 2026-09-01: 原为 "环境变量优先"。沙箱注入的 61350 对 Binance/OKX 全返 502,
+# 会让增量同步卡死; 改由 net_config 存活探测 + 回退 3067, 从源头规避。
+import net_config  # noqa: E402
+
+_PROXY = net_config.proxy_url()
 _op = urllib.request.build_opener(
     urllib.request.ProxyHandler({'http': _PROXY, 'https': _PROXY}))
 urllib.request.install_opener(_op)

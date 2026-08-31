@@ -45,17 +45,21 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'data')
 os.makedirs(DATA, exist_ok=True)
 
+sys.path.insert(0, os.path.dirname(HERE))  # 仓库根, 供 net_config
 sys.path.insert(0, HERE)
 import crypto_adoption_v2 as ca2
 
-# ---------- 代理支持 (本机经 127.0.0.1:3067 出网; 有网环境留空则直连) ----------
-_PROXY = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
-          or os.environ.get('HTTP_PROXY') or os.environ.get('http_proxy'))
-if _PROXY:
-    _op = urllib.request.build_opener(
-        urllib.request.ProxyHandler({'http': _PROXY, 'https': _PROXY}))
-    urllib.request.install_opener(_op)
-    print(f"  [代理] 已启用: {_PROXY}", file=sys.stderr)
+# ---------- 代理支持 (统一走 net_config 解析) ----------
+# 2026-09-01: 原先是 "环境变量优先且无回退"。沙箱/CI 会注入 61350 / 51245 之类
+# 对 Binance/OKX 一律返回 502 的代理, 导致本模块取数卡死 (历史坑, 见 PITFALLS)。
+# 改由 net_config 统一解析: 存活探测 + 回退默认 3067, 从源头规避坏代理。
+import net_config  # noqa: E402
+
+_PROXY = net_config.proxy_url()
+_op = urllib.request.build_opener(
+    urllib.request.ProxyHandler({'http': _PROXY, 'https': _PROXY}))
+urllib.request.install_opener(_op)
+print(f"  [代理] 已启用: {_PROXY}", file=sys.stderr)
 
 
 # ---------- 原始 3 防御币配置 (v1.0 兼容) ----------

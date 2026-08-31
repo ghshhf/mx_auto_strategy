@@ -4,15 +4,21 @@
 """
 import csv
 import json
-import subprocess
+import os
 import sys
 import time
+import urllib.error
+import urllib.request
 
-PROXY = "socks5h://127.0.0.1:1080"
-PANEL = "data/weekly_adjclose_crypto50.csv"
-OUT = "crypto_pool_cg_categories.json"
+HERE = os.path.dirname(os.path.abspath(__file__))
+PANEL = os.path.join(HERE, "data", "weekly_adjclose_crypto50.csv")
+OUT = os.path.join(HERE, "crypto_pool_cg_categories.json")
 
-sys.path.insert(0, '.')
+# 2026-09-01: 原硬编码 socks5h://127.0.0.1:1080 (端口实测未监听, 脚本跑不通),
+# 改走 net_config 统一代理解析; 同时去掉对外部 curl 的依赖。
+sys.path.insert(0, os.path.dirname(HERE))
+sys.path.insert(0, HERE)
+from net_config import proxy_opener  # noqa: E402
 import data_sources as ds  # noqa: E402
 
 
@@ -20,19 +26,17 @@ def cg_coin(id_, tries=3):
     url = (f"https://api.coingecko.com/api/v3/coins/{id_}"
            f"?localization=false&tickers=false&market_data=false"
            f"&community_data=false&developer_data=false&sparkline=false")
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     for attempt in range(tries):
-        r = subprocess.run(["curl", "-s", "-m", "30", "-x", PROXY,
-                            "-w", "\n%{http_code}", url],
-                           capture_output=True, text=True)
-        body = r.stdout
-        code = body.rsplit("\n", 1)[-1].strip() if "\n" in body else ""
-        data = body.rsplit("\n", 1)[0] if "\n" in body else body
-        if code == "429":
-            print(f"    429, 等60s重试({attempt+1}/{tries})...", file=sys.stderr)
-            time.sleep(60)
-            continue
         try:
-            return json.loads(data)
+            raw = proxy_opener().open(req, timeout=30).read().decode("utf-8", "ignore")
+            return json.loads(raw)
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                print(f"    429, 等60s重试({attempt+1}/{tries})...", file=sys.stderr)
+                time.sleep(60)
+                continue
+            return None
         except Exception:
             return None
     return None

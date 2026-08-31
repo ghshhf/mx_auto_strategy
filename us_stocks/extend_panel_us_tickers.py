@@ -22,11 +22,17 @@
 import csv, os, sys, subprocess, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# 2026-09-01: 代理改由 net_config 统一解析 (原为硬编码 3067); 对齐改委托 panel_align
+sys.path.insert(0, os.path.dirname(HERE))   # 仓库根 -> net_config
+sys.path.insert(0, HERE)                    # us_stocks/ -> panel_align
+from net_config import proxy_url  # noqa: E402
+from panel_align import align_asof_str  # noqa: E402
+
 PANEL = os.path.join(HERE, "data", "weekly_adjclose_full_ext.csv")
 NODE = "C:/Users/21393/.workbuddy/binaries/node/versions/24.14.0/node.exe"
 WSK = ("C:/Users/21393/AppData/Local/Programs/WorkBuddy/resources/"
        "app.asar.unpacked/resources/builtin-skills/westock-data/scripts/index.js")
-PROXY = "http://127.0.0.1:3067"
+PROXY = proxy_url()
 
 # 预承诺扩池名单(规模/知名度驱动, 非收益驱动) —— MA 已在面板, 此处仅补缺失 8 只。
 TICKERS = ["TSM", "V", "MELI", "SE", "PDD", "NU", "SHOP", "SQ"]
@@ -65,19 +71,12 @@ def fetch_weekly_hfq(code):
 
 
 def align(series, dates):
-    """将 kline {date:close} 对齐到面板周日期序列: ffill, 上市前空。"""
-    keys = sorted(series)
-    out = []
-    ki = 0
-    for d in dates:
-        # 推进到 <= d 的最近 kline 日期
-        while ki < len(keys) and keys[ki] <= d:
-            ki += 1
-        if ki == 0:
-            out.append("")          # 上市前
-        else:
-            out.append(f"{series[keys[ki - 1]]:.5f}")
-    return out
+    """将 kline {date:close} 对齐到面板周日期序列: ffill, 上市前空字符串。
+
+    注意参数顺序与 panel_align 相反 (本函数历史签名为 (series, dates), 保留以免
+    破坏调用方)。2026-09-01: 实现改委托共享 align_asof_str (行为等价)。
+    """
+    return align_asof_str(dates, series, fmt="%.5f", empty="")
 
 
 def main():
