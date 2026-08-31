@@ -139,7 +139,7 @@ THEME_COINS = {
     "L2扩容":  ['POL'],
     "DeFi":    ['UNI', 'AAVE', 'SKY', 'LDO'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'JUP'],
+    "DEX":     ['UNI', 'JUP', 'RAY'],  # 2026-08-31 加 RAY (Raydium, Solana AMM/DEX, 2021 上线, 熊市幸存)
     "平台币":  ['BNB', 'OKB', 'GT'],
     "链上永续交易所": ['DYDX', 'HYPE'],
     "基础设施": ['LINK'],
@@ -159,7 +159,7 @@ for _coins in THEME_COINS.values():
         _OFFENSE_SET.add(c)
 OFFENSE_COINS = sorted(_OFFENSE_SET)
 # 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 降至 38;
-# 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 下限留 1 缓冲设 36; 引擎每轮只选 3-4 个)
+# 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 再加 RAY(DEX) → 净 +1 = 38; 下限留 2 缓冲设 36; 引擎每轮只选 3-4 个)
 assert len(OFFENSE_COINS) >= 36, f"进攻代币不足 36, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
@@ -432,6 +432,7 @@ COIN_META = {
     'HYPE': {'name': 'Hyperliquid', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2024},
     'LDO': {'name': 'Lido', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
+    'RAY': {'name': 'Raydium', 'role': 'offense', 'theme': 'DEX', 'launch': 2021},
     'FET': {'name': 'Fetch.ai', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2019},
     'GT': {'name': 'GateToken', 'role': 'offense', 'theme': '平台币', 'launch': 2024},
     # AI
