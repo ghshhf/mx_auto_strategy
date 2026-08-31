@@ -147,7 +147,7 @@ THEME_COINS = {
     "模块化":   [],  # 2026-09-01 删 TIA(最后成员) 后赛道置空, 保留键以对齐 PHASE_HISTORY/引擎引用
     "DePIN":   ['RENDER'],
     "存储": ['FIL'],
-    "GameFi":  ['GALA', 'RON'],
+    "GameFi": [],
     "隐私":    ['ZEC'],  # 2026-08-18 删DASH, 留ZEC押隐私beta
     "RWA": ['ONDO'],
 }
@@ -442,9 +442,6 @@ COIN_META = {
     # 模块化
     # 存储
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
-    'GALA': {'name': 'Gala Games', 'role': 'offense', 'theme': 'GameFi', 'launch': 2020},
-    'RON': {'name': 'Ronin', 'role': 'offense', 'theme': 'GameFi', 'launch': 2021},
-    # 隐私
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
     # RWA
     'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},

@@ -101,7 +101,10 @@ def fetch_okx(sym):
             break
         for x in data:
             m = dt.datetime.fromtimestamp(int(x[0]) / 1000, dt.timezone.utc)
-            out[m.strftime('%Y-%m-%d')] = float(x[4])
+            # OKX 1W 周K 实际以周日 16:00 UTC 开盘(CoinGecko/Binance/Gate 为周一00:00),
+            # 归一为周一键以对齐面板 -3 口径.
+            key = (m + dt.timedelta(days=1)).strftime('%Y-%m-%d')
+            out[key] = float(x[4])
         oldest = min(int(x[0]) for x in data)
         if oldest <= 1420000000000 or len(data) < 100:
             break

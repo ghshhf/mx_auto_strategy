@@ -69,15 +69,15 @@ def align_friday(ts_ms):
 # ---------------- 符号映射 ----------------
 # CoinGecko 用 coin id (非 ticker); 此处为常用币映射, 未知币该源自动跳过。
 COINGECKO_IDS = {
+    'HYPE': 'hyperliquid',  # 2026-09-01
     'HBAR': 'hedera-hashgraph',  # 2026-08-31
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'XRP': 'ripple', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'ATOM': 'cosmos', 'UNI': 'uniswap', 'LTC': 'litecoin',
     'NEAR': 'near', 'APT': 'aptos', 'GLM': 'golem', 'AAVE': 'aave',
-    'INJ': 'injective', 'FIL': 'filecoin', 'RON': 'ronin',
-    'SAND': 'the-sandbox', 'MANA': 'decentraland',
-    'DYDX': 'dydx', 'GALA': 'gala', 'ZEC': 'zcash',
+    'INJ': 'injective', 'FIL': 'filecoin', 'SAND': 'the-sandbox', 'MANA': 'decentraland',
+    'DYDX': 'dydx', 'ZEC': 'zcash',
     'JUP': 'jupiter', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
     'GT': 'gate-token',
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
@@ -93,12 +93,10 @@ CMC_IDS = {
     'HBAR': 4642,  # 2026-08-31
     'AAVE': 7278, 'ADA': 2010, 'APT': 21794, 'AVAX': 5805, 'BCH': 1831, 'BTC': 1, 'XLM': 512,
     'DOT': 6636, 'DYDX': 28324, 'ICP': 8916,
-    'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'GALA': 7080,
-    'JUP': 29210, 'LINK': 1975, 'LTC': 2,
+    'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'JUP': 29210, 'LINK': 1975, 'LTC': 2,
     'CFG': 4160, 'POL': 6690, 'NEAR': 6535,
     'OKB': 3897, 'ONDO': 21159, 'INJ': 20646, 'XRP': 52,
-    'RENDER': 5690, 'RON': 14101,
-    'SOL': 5426,
+    'RENDER': 5690, 'SOL': 5426,
     'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
     'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, 'ONT': 2566, 'TAO': 22974,
 }
