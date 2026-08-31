@@ -20,6 +20,8 @@ from plotly.subplots import make_subplots
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.dirname(HERE))  # 仓库根, 供 net_config
+import net_config  # noqa: E402
 import crypto_adoption_v2 as c  # noqa: E402
 import crypto_options_bt as eng  # noqa: E402
 
@@ -47,9 +49,8 @@ def fetch_mcap():
         ids = ','.join(CG[s] for s in c.ALL_COINS if s in CG)
         url = ('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='
                + ids + '&order=market_cap_desc&per_page=250&page=1&sparkline=false')
-        handler = urllib.request.ProxyHandler({'http': 'http://127.0.0.1:3067',
-                                               'https': 'http://127.0.0.1:3067'})
-        opener = urllib.request.build_opener(handler)
+        # 代理统一走 net_config 解析 (存活探测 + 回退默认 3067)
+        opener = net_config.proxy_opener()
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         data = json.load(opener.open(req, timeout=40))
         rev = {d['id']: d for d in data}

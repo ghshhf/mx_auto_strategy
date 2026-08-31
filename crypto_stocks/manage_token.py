@@ -15,7 +15,7 @@
   最后一行持有当前未完结周K的实时收盘快照, 与 sync_crypto_panel 行为一致.
 
 数据源链: Binance -> OKX -> Gate.io (取可用K线最多者; 平台币如 GT 仅 Gate 有).
-本机出网经 127.0.0.1:3067 代理 (HTTPS_PROXY 环境变量可覆盖).
+本机出网经 net_config 统一代理解析 (默认 127.0.0.1:3067, 可用 MX_PROXY 环境变量覆盖).
 
 用法:
   python manage_token.py list
@@ -47,8 +47,10 @@ SYNC_FILE = os.path.join(HERE, 'sync_crypto_panel.py')
 SCREEN_FILE = os.path.join(HERE, '_screen_pool_now.py')
 DS_FILE = os.path.join(HERE, 'data_sources.py')
 
-PROXY = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
-         or 'http://127.0.0.1:3067')
+# 代理统一走 net_config 解析 (存活探测 + 回退默认 3067, 规避沙箱注入坏代理 61350 返502)
+sys.path.insert(0, os.path.dirname(HERE))  # 仓库根, 供 net_config
+import net_config  # noqa: E402
+PROXY = net_config.proxy_url()
 TODAY = dt.date.today().isoformat()
 
 # ---------------------------------------------------------------- HTTP --

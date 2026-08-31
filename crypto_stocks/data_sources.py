@@ -38,14 +38,16 @@ from abc import ABC, abstractmethod
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'data')
 
+sys.path.insert(0, os.path.dirname(HERE))  # 仓库根, 供 net_config
+import net_config  # noqa: E402
+
 
 # ---------------- 代理 (方法内按需, 不全局 install) ----------------
 def _proxy_opener():
-    proxy = (os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
-             or os.environ.get('HTTP_PROXY') or os.environ.get('http_proxy')
-             or 'http://127.0.0.1:3067')
+    # 统一走 net_config 解析, 规避沙箱注入坏代理(61350 返502)
+    u = net_config.proxy_url()
     return urllib.request.build_opener(
-        urllib.request.ProxyHandler({'http': proxy, 'https': proxy})), proxy
+        urllib.request.ProxyHandler({'http': u, 'https': u})), u
 
 
 def _http_get_json(url, headers=None, timeout=30):
