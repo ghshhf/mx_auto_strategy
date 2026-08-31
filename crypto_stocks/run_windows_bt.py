@@ -92,7 +92,7 @@ def main():
             out['windows'].append(rec)
             rows.append(rec)
     # JSON
-    with open(os.path.join(HERE, 'crypto_windows_results.json'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(HERE, 'reports', 'crypto_windows_results.json'), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     # MD
     md = ['# 加密引擎 10/5/3 年回测（本地面板, 无下载）', '',
@@ -126,7 +126,7 @@ def main():
               '或 (b) 买真 put 全额对冲（吃收益）。这是「持币吃涨幅」策略的固有矛盾，**非参数能消除**。')
     md.append('- 10 年巨大倍数几乎全部来自 2016-2021 超级牛市；2021-2026 窗口策略近持平（~1x）且跑输 BTC 买入持有，'
               '属典型的幸存者偏差 + 早周期过拟合。周期叠加是「收益/回撤 trade-off 旋钮」而非崩盘保险。')
-    with open(os.path.join(HERE, 'crypto_windows_report.md'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(HERE, 'reports', 'crypto_windows_report.md'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(md))
     print('\n已写出 crypto_windows_results.json + crypto_windows_report.md')
 

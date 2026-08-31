@@ -121,5 +121,5 @@ window.addEventListener('resize',function(){{chart.resize();}});
 </script>
 </body></html>"""
 
-open('index_buyhold_rebal.html', 'w', encoding='utf-8').write(HTML)
+open('reports/index_buyhold_rebal.html', 'w', encoding='utf-8').write(HTML)
 print('written index_buyhold_rebal.html  (', len(HTML), 'bytes )')

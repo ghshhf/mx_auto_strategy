@@ -30,7 +30,7 @@ A股 / 美股 / 加密 = 同源方法论的三套**研究回测引擎**（非实
 - **⚠️ 2026-08-11 二次修订（山寨维度）**：此前所有相位实证只用 BTC 一列。全 56 币重算后发现三点：①本轮山寨中位自周期顶 **−89.4%** vs BTC **−48.2%**（分化史上最极端）；②本轮山寨见顶 post-halving **7.3 月**，比 BTC（17.2 月）**提前 9.9 个月**，前两轮则同步 → 时间刻在 `accumulation` 段仍让策略满仓持已见顶的山寨；③全局 MDD −43.5% **不在下行相位**，100% 落在 `pre_halving`，`accumulation 2024` 段 MDD −40.3% 却只赚 26.0%。对策：下行相位 `cr=bb` 由 0.3 → **0.0**（完全离场）+ 新增 **`alt_rs_gate`**（ALT/BTC 等权相对强度破 20 周 MA → 进攻仓转防御核 BTC，市场信号非时间刻）。结果 10y **37,815x / −32.4% / Sharpe 2.00**（MDD 天花板首次被打破）；5y 5.81x/−41.4% → **7.32x/−33.9%**。OOS：156 周窗 walk-forward 倍数 t=**+2.31**、MDD t=**+6.17**（胜 17/18）；周期切割两轮均倍数更高 + 回撤更浅。**证伪记录**：「差别减仓（保 BTC 砍山寨）」无独立 alpha，等敞口对照后其收益 100% 来自总敞口更低
 - 反直觉铁律：**见顶期（euphoria）必须满仓**（减仓则 10y 18,378x→4,580x）；「高位」不是减仓信号，「减半后 18 个月」才是
 - 诚实样本外：切割 B 3.4x / Walk-forward 274.8x（≈69% 后视镜保留）
-- 引擎 `crypto_stocks/crypto_options_bt.py`；学习页 `crypto_stocks/crypto_17000_explainer.html`；机制文档 `docs/CYCLE_DERISK.md`
+- 引擎 `crypto_stocks/crypto_options_bt.py`；学习页 `crypto_stocks/reports/crypto_17000_explainer.html`；机制文档 `docs/CYCLE_DERISK.md`
 - **85% 档过拟合判定**：strong 档进攻 cap 65%→85% 在头条面板为平滑杠杆（不解锁额外 alpha），且 walk-forward 下 IS 选参（0.85）打不过头条 0.65 → 头条 0.65 为诚实选择（证据 `crypto_stocks/crypto_strong_offense_wf_out.txt`）
 
 ## 跨市场组合（`portfolio_blend.py`，共同窗口 2017–2026，470 周）
@@ -59,6 +59,6 @@ A股 / 美股 / 加密 = 同源方法论的三套**研究回测引擎**（非实
 - 主 `README.md` / `CLAUDE.md` — 项目定位与分类
 - A股：`ashare_backtest/` + `docs/curves.html`
 - 美股：`us_stocks/README.md` + `us_stocks/data/us_nav_ai.csv`
-- 加密：`crypto_stocks/README.md` + `crypto_stocks/crypto_17000_explainer.html`
+- 加密：`crypto_stocks/README.md` + `crypto_stocks/reports/crypto_17000_explainer.html`
 - 组合：`docs/portfolio_blend.html` + `docs/data/portfolio_blend.json`
 - OOS 证据：`crypto_stocks/crypto_oos_out*.txt`、`crypto_stocks/crypto_strong_offense_wf_out.txt`、`us_oos_out.txt`

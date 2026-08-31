@@ -72,9 +72,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Check syntax (py_compile all .py files)
-        run: |
-          find . -name "*.py" -not -path "./.git/*" | while read f; do
-            python -m py_compile "$f" || { echo "SYNTAX ERROR in $f"; exit 1; }
-          done
-          echo "All Python files compile cleanly."
+      - name: Install ruff
+        run: pip install ruff
+
+      # 与本地 `make lint` 共用 scripts/lint_all.py (ruff --target-version py311)。
+      # ruff 可捕获 py3.11 不兼容语法 (如 PEP 701 f-string), 且失败时输出 文件:行号。
+      - name: Check syntax (ruff py311, unified with make lint)
+        run: python scripts/lint_all.py

@@ -52,7 +52,7 @@ for name, pnl, st in WINDOWS:
         print(f"{name} {tag}: multiple={r['multiple']:.2f} mdd={r['mdd']*100:.1f}% sharpe={r['sharpe']:.2f} weeks={len(nav)}")
     out[name] = rows
 
-path = os.path.join(HERE, 'nav_curves.json')
+path = os.path.join(HERE, 'reports', 'nav_curves.json')
 with open(path, 'w', encoding='utf-8') as f:
     json.dump(out, f, ensure_ascii=False)
 print(f"已保存: {path}")

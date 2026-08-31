@@ -1,0 +1,42 @@
+[project]
+name = "mx-auto-strategy"
+version = "2.0.0"
+description = "mx_auto_strategy — A股/美股/加密多资产量化策略回测与网页自动发布"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+# 与 requirements.txt 保持一致 (CI/publish 用 requirements.txt 安装)
+dependencies = [
+    "pandas>=1.5",
+    "numpy>=1.23",
+    "matplotlib>=3.6",
+    "plotly>=5.0",
+    "requests>=2.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "ruff>=0.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+# 语法基线 = Python 3.11 (CI test matrix 的最低版本)。
+# PEP 701 (3.12+ f-string 嵌套同引号) 在 3.11 是 SyntaxError, 本仓已发生过 CI 全红事故。
+target-version = "py311"
+line-length = 120
+extend-exclude = [
+    "crypto_stocks/archive",
+    "crypto_stocks/scratch",
+    "crypto_stocks/scripts/ops",
+    "crypto_stocks/logs",
+    "crypto_stocks/reports",
+]
+
+[tool.ruff.lint]
+# 只做语法门禁 (E9 = 语法错误族; ruff>=0.16 中 E999 已并入 E9, 语法错误始终报告),
+# 不做风格强制 — 存量代码风格不统一, 全量风格化改造另行立项。
+select = ["E9"]

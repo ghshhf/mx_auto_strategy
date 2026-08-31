@@ -307,7 +307,7 @@ alt_rs_gate 在此窗口贡献相同（因该段已处于 crash 相位，时间�
 
 结论：用户直觉的"时间刻底层 + 高位减仓做空"已被引擎编码且实证显著；BTC 单视角盲点已通过
 alt_rs_gate 修补；唯"比上轮更猛"应改为"相对 BTC 更惨、绝对更浅"。复现：`_scratch_system_backtest.py`、
-`_scratch_alt_report.py`（报告 `crypto_alt_blindspot_2026-08.html`）。
+`_scratch_alt_report.py`（报告 `crypto_stocks/reports/crypto_alt_blindspot_2026-08.html`）。
 
 ### 一个被否掉的想法（记录以免重犯）
 

@@ -88,6 +88,6 @@ if __name__ == "__main__":
 
     print("=" * 78)
     print(f"总耗时 {time.time()-t0:.0f}s")
-    with open(os.path.join(HERE, "reconcile_truth_report.json"), "w") as f:
+    with open(os.path.join(HERE, "reports", "reconcile_truth_report.json"), "w") as f:
         json.dump(out, f, indent=2)
     print("已写入 reconcile_truth_report.json")

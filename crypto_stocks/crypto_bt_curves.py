@@ -83,7 +83,7 @@ ax2.grid(True, alpha=0.3)
 ax2.axhline(-31.3, color="#999", ls=":", lw=0.8)
 
 plt.tight_layout()
-out = "crypto_bt_curves.png"
+out = "reports/crypto_bt_curves.png"
 plt.savefig(out, dpi=130)
 print("saved", out)
 
@@ -94,5 +94,5 @@ result = {
     "btc": {"multiple": round(mbtc, 1)},
 }
 print(json.dumps(result, ensure_ascii=False, indent=2))
-with open("crypto_bt_curves.json", "w") as f:
+with open("reports/crypto_bt_curves.json", "w") as f:
     json.dump(result, f, ensure_ascii=False, indent=2)

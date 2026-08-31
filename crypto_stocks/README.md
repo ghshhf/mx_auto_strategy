@@ -71,7 +71,7 @@
 - **🔑 17000x 的 alpha 100% 来自「时间刻减仓」，与做空无关**（2026-08-11 查证）：把 `HALVING_PHASE_ADJUST['crash']` 的「做空×2 / MA20→10」强制关闭，10y 结果**一字不差**仍是 18,378.4x / −43.0% → 唯一起作用的是 `risk_scale` 在 crash/bear_bottom 相位把风险仓位缩到 30–50%、其余转 STABLE 现金。三个反直觉点：①**见顶期 euphoria 必须满仓**（改 0.5 → 10y 崩到 4,580x，抛物线主升全在这 6 个月）；②**筑底期不能恢复仓位**（设 1.0 → MDD −43.5% 恶化到 −64.2%）；③**预热起点 31 月 ≫ 36 月**（24,494x vs 9,315x）。OOS：20 窗 walk-forward 倍数 t=+3.45 / MDD t=+2.91（双维度显著），减半周期切割 3 轮训练→测试**保留率均 100%**。完整推导见 [`docs/CYCLE_DERISK.md`](../docs/CYCLE_DERISK.md)。
 - **🔑 二次修订：只看 BTC 是不够的（2026-08-11 晚）**：上条所有相位实证只用 BTC 一列。全 56 币重算推翻三点 —— ①**本轮山寨相对 BTC 杀伤史上最强**：中位自周期顶 **−89.4%** vs BTC **−48.2%**（上轮为 −90.3% vs −74.5%，即绝对跌幅相仿但**参照物 BTC 变抗跌了**）；②**山寨周期时钟脱钩**：本轮 44 币中 40 个顶在 BTC 之前，山寨中位见顶 post-halving **7.3 月** vs BTC 17.2 月（**提前 9.9 个月**），而前两轮为 −0.9 / +0.2 月（同步）→ 时间刻在 `accumulation`（0–12 月规定满仓）段仍持有已见顶 10 个月的山寨；③**最大回撤不在下行相位**：10y 全局 MDD −43.5% 峰谷 100% 落在 `pre_halving`，`crash`/`bear_bottom` 独立 MDD 仅 −13.4% / −7.3%（减仓层工作良好），而 `accumulation 2024` 段 MDD **−40.3% 却只赚 26.0%**（纯亏损性回撤）。**对策**：`cr=bb` 0.3 → **0.0**（下行完全离场）+ 新增 **`alt_rs_gate`**（ALT/BTC 等权相对强度 < 20 周 MA → 进攻仓转防御核 BTC；市场信号非时间刻，三轮可检验）。**结果**：10y **37,815x / −32.4% / Sharpe 2.00**（旧 24,494x / −43.5% / 1.81，**MDD 天花板首次被打破**）、5y **7.32x / −33.9%**、3y 2.17x / −33.4%、2y 1.62x / −22.9%。**OOS**：156 周窗 walk-forward 倍数 t=**+2.31**、MDD t=**+6.17**（胜 17/18）；边际检验 COMBO vs 仅清仓 MDD t=+2.75、vs 仅门控 倍数 t=+2.58（两层各扛一个维度）；周期切割 2020 轮 101.35x/−18.7%、2024 轮 1.68x/−32.2%，均优于旧默认。**证伪记录**：「差别减仓」（下行保 BTC 砍山寨）**无独立 alpha** —— V4(山寨0/核心0.3)=38.5kx 恰落在一刀切 0.05(41.2kx)~0.10(37.3kx) 之间，收益 100% 来自总敞口更低，默认关闭。
 - ⚠️ **与旧合成 42,484x 严格区分**：17000x 是**真实 Binance/OKX 数据 + 真实引擎**的 in-sample 上限，信号合法可辩护；42,484x 是 `generate_synthetic_*` 虚构序列产物，**已废弃**。二者量级相近但性质完全不同，引用时务必标明口径。
-- 学习拆解交互页：`crypto_17000_explainer.html`（同目录，复现 18360x + 逐层瀑布 + 净值曲线 + 减半相位时间轴）。
+- 学习拆解交互页：`reports/crypto_17000_explainer.html`（复现 18360x + 逐层瀑布 + 净值曲线 + 减半相位时间轴）。
 
 ### ❌ V5.1（**合成数据 · 非实盘口径 · 已废弃**）
 
@@ -151,28 +151,37 @@
 
 ---
 
-## 2. 目录结构
+## 2. 目录结构（2026-08-31 重构后）
+
+> 重构原则：根目录只保留**引擎 + 活跃脚本 + 就地配对的 I/O 文件**；一次性运维脚本、草稿、日志、纯产物报告分别归入子目录。
+> 所有被移动的脚本已注入「重定位引导头」，在任意工作目录下直接 `python <脚本路径>` 运行，等效于重构前在 `crypto_stocks/` 根目录下运行。
 
 ```
 crypto_stocks/
 ├── README.md                          # 本文件（加密分类标记 + 导航）
-├── crypto_adoption.py                 # V1 篮子：BTC 防御 + ETH/OKB 进攻
-├── crypto_adoption_v2.py              # V2 篮子：Crypto50 + 12 赛道 + 木头姐相位
-├── crypto_hist_data.py                # ✅ **唯一实盘数据路径** (2026-07-31 重写): 经 3067 代理拉 Binance主/OKX备
-│                                      #    真实周K线, 覆盖全 57 币, 上市前留空
 ├── backtest_v2.py                     # V2 引擎 (2026-07-31 重建, 50池/四档/木头姐选币/CrashGuard/VolTarget, 严查前视)
-├── backtest_v1_results.json           # 遗留*合成数据*结果 (已废弃, 仅存档)
-├── backtest_v2_results.json           # 遗留*合成数据*结果 (已废弃, 仅存档)
-├── realistic_validation.py            # 遗留验证脚本 (import 已重建的 backtest_v2 即可跑)
-├── realistic_validation_results.json  # 遗留*合成数据*walk-forward 结果 (已废弃, 过拟合证据)
+├── crypto_options_bt.py               # 期权三件套引擎 (v6.18, 含减半周期时间刻减仓)
+├── crypto_hist_data.py                # ✅ 唯一实盘数据路径: 经 3067 代理拉 Binance主/OKX备 真实周K线
+├── export_nav_crypto.py               # NAV 导出 (CI publish 链路, 写 docs/data/nav_crypto.json)
+├── generate_nav_json.py               # 参数归因净值曲线 -> reports/nav_curves.json
+├── sync_crypto_panel.py               # 面板同步 (按列名对齐写入; 严禁按位置写入)
+├── bt_*.py / selection_*.py / ...     # 分析与调参脚本 (~40 个, 与其 *_results.json / *_report.md 就地配对)
 ├── data/
-│   ├── weekly_adjclose_crypto3.csv     # 3防御币 (crypto_hist_data 旧版产物)
 │   ├── weekly_adjclose_crypto50.csv    # ✅ 真实周K线 (468周 × 57币, 2017-08~2026-07, 52币有数据)
-│   └── weekly_adjclose_crypto50_v3.csv # ⚠ 合成 V3 遗留面板 (已废弃, 勿用于回测)
-└── figs/
-    ├── v1_*.png                       # V1 图表 (基于合成数据, 已废弃)
-    └── v2_*.png                       # V2 图表 (净值/回撤/市况时间轴)
+│   └── weekly_adjclose_crypto50_10y.csv# ✅ 10 年面板 (40 币, 列名/数据自洽基线 = commit 4d7fb61)
+├── reports/                           # 生成的独立报告与历史产物 (html/md/png/json)
+│   ├── crypto_17000_explainer.html     # 17000x 学习拆解交互页
+│   ├── backtest_v1/v2_results.json     # 遗留*合成数据*结果 (已废弃, 仅存档)
+│   └── ... (曲线报告 / blindspot / 归因可视化等)
+├── scripts/ops/                       # 一次性池操作脚本 (add_/del_/rename_* 币种增删改)
+├── scratch/                           # 草稿与探索脚本 (_scratch_*/_old_*)
+├── logs/                              # 回测运行日志 (bt_*.txt)
+├── archive/                           # 历史版本与弃用文件 (旧引擎/echarts.min.js 等)
+└── figs/                              # 图表
 ```
+
+> **2026-08-31 重构说明**：`realistic_validation.py` 在 `archive/`；`realistic_validation_results.json`、
+> `backtest_v1/v2_results.json` 等遗留产物在 `reports/`。移动前已全仓核查引用并修补所有读写方路径。
 
 > **合成数据脚本已移除（2026-08）**：`generate_synthetic_data.py` / `generate_synthetic_v2.py` / `generate_synthetic_v3.py` 三个文件已从仓库删除。
 > 删除前已全仓核查：**无任何模块 `import` 或调用它们**（`realistic_validation.py` 顶部注释明确写着"不依赖 generate_synthetic_v3"），删除不影响任何可运行路径。
@@ -236,7 +245,7 @@ python3 backtest_v2.py --offense-n 5 --crash-thr -0.15 --vol-target 0.60   # 加
 python3 crypto_adoption_v2.py
 ```
 
-依赖：`pandas`, `numpy`（用 `G:\venv\quant\Scripts\python.exe`，含 pandas 3.0.5）。真实数据下载仅用标准库 `urllib`（自动走 `HTTPS_PROXY` 代理 / 留空则直连），无需 key。
+依赖：`pandas`, `numpy`（任意 Python ≥3.11 且装有这两个包的环境；仓库级依赖见根目录 `requirements.txt`）。真实数据下载仅用标准库 `urllib`（自动走 `HTTPS_PROXY` 代理 / 留空则直连），无需 key。
 
 > ✅ **真实数据已生成**：`data/weekly_adjclose_crypto50.csv`（468 周 × 57 币，2017-08 ~ 2026-07，52 币有数据）。若需刷新，重跑 `crypto_hist_data.py` 即可（代理可达 Binance/OKX，无需 key）。
 
