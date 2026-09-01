@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from crypto_stocks.research.aggregate import (
+from markets.crypto.research.aggregate import (
     analyze_coins, latest, build_report, _bucket_of, _horizon_months,
 )
 

@@ -13,7 +13,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-sys.path.insert(0, os.path.join(ROOT, "us_stocks"))
+sys.path.insert(0, os.path.join(ROOT, "markets", "us"))
 
 from panel_align import align_asof, align_asof_str  # noqa: E402
 

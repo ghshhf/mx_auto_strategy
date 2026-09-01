@@ -5,7 +5,7 @@
 #   2. akshare 依赖树很重，装它会显著拖慢 CI 并增加失败面。
 #
 # 缺失时的行为（不会 ImportError，只是少一条取数路径）：
-#   akshare  -> ashare_backtest 的 A股指数日线 / ETF 资金流 / 估值分位
+#   akshare  -> markets/ashare 的 A股指数日线 / ETF 资金流 / 估值分位
 #               兜底：东财 push2delay 接口 (etf_fund_flow)、腾讯行情 (analog_core)
 #               入口：analog_core._pull_akshare_index / etf_fund_flow(AK_OK 开关)
 #                     / macro_fetch / valuation_fetch

@@ -15,7 +15,7 @@ test_us_truth.py - 美股真值回归闸门 (CI 拦截, 面板缺失则跳过)
      仅做崩溃级护栏, 不锁精确值。若有人误关 options_sim 或 IV 配置损坏导致
      跌至 ~31x(flat 4.5%)或回归无期权 21x, 此测试 FAIL。
 
-数据依赖: 美股面板 us_stocks/data/weekly_adjclose_full_ext.csv (已入库, 非 gitignore)。
+数据依赖: 美股面板 markets/us/data/weekly_adjclose_full_ext.csv (已入库, 非 gitignore)。
 面板缺失时 pytest.skip (与 A股 test_baseline_integrity.py 同模式), CI 不误报。
 
 ⚠️ 当你有意更新美股引擎(换面板 / 改参数 / 调期权 IV 假设)导致真值变化时,
@@ -28,7 +28,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-sys.path.insert(0, os.path.join(ROOT, "us_stocks"))
+sys.path.insert(0, os.path.join(ROOT, "markets", "us"))
 
 import us_backtest_ai as U
 
@@ -44,7 +44,7 @@ SIM_LO, SIM_HI = 80.0, 130.0
 
 
 def _panel_path():
-    p = os.path.join(ROOT, "us_stocks", "data", "weekly_adjclose_full_ext.csv")
+    p = os.path.join(ROOT, "markets", "us", "data", "weekly_adjclose_full_ext.csv")
     return p if os.path.exists(p) else None
 
 

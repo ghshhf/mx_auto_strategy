@@ -1,6 +1,6 @@
 """机构研报子模块 config.py 的纯函数单元测试 + seeds 集成测试。"""
 import pytest
-from crypto_stocks.research.config import (
+from markets.crypto.research.config import (
     normalize_institution, normalize_coin, tier_of,
     normalize_rating, TRACKED_INSTITUTIONS, SUPPORTED_COINS_UPPER,
 )
@@ -84,7 +84,7 @@ def test_normalize_rating_unknown_is_none_not_guessed():
 def test_seeds_import_and_validity():
     """15 条种子的完整性测试（compute_record_id 依赖 sources.base 存在，Task4 后自动 PASS）。"""
     try:
-        from crypto_stocks.research.seeds import get_seed_records
+        from markets.crypto.research.seeds import get_seed_records
     except Exception:
         pytest.skip("seeds module not yet available (expected before Task3)")
         return
@@ -103,7 +103,7 @@ def test_seeds_import_and_validity():
 
 def test_seeds_btc_has_6_institutions():
     try:
-        from crypto_stocks.research.seeds import get_seed_records
+        from markets.crypto.research.seeds import get_seed_records
     except Exception:
         pytest.skip("seeds module not yet available")
         return
@@ -115,7 +115,7 @@ def test_seeds_btc_has_6_institutions():
 
 def test_seeds_eth_sol_minimum_coverage():
     try:
-        from crypto_stocks.research.seeds import get_seed_records
+        from markets.crypto.research.seeds import get_seed_records
     except Exception:
         pytest.skip("seeds module not yet available")
         return

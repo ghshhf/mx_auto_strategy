@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 改造 `us_stocks/us_backtest_ai.py` 的 `run_optimized()` 加持仓跟踪 + 单点止盈(+50%) + -8% 硬止损 + 0.1% 滑点成本模型，并新建 `us_stocks/us_options.py` 期权覆盖层空壳接口（阶段2 实现），跑 3/5/10 年回测输出对照表。
+**Goal:** 改造 `markets/us/us_backtest_ai.py` 的 `run_optimized()` 加持仓跟踪 + 单点止盈(+50%) + -8% 硬止损 + 0.1% 滑点成本模型，并新建 `markets/us/us_options.py` 期权覆盖层空壳接口（阶段2 实现），跑 3/5/10 年回测输出对照表。
 
 **Architecture:** 不新建引擎，改造现有 `run_optimized()`。止盈止损作为叠加层插入主循环，不干预原作者的 `struct_def`/`vol_target`/`crash_off` 权重分配逻辑。期权接口空壳返回 None，阶段1 走纯现货逻辑，阶段2 切换为期权逻辑。A 股代码零改动。
 
@@ -10,7 +10,7 @@
 
 **设计文档:** [docs/us-options-hedge-design.md](file:///workspace/mx_auto_strategy/docs/us-options-hedge-design.md)
 
-**原作者哲学兼容性:** 原作者注释（[us_backtest_ai.py:344](file:///workspace/mx_auto_strategy/us_stocks/us_backtest_ai.py)）"事后信号(止损)无法压MDD"在纯现货框架下成立。本设计的止损定位为**风险护栏**（防单票黑天鹅），不指望压组合 MDD；阶段2 加入大盘 protective put 才是非对称对冲工具。
+**原作者哲学兼容性:** 原作者注释（[us_backtest_ai.py:344](file:///workspace/mx_auto_strategy/markets/us/us_backtest_ai.py)）"事后信号(止损)无法压MDD"在纯现货框架下成立。本设计的止损定位为**风险护栏**（防单票黑天鹅），不指望压组合 MDD；阶段2 加入大盘 protective put 才是非对称对冲工具。
 
 ---
 
@@ -18,13 +18,13 @@
 
 ```
 mx_auto_strategy/
-├── us_stocks/
+├── markets/us/
 │   ├── us_backtest_ai.py    [改] run_optimized 加持仓跟踪+止盈止损+成本模型
 │   └── us_options.py        [新] 阶段2 期权覆盖层接口(阶段1 空壳)
 ├── strategy_config.json     [改] +us_backtest 配置段
 ├── tests/
 │   └── test_us_backtest.py  [新] 止盈/止损/成本/无前视/原逻辑不回归
-└── us_stocks/data/
+└── markets/us/data/
     └── us_nav_ai.csv        [改] 输出加新列
 ```
 
@@ -33,7 +33,7 @@ mx_auto_strategy/
 ## Task 1: 新建期权接口空壳 `us_options.py`
 
 **Files:**
-- Create: `us_stocks/us_options.py`
+- Create: `markets/us/us_options.py`
 
 **目的:** 阶段2 期权覆盖层的接口预留。阶段1 所有函数返回 None，`run_optimized` 走纯现货逻辑。
 
@@ -112,7 +112,7 @@ Expected: 两个 `None`，无异常。
 
 ```bash
 cd /workspace/mx_auto_strategy
-git add us_stocks/us_options.py
+git add markets/us/us_options.py
 git commit -m "feat(us): 新增期权覆盖层空壳接口(阶段2 实现, 阶段1 返回 None)"
 ```
 
@@ -170,13 +170,13 @@ git commit -m "feat(us): 新增 us_backtest 配置段(止盈+50%/止损-8%/滑�
 ## Task 3: 新增 `load_us_cfg` 辅助函数
 
 **Files:**
-- Modify: `us_stocks/us_backtest_ai.py` (在 `load_panel` 函数后，约第 92 行后插入)
+- Modify: `markets/us/us_backtest_ai.py` (在 `load_panel` 函数后，约第 92 行后插入)
 
 **目的:** 从 strategy_config.json 读取 `us_backtest` 段，提供默认值兜底（兼容老配置）。
 
 - [ ] **Step 1: 在 `load_panel` 函数后插入 `load_us_cfg`**
 
-在 `us_stocks/us_backtest_ai.py` 的 `load_panel` 函数（约第 80-91 行）之后插入：
+在 `markets/us/us_backtest_ai.py` 的 `load_panel` 函数（约第 80-91 行）之后插入：
 
 ```python
 def load_us_cfg(path=None):
@@ -216,9 +216,9 @@ def load_us_cfg(path=None):
 
 - [ ] **Step 2: 在文件顶部 import 区域加 `import json`**
 
-在 `us_stocks/us_backtest_ai.py` 第 44-50 行的 import 区域，确认已有 `import json`。如果没有，在 `import csv` 后加一行 `import json`。
+在 `markets/us/us_backtest_ai.py` 第 44-50 行的 import 区域，确认已有 `import json`。如果没有，在 `import csv` 后加一行 `import json`。
 
-Run: `cd /workspace/mx_auto_strategy && python -c "import ast; ast.parse(open('us_stocks/us_backtest_ai.py').read()); print('syntax ok')"`
+Run: `cd /workspace/mx_auto_strategy && python -c "import ast; ast.parse(open('markets/us/us_backtest_ai.py').read()); print('syntax ok')"`
 Expected: `syntax ok`
 
 - [ ] **Step 3: 验证函数可调用**
@@ -230,7 +230,7 @@ Expected: 打印 `{'take_profit_pct': 0.5, 'stop_loss_pct': -0.08, 'slippage_bps
 
 ```bash
 cd /workspace/mx_auto_strategy
-git add us_stocks/us_backtest_ai.py
+git add markets/us/us_backtest_ai.py
 git commit -m "feat(us): 新增 load_us_cfg 读取止盈止损+成本配置(带默认值兜底)"
 ```
 
@@ -239,7 +239,7 @@ git commit -m "feat(us): 新增 load_us_cfg 读取止盈止损+成本配置(带�
 ## Task 4: 新增止盈止损检查函数
 
 **Files:**
-- Modify: `us_stocks/us_backtest_ai.py` (在 `load_us_cfg` 函数后插入)
+- Modify: `markets/us/us_backtest_ai.py` (在 `load_us_cfg` 函数后插入)
 
 **目的:** 纯函数, 易测试。检查单票是否触发止盈/止损。
 
@@ -300,7 +300,7 @@ Expected: `clear` / `None` / `clear` / `None`
 
 ```bash
 cd /workspace/mx_auto_strategy
-git add us_stocks/us_backtest_ai.py
+git add markets/us/us_backtest_ai.py
 git commit -m "feat(us): 新增 check_take_profit/check_stop_loss 纯函数(止盈+50%/止损-8%)"
 ```
 
@@ -309,7 +309,7 @@ git commit -m "feat(us): 新增 check_take_profit/check_stop_loss 纯函数(止�
 ## Task 5: 改造 `run_optimized` 主循环
 
 **Files:**
-- Modify: `us_stocks/us_backtest_ai.py` (改造 `run_optimized` 函数, 约第 326-439 行)
+- Modify: `markets/us/us_backtest_ai.py` (改造 `run_optimized` 函数, 约第 326-439 行)
 
 **目的:** 在主循环中插入持仓跟踪 + 成本扣减 + 止盈止损检查。保留原作者的 struct_def/vol_target/crash_off 逻辑不动。
 
@@ -485,7 +485,7 @@ def finalize(nav, nav_hist, mdd, dates, yearly, n, weak_weeks, crash_weeks=0, gu
 
 Run: `cd /workspace/mx_auto_strategy && python -c "
 import re
-src = open('us_stocks/us_backtest_ai.py').read()
+src = open('markets/us/us_backtest_ai.py').read()
 for i, line in enumerate(src.split(chr(10)), 1):
     if 'run_optimized(' in line and 'def run_optimized' not in line:
         print(f'{i}: {line.strip()}')
@@ -496,7 +496,7 @@ Expected: 看到 2-4 个调用点（如 `_opt_nav, _opt_stats = run_optimized(..
 
 - [ ] **Step 9: 验证语法 + 跑通原版回测**
 
-Run: `cd /workspace/mx_auto_strategy && python -c "import ast; ast.parse(open('us_stocks/us_backtest_ai.py').read()); print('syntax ok')"`
+Run: `cd /workspace/mx_auto_strategy && python -c "import ast; ast.parse(open('markets/us/us_backtest_ai.py').read()); print('syntax ok')"`
 Expected: `syntax ok`
 
 Run: `cd /workspace/mx_auto_strategy/us_stocks && python us_backtest_ai.py --mode optimized --no-ai 2>&1 | tail -20`
@@ -506,7 +506,7 @@ Expected: 回测跑通，输出倍数/MDD/CAGR，无异常。倍数应略低于�
 
 ```bash
 cd /workspace/mx_auto_strategy
-git add us_stocks/us_backtest_ai.py
+git add markets/us/us_backtest_ai.py
 git commit -m "feat(us): run_optimized 加持仓跟踪+止盈止损+成本模型(保留原作者 struct_def/vol_target 逻辑)"
 ```
 
@@ -682,7 +682,7 @@ git commit -m "test(us): 新增止盈止损+成本模型单元测试(覆盖触�
 ## Task 7: 跑 3/5/10 年回测输出对照表
 
 **Files:**
-- Modify: `us_stocks/us_backtest_ai.py` (在 `main()` 末尾加对照表打印)
+- Modify: `markets/us/us_backtest_ai.py` (在 `main()` 末尾加对照表打印)
 
 **目的:** 用户要求"做完简单回测一下。3 年、5 年、10 年"。输出原版(无止盈止损) vs 新版(含止盈止损+成本) 对照。
 
@@ -691,7 +691,7 @@ git commit -m "test(us): 新增止盈止损+成本模型单元测试(覆盖触�
 在 `main()` 函数末尾（所有 run_optimized 调用之后），加入对照表打印。先读取 main 函数末尾确认插入点：
 
 Run: `cd /workspace/mx_auto_strategy && python -c "
-src = open('us_stocks/us_backtest_ai.py').read()
+src = open('markets/us/us_backtest_ai.py').read()
 lines = src.split(chr(10))
 for i, line in enumerate(lines, 1):
     if 'print(' in line and i > 580:
@@ -769,7 +769,7 @@ Expected: 末尾打印对照表，含 3y/5y/10y 三行的倍数/MDD/CAGR 对照 
 
 ```bash
 cd /workspace/mx_auto_strategy
-git add us_stocks/us_backtest_ai.py
+git add markets/us/us_backtest_ai.py
 git commit -m "feat(us): main 末尾加 3/5/10 年回测对照表(原版 vs 含止盈止损+成本)"
 ```
 
@@ -794,7 +794,7 @@ Expected: 回测跑通, 输出 3/5/10 年对照表, 止盈止损次数 > 0, 累�
 
 - [ ] **Step 3: 跑 QA-02 合成数据测试**
 
-Run: `cd /workspace/mx_auto_strategy && python ashare_backtest/_qa/qa_02_synthetic_unit_tests.py 2>&1 | tail -10`
+Run: `cd /workspace/mx_auto_strategy && python markets/ashare/_qa/qa_02_synthetic_unit_tests.py 2>&1 | tail -10`
 Expected: `26 PASS / 0 FAIL`（A 股回测零回归）。
 
 - [ ] **Step 4: 验证 A 股代码无 import 美股模块**

@@ -6,9 +6,9 @@
 #
 # 前置:
 #   1) 已用代理刷新过行情面板(见 README「数据刷新」):
-#        - A股: ashare_backtest/data/ashare_panel_close_em.csv (tencent_hfq_rebuild.py)
-#        - 美股: us_stocks/data/weekly_adjclose_full_ext.csv
-#        - 加密: crypto_stocks/data/weekly_adjclose_crypto50_10y.csv (已提交, 可跳过)
+#        - A股: markets/ashare/data/ashare_panel_close_em.csv (tencent_hfq_rebuild.py)
+#        - 美股: markets/us/data/weekly_adjclose_full_ext.csv
+#        - 加密: markets/crypto/data/weekly_adjclose_crypto50_10y.csv (已提交, 可跳过)
 #   2) Git 已配置代理(推送 GitHub 走代理)，或用 SSH。
 #
 # 用法:
@@ -19,18 +19,18 @@ export PYTHONPATH=.
 PY="${PYTHON:-python}"
 
 echo "== 1/4 重新生成各市场 NAV =="
-if [ -f crypto_stocks/data/weekly_adjclose_crypto50_10y.csv ]; then
-  "$PY" crypto_stocks/export_nav_crypto.py
+if [ -f markets/crypto/data/weekly_adjclose_crypto50_10y.csv ]; then
+  "$PY" markets/crypto/export_nav_crypto.py
 else
   echo "跳过: 加密面板缺失"
 fi
-if [ -f ashare_backtest/data/ashare_panel_close_em.csv ]; then
-  "$PY" ashare_backtest/export_nav.py
+if [ -f markets/ashare/data/ashare_panel_close_em.csv ]; then
+  "$PY" markets/ashare/export_nav.py
 else
   echo "跳过: A股面板缺失 (先用代理跑 tencent_hfq_rebuild.py)"
 fi
-if [ -f us_stocks/data/weekly_adjclose_full_ext.csv ]; then
-  "$PY" us_stocks/export_nav_us.py
+if [ -f markets/us/data/weekly_adjclose_full_ext.csv ]; then
+  "$PY" markets/us/export_nav_us.py
 else
   echo "跳过: 美股面板缺失 (先用代理刷新 weekly_adjclose_full_ext.csv)"
 fi
@@ -39,7 +39,7 @@ echo "== 2/4 组合层 =="
 "$PY" portfolio_blend.py
 
 echo "== 3/4 刷新报告 =="
-"$PY" crypto_stocks/build_crypto_opt_report.py
+"$PY" markets/crypto/build_crypto_opt_report.py
 
 echo "== 4/4 提交并推送 =="
 git add docs/

@@ -10,7 +10,7 @@ __pycache__/
 
 # 本地运行产物（仅限仓库根目录的一次性脚本）
 # ⚠️ 必须用前导 / 锚定到仓库根: 早期这里的 `backtest_*.py` 是全局模式,
-#    会把 ashare_backtest/、crypto_stocks/research/ 等任意子目录下的同名文件
+#    会把 markets/ashare/、markets/crypto/research/ 等任意子目录下的同名文件
 #    **静默忽略**(git status 不显示、提交时无声丢失), 只能靠 ! 白名单逐个放行,
 #    而白名单又只匹配顶层目录, 子目录仍会漏。锚定后该陷阱整体消失。
 /backtest_*.py
@@ -33,12 +33,12 @@ __pycache__/
 Thumbs.db
 
 # 回测数据面板 (历史大文件, 本地保留不提交)
-ashare_backtest/WK/
-# 注: ashare_backtest/data/ashare (A股日线/资金流缓存, 需上传GitHub作公共数据源) 不忽略, 正常提交
+markets/ashare/WK/
+# 注: markets/ashare/data/ashare (A股日线/资金流缓存, 需上传GitHub作公共数据源) 不忽略, 正常提交
 
 # 旧的瞬时节点的缓存(已迁移到 data/ashare 并随仓库提交)
-ashare_backtest/_cache/
-ashare_backtest/cache/
+markets/ashare/_cache/
+markets/ashare/cache/
 
 # 临时对比测试脚本
-ashare_backtest/_cmp_*.py
+markets/ashare/_cmp_*.py

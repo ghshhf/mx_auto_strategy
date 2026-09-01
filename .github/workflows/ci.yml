@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # 测试集覆盖 ashare_backtest / us_stocks / cycles 三个子系统，
+          # 测试集覆盖 markets/ashare / markets/us / cycles 三个子系统，
           # 需要 pandas/numpy/requests 等运行期依赖；pytest 仅用于报告格式。
           pip install pytest
           pip install -r requirements.txt
@@ -44,12 +44,12 @@ jobs:
 
       - name: Run QA-02 unit tests (blocking)
         run: |
-          cd ashare_backtest/_qa && python qa_02_unit.py
+          cd markets/ashare/_qa && python qa_02_unit.py
 
       - name: Run data-dependent QA scripts (non-blocking)
         continue-on-error: true
         run: |
-          for f in ashare_backtest/_qa/qa_01_artifact_scan.py ashare_backtest/_qa/qa_03_before_after.py ashare_backtest/_qa/qa_04_hk_and_perf.py ashare_backtest/_qa/qa_05_datalayer.py; do
+          for f in markets/ashare/_qa/qa_01_artifact_scan.py markets/ashare/_qa/qa_03_before_after.py markets/ashare/_qa/qa_04_hk_and_perf.py markets/ashare/_qa/qa_05_datalayer.py; do
             echo "--- Running $f ---"
             python "$f" 2>&1 || echo "[WARN] $f failed (expected if data files absent)"
           done

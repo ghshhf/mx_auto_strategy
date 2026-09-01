@@ -20,9 +20,9 @@
 
 | 路径 | 作用 |
 |---|---|
-| `crypto_stocks/` | 加密回测主引擎（周线动量 + 减半周期减仓） |
-| `ashare_backtest/` | A股回测（腾讯后复权金标准面板） |
-| `us_stocks/` | 美股回测（真实面板 + AI 选股层） |
+| `markets/crypto/` | 加密回测主引擎（周线动量 + 减半周期减仓） |
+| `markets/ashare/` | A股回测（腾讯后复权金标准面板） |
+| `markets/us/` | 美股回测（真实面板 + AI 选股层） |
 | `cycles/` | 减半周期相位表与叠加层（`phases.py` / `overlay.py` / `specs.py`） |
 | `docs/` | 报告产物（如 `curves.html`） |
 | `PITFALLS.md` | **必读**：历史踩坑清单 |
@@ -74,7 +74,7 @@ bash scripts/refresh_and_publish.sh
 
 ### 加密（43 币）
 ```bash
-cd crypto_stocks
+cd markets/crypto
 C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_windows_bt.py
 # 产出: crypto_windows_report.md + crypto_windows_results.json（10/5/3 年 × base/cycle 两档）
 ```
@@ -82,7 +82,7 @@ C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_wi
 
 ### A股
 ```bash
-cd ashare_backtest
+cd markets/ashare
 C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_windows.py
 # 产出: nav_windows.html + nav_windows.csv（3/5/10y trailing 窗口对比）
 ```
@@ -90,7 +90,7 @@ C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe run_wi
 
 ### 美股
 ```bash
-cd us_stocks
+cd markets/us
 C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe us_backtest_ai.py --no-ai
 # --no-ai: 关闭 AI 选股层，只跑 baseline + optimized（复现 22.48x 真值无需 LLM）
 # 默认还会跑 optimized；如需真接 LLM 加权加 --with-llm（需配置，否则 pass-through=1.0）
@@ -123,8 +123,8 @@ python run_cycle_windows.py        # 根目录
 
 | 市场 | 脚本 | 源 |
 |---|---|---|
-| A股 | `ashare_backtest/tencent_hfq_rebuild.py` | 腾讯 `web.ifzq.gtimg.cn` 后复权周线（**活跃**；eastmoney 源已死，勿用 `eastmoney_hfq_rebuild.py`） |
-| 加密 | `crypto_stocks/sync_crypto_panel.py` | Binance → OKX → CMC 三级降级同步 |
+| A股 | `markets/ashare/tencent_hfq_rebuild.py` | 腾讯 `web.ifzq.gtimg.cn` 后复权周线（**活跃**；eastmoney 源已死，勿用 `eastmoney_hfq_rebuild.py`） |
+| 加密 | `markets/crypto/sync_crypto_panel.py` | Binance → OKX → CMC 三级降级同步 |
 
 > ⚠️ 文件名带 `_em` ≠ eastmoney 源。`ashare_weekly_em/`、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv` 是**活跃腾讯数据**，被引擎读写——**删了回测直接崩**。真废弃是带 `OLD_eastmoney_bak` / `.bak9` 后缀的。
 

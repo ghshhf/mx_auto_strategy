@@ -97,10 +97,10 @@ class TestEngineIntegration(unittest.TestCase):
     """接入三引擎: cycle_tilt=0 必须 == 基线(关闭)。数据缺失则跳过。"""
 
     def test_a_share_tilt0_equals_baseline(self):
-        panel = os.path.join(BASE, "ashare_backtest", "data", "ashare_panel_close_em.csv")
+        panel = os.path.join(BASE, "markets", "ashare", "data", "ashare_panel_close_em.csv")
         if not os.path.exists(panel):
             self.skipTest("A股面板数据不存在(需 tencent_hfq_rebuild)")
-        sys.path.insert(0, os.path.join(BASE, "ashare_backtest"))
+        sys.path.insert(0, os.path.join(BASE, "markets", "ashare"))
         from backtest_engine import run  # noqa: F401
         kw = dict(offense_mode="momentum", momentum_lookback=26, use_tech=True,
                   core_satellite=True, core_frac=0.5, death_cross=True, costs=True,
@@ -110,11 +110,11 @@ class TestEngineIntegration(unittest.TestCase):
         self.assertEqual(a["final_multiple"], b["final_multiple"])
 
     def test_us_tilt0_equals_baseline(self):
-        p = os.path.join(BASE, "us_stocks", "data", "weekly_adjclose_full_ext.csv")
+        p = os.path.join(BASE, "markets", "us", "data", "weekly_adjclose_full_ext.csv")
         if not os.path.exists(p):
             self.skipTest("美股面板数据不存在")
         import importlib
-        us = importlib.import_module("us_stocks.us_backtest_ai")
+        us = importlib.import_module("markets.us.us_backtest_ai")
         dates, series = us.load_panel(p)
         cfg = us.load_us_cfg()
         N = 104
@@ -125,10 +125,10 @@ class TestEngineIntegration(unittest.TestCase):
 
     def test_crypto_tilt0_equals_baseline(self):
         import pandas as pd
-        p = os.path.join(BASE, "crypto_stocks", "data", "weekly_adjclose_crypto50.csv")
+        p = os.path.join(BASE, "markets", "crypto", "data", "weekly_adjclose_crypto50.csv")
         if not os.path.exists(p):
             self.skipTest("加密面板数据不存在")
-        import crypto_stocks.crypto_options_bt as cb
+        import markets.crypto.crypto_options_bt as cb
         px = pd.read_csv(p, index_col=0, parse_dates=True).sort_index().iloc[-156:]
         a = cb.run_bt(px.copy(), cycle_overlay=False)
         b = cb.run_bt(px.copy(), cycle_overlay=True, cycle_tilt=0.0)

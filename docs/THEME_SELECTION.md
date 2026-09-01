@@ -3,7 +3,7 @@
 > 背景：用户质疑当前选币"只是看动量/最强"，可能误判/触判；要求加"行业/题材"层，
 > 并"查看历史预判下一轮题材"。本文件先还原当前逻辑，再定位误判根因，最后给出
 > **数据驱动（零前视）** 的题材升级方案与下一轮预判。
-> 复现：`crypto_stocks/_scratch_theme_leadership.py`
+> 复现：`markets/crypto/_scratch_theme_leadership.py`
 
 ---
 

@@ -9,7 +9,7 @@
 ## §1 数据层坑（最致命，删错/用错会静默污染回测）
 
 - **`*_em` 文件名 ≠ eastmoney 数据源【重大误解点】**
-  记忆里写"eastmoney 已死，现用腾讯 `web.ifzq.gtimg.cn` 后复权周线"。但**活跃代码 `ashare_backtest/tencent_hfq_rebuild.py` 产出的是 `ashare_weekly_em/`、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv`**——文件名沿用了旧 `_em` 后缀，实际已是腾讯数据。
+  记忆里写"eastmoney 已死，现用腾讯 `web.ifzq.gtimg.cn` 后复权周线"。但**活跃代码 `markets/ashare/tencent_hfq_rebuild.py` 产出的是 `ashare_weekly_em/`、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv`**——文件名沿用了旧 `_em` 后缀，实际已是腾讯数据。
   → **切勿按文件名判断数据源**。`ashare_weekly_em/`、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv` 都是**活跃、被 `backtest_engine.py` 读写**的，删了回测直接崩。
   → 真正的废弃 eastmoney 残留是显式带 `OLD_eastmoney_bak` / `.bak9` 后缀的，已于 2026-08-11 清理。
 
@@ -17,9 +17,9 @@
   `ashare_panel_close.csv`（默认）、`ashare_panel_close_em.csv`、`ashare_panel_volume_em.csv`（均腾讯后复权）、`ashare_weekly_em/<code>.csv`（逐标的原始周线）、`macro_monthly.csv`、`valuation_daily.csv`。
   `ashare_daily/`、`ashare_weekly/`（无后缀）、`ashare_weekly_hfq/`、`ashare_panel_close_hfq.csv`、`ashare_panel_ohlc*.csv`、`_mx_raw/`、`*_OLD_eastmoney_bak`、`*.bak9` 均已确认**无任何代码引用、且未被 git 跟踪**，属孤儿，已删。
 
-- **美股 SOX 原始数据**：`us_stocks/data/raw_sox_historyofmarket.json`（502K）被 `us_stocks/extend_panel_real_indices.py` 读取，**勿删**（非重新生成则美股面板缺 SOX 真实指数）。
+- **美股 SOX 原始数据**：`markets/us/data/raw_sox_historyofmarket.json`（502K）被 `markets/us/extend_panel_real_indices.py` 读取，**勿删**（非重新生成则美股面板缺 SOX 真实指数）。
 
-- **加密面板**：`crypto_stocks/data/weekly_adjclose_crypto50.csv`（主，61→62 币）与 `weekly_adjclose_crypto50_10y.csv`（10y，621 周）是回测唯一数据源。增币须同时回填两面板对齐日期（见 `_add_trb_backfill.py` 模板），且早期空缺列引擎按周自动排除，不会报错。
+- **加密面板**：`markets/crypto/data/weekly_adjclose_crypto50.csv`（主，61→62 币）与 `weekly_adjclose_crypto50_10y.csv`（10y，621 周）是回测唯一数据源。增币须同时回填两面板对齐日期（见 `_add_trb_backfill.py` 模板），且早期空缺列引擎按周自动排除，不会报错。
 
 ---
 
@@ -96,18 +96,18 @@
 ## §8 本次清理记录（2026-08-11）
 
 删除（均 0 git 跟踪、0 代码引用，属孤儿/显式备份）：
-- `ashare_backtest/data/ashare_weekly_em_OLD_eastmoney_bak/`（4.3M）
-- `ashare_backtest/data/ashare_panel_close_em.csv.OLD_eastmoney_bak`
-- `ashare_backtest/data/ashare_panel_close.csv.bak9`
-- `ashare_backtest/data/ashare_panel_close_hfq.csv`、`ashare_panel_ohlc.csv`、`ashare_panel_ohlc_hfq.csv`（共 ~6.4M）
-- `ashare_backtest/data/_mx_raw/`（564K 原始 dump）
-- `ashare_backtest/data/ashare_daily/`（58 文件 6.2M，无引用，研究用周线）
-- `ashare_backtest/data/ashare_weekly/`（106 文件 4.1M）、`ashare_weekly_hfq/`（106 文件 4.4M，eastmoney 时代孤儿周线）
+- `markets/ashare/data/ashare_weekly_em_OLD_eastmoney_bak/`（4.3M）
+- `markets/ashare/data/ashare_panel_close_em.csv.OLD_eastmoney_bak`
+- `markets/ashare/data/ashare_panel_close.csv.bak9`
+- `markets/ashare/data/ashare_panel_close_hfq.csv`、`ashare_panel_ohlc.csv`、`ashare_panel_ohlc_hfq.csv`（共 ~6.4M）
+- `markets/ashare/data/_mx_raw/`（564K 原始 dump）
+- `markets/ashare/data/ashare_daily/`（58 文件 6.2M，无引用，研究用周线）
+- `markets/ashare/data/ashare_weekly/`（106 文件 4.1M）、`ashare_weekly_hfq/`（106 文件 4.4M，eastmoney 时代孤儿周线）
 - 根目录 `_opt_weights.log`、`_verify_weights.log`（未跟踪 scratch 日志）
 
-保留待确认（未删）：`crypto_stocks/_scratch_*.py` 等草稿脚本（19 个，无外部 import）、`E:\xmanbian` 根目录 mx 相关残留（`mx_backtest_*.html`、`_mx_src/`、`mx_auto_strategy_*.md`、`_qa_verify/`、`mx_hk_design/`、`mx_backtest_run/` 等）——见对话确认。
+保留待确认（未删）：`markets/crypto/_scratch_*.py` 等草稿脚本（19 个，无外部 import）、`E:\xmanbian` 根目录 mx 相关残留（`mx_backtest_*.html`、`_mx_src/`、`mx_auto_strategy_*.md`、`_qa_verify/`、`mx_hk_design/`、`mx_backtest_run/` 等）——见对话确认。
 
-**回收空间**：`ashare_backtest/data` 由 ~25M+ 降至 5.5M。
+**回收空间**：`markets/ashare/data` 由 ~25M+ 降至 5.5M。
 
 ---
 

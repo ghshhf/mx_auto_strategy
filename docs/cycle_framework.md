@@ -90,9 +90,9 @@ mult = cycle_scale_at(query_date, tilt=0.5)
 
 | 引擎 | 入口 | 接入参数 | 守恒 helper | 语义 |
 |------|------|----------|-------------|------|
-| A股 | `ashare_backtest/backtest_engine.py` `run()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_alloc` | 进攻/防御/现金三栏守恒：加仓从防御仓匀、减仓释放现金 |
-| 美股 | `us_stocks/us_backtest_ai.py` `run_optimized()` | `cycle_overlay`, `cycle_tilt=0.0`(默认), `cycle_weights=None` | `cap_offense` | 进攻% 缩放，现金自动吸收差额（顺风最多吃光现金，不借入） |
-| 加密 | `crypto_stocks/crypto_options_bt.py` `run_bt()` / `_build_target()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_crypto_target` | 缩放进攻权重，差额从稳定币(STABLE)匀取 |
+| A股 | `markets/ashare/backtest_engine.py` `run()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_alloc` | 进攻/防御/现金三栏守恒：加仓从防御仓匀、减仓释放现金 |
+| 美股 | `markets/us/us_backtest_ai.py` `run_optimized()` | `cycle_overlay`, `cycle_tilt=0.0`(默认), `cycle_weights=None` | `cap_offense` | 进攻% 缩放，现金自动吸收差额（顺风最多吃光现金，不借入） |
+| 加密 | `markets/crypto/crypto_options_bt.py` `run_bt()` / `_build_target()` | `cycle_overlay`, `cycle_tilt=0.3`(默认), `cycle_weights=None` | `apply_to_crypto_target` | 缩放进攻权重，差额从稳定币(STABLE)匀取 |
 
 > 不传 `cycle_weights` 时，引擎按自身 key（`ashare`/`us`/`crypto`）回退到 `specs.ENGINE_CYCLE_WEIGHTS` 的**逐引擎精选周期+权重**；传了则用它（用于实验）。`composite_regime` 已支持 `weights` 参数，只合成指定周期、忽略其余。
 

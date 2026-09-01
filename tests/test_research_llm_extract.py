@@ -1,5 +1,5 @@
 """Task 6: llm_extract 在未配置 LLM 场景的静默性 smoke 测试。"""
-from crypto_stocks.research.parsers.llm_extract import (
+from markets.crypto.research.parsers.llm_extract import (
     extract_records_from_texts, _normalize_parsed,
 )
 

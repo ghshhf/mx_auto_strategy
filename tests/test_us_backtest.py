@@ -18,7 +18,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, "us_stocks"))
+sys.path.insert(0, os.path.join(HERE, "markets", "us"))
 
 import us_backtest_ai as ubt
 

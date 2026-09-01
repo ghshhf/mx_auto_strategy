@@ -51,14 +51,14 @@ jobs:
           PYTHONPATH: .
         run: |
           set -u
-          if [ -f crypto_stocks/data/weekly_adjclose_crypto50_10y.csv ]; then
-            python crypto_stocks/export_nav_crypto.py
+          if [ -f markets/crypto/data/weekly_adjclose_crypto50_10y.csv ]; then
+            python markets/crypto/export_nav_crypto.py
           fi
-          if [ -f ashare_backtest/data/ashare_panel_close_em.csv ]; then
-            python ashare_backtest/export_nav.py
+          if [ -f markets/ashare/data/ashare_panel_close_em.csv ]; then
+            python markets/ashare/export_nav.py
           fi
-          if [ -f us_stocks/data/weekly_adjclose_full_ext.csv ]; then
-            python us_stocks/export_nav_us.py
+          if [ -f markets/us/data/weekly_adjclose_full_ext.csv ]; then
+            python markets/us/export_nav_us.py
           fi
           # 组合层读已提交 nav.json + us_nav_ai.csv + 重算加密，始终可离线跑
           python portfolio_blend.py
@@ -68,7 +68,7 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          python crypto_stocks/build_crypto_opt_report.py
+          python markets/crypto/build_crypto_opt_report.py
 
       - name: Commit & push docs
         run: |

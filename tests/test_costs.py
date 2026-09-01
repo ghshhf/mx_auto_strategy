@@ -11,7 +11,7 @@ import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ashare_backtest"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "markets", "ashare"))
 from backtest_engine import run
 
 

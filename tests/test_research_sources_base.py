@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from crypto_stocks.research.sources.base import (
+from markets.crypto.research.sources.base import (
     compute_record_id, read_jsonl, append_jsonl_atomic,
     BaseResearchSource, _http_request,
 )

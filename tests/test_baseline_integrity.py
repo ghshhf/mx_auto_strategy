@@ -10,7 +10,7 @@ test_baseline_integrity.py - v6.18 诚实基线完整性闸门 (CI 拦截, 数�
   2. 基线对参数不敏感(参数扫描已证): 容差放宽到 [15,22]x / MDD [-40,-25]%,
      防止"微调基线配置刷出更好看数字"的自欺重新溜入。
 
-数据依赖: 腾讯后复权面板 ashare_backtest/data/ashare_panel_close_em.csv (gitignore, 不入库)。
+数据依赖: 腾讯后复权面板 markets/ashare/data/ashare_panel_close_em.csv (gitignore, 不入库)。
 面板缺失时 pytest.skip (与 test_data_contract.py 同模式), CI 不误报。
 
 显著性闸门的另一半(增强层样本外 |t|>=2 才准入基线)由 walk_forward.py 提供,
@@ -22,7 +22,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-sys.path.insert(0, os.path.join(ROOT, "ashare_backtest"))
+sys.path.insert(0, os.path.join(ROOT, "markets", "ashare"))
 
 from backtest_engine import run
 
@@ -35,7 +35,7 @@ MDD_LO, MDD_HI = -40.0, -25.0
 
 
 def _panel_path():
-    base = os.path.join(ROOT, "ashare_backtest", "data")
+    base = os.path.join(ROOT, "markets", "ashare", "data")
     for name in ("ashare_panel_close_em.csv", "ashare_panel_close.csv"):
         p = os.path.join(base, name)
         if os.path.exists(p):

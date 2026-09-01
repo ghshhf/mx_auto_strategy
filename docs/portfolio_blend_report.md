@@ -8,8 +8,8 @@
 | 子系统 | 来源 | 共同窗口倍数 | 说明 |
 |------|------|------|------|
 | A股 | `docs/data/nav.json` `windows['full']['optimized']['mult']` | 全长 33.1x | 腾讯后复权面板（v6.16 起 `web.ifzq.gtimg.cn`；已纠 eastmoney 字段错位 + westock 伪迹） |
-| 美股 | `us_stocks/data/us_nav_ai.csv` `optimized_ai_nav` | 23.1x | 真实面板，155 标的 |
-| 加密 | `crypto_stocks/backtest_v2.py` 真数据**重算** | 进攻 100.6x / 防御 40.7x | Binance/OKX 真实周K线；**未用**陈旧的合成 `backtest_v2_results.json`(46,238x) |
+| 美股 | `markets/us/data/us_nav_ai.csv` `optimized_ai_nav` | 23.1x | 真实面板，155 标的 |
+| 加密 | `markets/crypto/backtest_v2.py` 真数据**重算** | 进攻 100.6x / 防御 40.7x | Binance/OKX 真实周K线；**未用**陈旧的合成 `backtest_v2_results.json`(46,238x) |
 
 **对齐方式**：三序列周收盘日不同（A股周四 / 美股周一 / 加密周五），统一 `resample('W-FRI')` 后 inner join。
 **共同窗口**：`2017-08-11 ~ 2026-07-24`，共 **468 周**。所有倍数均在该窗口内计算（苹果对苹果）。

@@ -8,7 +8,7 @@
 
 ### 1.1 项目现状
 
-`mx_auto_strategy` 已有完整美股回测体系（[us_stocks/us_backtest_ai.py](file:///workspace/mx_auto_strategy/us_stocks/us_backtest_ai.py)）：
+`mx_auto_strategy` 已有完整美股回测体系（[markets/us/us_backtest_ai.py](file:///workspace/mx_auto_strategy/markets/us/us_backtest_ai.py)）：
 - 160 只 ticker 真实面板（2016-02 至今周线，westock-data 抓取）
 - 13 主题选股（AI算力/半导体/CloudSaaS/EV/光伏/GLP1/网络安全 等）
 - 市况三档（weak/balance/bull）+ crash 档
@@ -43,8 +43,8 @@
 ### 2.1 阶段划分
 
 **阶段1（本次实施）**：美股现货回测增强 + 期权接口预留
-- 改造 [us_backtest_ai.py](file:///workspace/mx_auto_strategy/us_stocks/us_backtest_ai.py) `run_optimized()` 加持仓跟踪 + 单点止盈 + -8% 硬止损 + 成本模型补全
-- 新建 `us_stocks/us_options.py` 期权覆盖层接口（阶段1 空壳，阶段2 实现）
+- 改造 [us_backtest_ai.py](file:///workspace/mx_auto_strategy/markets/us/us_backtest_ai.py) `run_optimized()` 加持仓跟踪 + 单点止盈 + -8% 硬止损 + 成本模型补全
+- 新建 `markets/us/us_options.py` 期权覆盖层接口（阶段1 空壳，阶段2 实现）
 - 跑 3/5/10 年回测对照（现货基线 vs 含止盈止损）
 
 **阶段2（后续）**：期权覆盖层实现
@@ -90,7 +90,7 @@
 
 ```
 mx_auto_strategy/
-├── us_stocks/
+├── markets/us/
 │   ├── us_backtest_ai.py    [改] run_optimized 加持仓跟踪+止盈止损+成本模型
 │   ├── us_options.py        [新] 阶段2 期权覆盖层接口(阶段1 空壳)
 │   └── data/
@@ -98,7 +98,7 @@ mx_auto_strategy/
 ├── strategy_config.json     [改] +us_backtest 配置段
 ├── tests/
 │   └── test_us_backtest.py  [新] 止盈/止损/成本/无前视
-└── ashare_backtest/         [不动] A 股零改动
+└── markets/ashare/         [不动] A 股零改动
 ```
 
 ### 3.2 核心原则
@@ -106,7 +106,7 @@ mx_auto_strategy/
 1. **不新建引擎**：改造现有 `run_optimized()`，保留原作者的 `struct_def`/`vol_target`/`crash_off` 哲学
 2. **止盈止损是叠加层**：在再平衡后检查，不干预权重分配逻辑
 3. **阶段2 接口预留**：`us_options.py` 空壳函数返回 None，阶段1 走纯现货逻辑，阶段2 切换为期权逻辑
-4. **A 股零改动**：所有改动局限于 `us_stocks/` 目录
+4. **A 股零改动**：所有改动局限于 `markets/us/` 目录
 
 ### 3.3 数据流
 
@@ -201,7 +201,7 @@ def check_stop_loss(code, state, price, cfg):
 
 ### 4.4 成本模型补全（新增）
 
-当前 `run_optimized` 完全无成本扣减（[us_backtest_ai.py:369](file:///workspace/mx_auto_strategy/us_stocks/us_backtest_ai.py) `nav *= (1 + growth)` 无 turnover × cost）。
+当前 `run_optimized` 完全无成本扣减（[us_backtest_ai.py:369](file:///workspace/mx_auto_strategy/markets/us/us_backtest_ai.py) `nav *= (1 + growth)` 无 turnover × cost）。
 
 ```python
 # 在再平衡时计算换手并扣成本
@@ -224,7 +224,7 @@ cost_total += cost
 ### 4.5 期权接口预留（us_options.py 空壳）
 
 ```python
-# us_stocks/us_options.py
+# markets/us/us_options.py
 """美股期权覆盖层(阶段2 实现, 阶段1 空壳)。
 
 阶段1: 所有函数返回 None, run_optimized 走纯现货逻辑。
@@ -287,7 +287,7 @@ def protective_put_for_hedge(code: str, spot: float,
 
 ### 4.6 run_optimized 改造点
 
-在现有 `run_optimized` 循环中（[us_backtest_ai.py:359-439](file:///workspace/mx_auto_strategy/us_stocks/us_backtest_ai.py)）插入 3 个新逻辑块。**关键：再平衡前必须先快照权重**（否则成本扣减无对照）：
+在现有 `run_optimized` 循环中（[us_backtest_ai.py:359-439](file:///workspace/mx_auto_strategy/markets/us/us_backtest_ai.py)）插入 3 个新逻辑块。**关键：再平衡前必须先快照权重**（否则成本扣减无对照）：
 
 ```python
 # 现有: for t in range(n): ... (行 359)

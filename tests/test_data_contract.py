@@ -2,7 +2,7 @@
 """
 test_data_contract.py
 =====================
-数据契约测试: 校验 ashare_backtest/data/ashare_weekly_em/ 下每个 CSV 的字段完整性,
+数据契约测试: 校验 markets/ashare/data/ashare_weekly_em/ 下每个 CSV 的字段完整性,
 以及 panel CSV (ashare_panel_close_em.csv) 的数据有效性。
 
 断言:
@@ -16,7 +16,7 @@ import csv
 import unittest
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(BASE, "ashare_backtest", "data")
+DATA = os.path.join(BASE, "markets", "ashare", "data")
 WK = os.path.join(DATA, "ashare_weekly_em")
 PANEL = os.path.join(DATA, "ashare_panel_close_em.csv")
 

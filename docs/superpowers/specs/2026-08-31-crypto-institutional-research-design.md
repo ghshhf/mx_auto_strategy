@@ -1,7 +1,7 @@
 # 加密机构研报子模块设计文档（Crypto Institutional Research Coverage Sub-module）
 
 > 日期：2026-08-31
-> 模块：`crypto_stocks/research/`
+> 模块：`markets/crypto/research/`
 > 定位：**纯用户参考模块，不参与选币/回测/交易**（哲学同 `news_feed.py` "仅参考·绝不交易"）
 > 核心原则：① 不捏造数据，机构没预测的就是无；② 以最新数据为准；③ 所有来源可追溯（附URL）
 
@@ -19,7 +19,7 @@
 ## 1. 模块结构与文件清单（12个文件，分6层）
 
 ```
-crypto_stocks/research/
+markets/crypto/research/
 ├── __init__.py                  # 空，标记为包
 ├── main.py                      # CLI 入口（argparse 5个子命令）
 ├── config.py                    # TRACKED_INSTITUTIONS 白名单 + 代币符号映射 + 常量

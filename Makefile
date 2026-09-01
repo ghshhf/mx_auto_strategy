@@ -26,9 +26,9 @@ lint:
 	$(PYTHON) scripts/lint_all.py
 
 docs:
-	$(PYTHON) crypto_stocks/export_nav_crypto.py
-	if [ -f ashare_backtest/data/ashare_panel_close_em.csv ]; then $(PYTHON) ashare_backtest/export_nav.py; fi
-	if [ -f us_stocks/data/weekly_adjclose_full_ext.csv ]; then $(PYTHON) us_stocks/export_nav_us.py; fi
+	$(PYTHON) markets/crypto/export_nav_crypto.py
+	if [ -f markets/ashare/data/ashare_panel_close_em.csv ]; then $(PYTHON) markets/ashare/export_nav.py; fi
+	if [ -f markets/us/data/weekly_adjclose_full_ext.csv ]; then $(PYTHON) markets/us/export_nav_us.py; fi
 	$(PYTHON) portfolio_blend.py
 
 verify: lint test

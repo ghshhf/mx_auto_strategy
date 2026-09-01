@@ -16,7 +16,7 @@ import tempfile
 import unittest
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(BASE, "ashare_backtest"))
+sys.path.insert(0, os.path.join(BASE, "markets", "ashare"))
 
 from backtest_engine import load_macro, macro_score_at  # noqa: E402
 
@@ -134,7 +134,7 @@ class TestMacroAllocationConservation(unittest.TestCase):
 
     def test_weights_sum_to_100_with_overlay(self):
         from backtest_engine import run
-        panel = os.path.join(BASE, "ashare_backtest", "data",
+        panel = os.path.join(BASE, "markets", "ashare", "data",
                              "ashare_panel_close_em.csv")
         if not os.path.exists(panel):
             self.skipTest("面板数据不存在")
@@ -156,7 +156,7 @@ class TestMacroAllocationConservation(unittest.TestCase):
     def test_overlay_off_matches_baseline(self):
         """macro_overlay=False 时结果必须与未引入该特性时完全一致。"""
         from backtest_engine import run
-        panel = os.path.join(BASE, "ashare_backtest", "data",
+        panel = os.path.join(BASE, "markets", "ashare", "data",
                              "ashare_panel_close_em.csv")
         if not os.path.exists(panel):
             self.skipTest("面板数据不存在")

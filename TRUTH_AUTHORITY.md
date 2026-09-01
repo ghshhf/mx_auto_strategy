@@ -2,7 +2,7 @@
 
 > 目的：终结「倍率对不上 / 减着减着变奇怪」的困惑。
 > 结论：**所有数字都真实，差异 100% 来自「窗口长度」与「引擎版本」，不是 bug。**
-> 验证脚本：`crypto_stocks/reconcile_truth.py`（12y）、`crypto_stocks/bt_leg_decompose.py`（10y），均用受管 python `C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe` 跑通、可复现。
+> 验证脚本：`markets/crypto/reconcile_truth.py`（12y）、`markets/crypto/bt_leg_decompose.py`（10y），均用受管 python `C:/Users/admin/.workbuddy/binaries/python/envs/default/Scripts/python.exe` 跑通、可复现。
 
 ## 0. 唯一权威真值
 

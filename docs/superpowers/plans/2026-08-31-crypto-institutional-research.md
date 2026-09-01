@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 构建 `crypto_stocks/research/` 独立子模块——支持查询 BTC/ETH/SOL 等主流币的机构研报覆盖数、机构列表、按时间分组的目标价上下区间（min/max），提供 5 个 CLI 命令（fetch/analyze/report/latest/add），**首日不联网即可用**（内置渣打/ARK/摩根等大牌种子数据），**绝不捏造、绝不参与交易/回测决策**。
+**Goal:** 构建 `markets/crypto/research/` 独立子模块——支持查询 BTC/ETH/SOL 等主流币的机构研报覆盖数、机构列表、按时间分组的目标价上下区间（min/max），提供 5 个 CLI 命令（fetch/analyze/report/latest/add），**首日不联网即可用**（内置渣打/ARK/摩根等大牌种子数据），**绝不捏造、绝不参与交易/回测决策**。
 
 **Architecture:** 6 层解耦：① config/seeds（数据基础）→ ② kb（本地持久化）→ ③ sources/（多源抓取器，仿 data_sources.py 降级模式）→ ④ parsers/（可选 LLM 结构化提取）→ ⑤ aggregate.py（交叉聚合，per-coin 统计）→ ⑥ main.py（CLI 展示层）。每层独立 import，聚合层和 CLI 层可单测。
 
@@ -14,19 +14,19 @@
 
 | 文件 | 职责 |
 |---|---|
-| `crypto_stocks/research/__init__.py` | 包标记 |
-| `crypto_stocks/research/config.py` | TRACKED_INSTITUTIONS 3 级白名单 + SYNONYMS_MAP + 常量（分桶） |
-| `crypto_stocks/research/seeds.py` | 15 条内置种子（BTC 6家 / ETH 4家 / SOL 3家） |
-| `crypto_stocks/research/sources/__init__.py` | 导出源 + `get_all_sources()` |
-| `crypto_stocks/research/sources/base.py` | BaseResearchSource 抽象 + 代理 HTTP + JSONL 原子 + 去重 id |
-| `crypto_stocks/research/sources/exchange_research.py` | 源① Binance/OKX/Coinbase 研报（桩 + 降级） |
-| `crypto_stocks/research/sources/media_keyword.py` | 源② 加密媒体关键词三重匹配（桩 + 降级） |
-| `crypto_stocks/research/sources/price_target_agg.py` | 源③ CMC/CoinGecko 目标价探测（桩 + 降级） |
-| `crypto_stocks/research/parsers/__init__.py` | 包标记 |
-| `crypto_stocks/research/parsers/llm_extract.py` | 可选 LLM 提取：未配置返回空、配了调 llm_client |
-| `crypto_stocks/research/aggregate.py` | 核心：records → per-coin 聚合（3桶 + 近半年 + 诚实零覆盖） |
-| `crypto_stocks/research/main.py` | argparse CLI（5 命令） + 终端格式化表格 |
-| `crypto_stocks/research/kb/.gitignore` | `*.jsonl` / `*.html` / `*.md` 全忽略（永不入库git） |
+| `markets/crypto/research/__init__.py` | 包标记 |
+| `markets/crypto/research/config.py` | TRACKED_INSTITUTIONS 3 级白名单 + SYNONYMS_MAP + 常量（分桶） |
+| `markets/crypto/research/seeds.py` | 15 条内置种子（BTC 6家 / ETH 4家 / SOL 3家） |
+| `markets/crypto/research/sources/__init__.py` | 导出源 + `get_all_sources()` |
+| `markets/crypto/research/sources/base.py` | BaseResearchSource 抽象 + 代理 HTTP + JSONL 原子 + 去重 id |
+| `markets/crypto/research/sources/exchange_research.py` | 源① Binance/OKX/Coinbase 研报（桩 + 降级） |
+| `markets/crypto/research/sources/media_keyword.py` | 源② 加密媒体关键词三重匹配（桩 + 降级） |
+| `markets/crypto/research/sources/price_target_agg.py` | 源③ CMC/CoinGecko 目标价探测（桩 + 降级） |
+| `markets/crypto/research/parsers/__init__.py` | 包标记 |
+| `markets/crypto/research/parsers/llm_extract.py` | 可选 LLM 提取：未配置返回空、配了调 llm_client |
+| `markets/crypto/research/aggregate.py` | 核心：records → per-coin 聚合（3桶 + 近半年 + 诚实零覆盖） |
+| `markets/crypto/research/main.py` | argparse CLI（5 命令） + 终端格式化表格 |
+| `markets/crypto/research/kb/.gitignore` | `*.jsonl` / `*.html` / `*.md` 全忽略（永不入库git） |
 
 **要修改的 0 个文件**：模块完全独立，零侵入整条交易/回测链。
 
@@ -35,25 +35,25 @@
 ## Task 1: 目录脚手架 + .gitignore
 
 **Files:**
-- Create: `crypto_stocks/research/__init__.py`, `crypto_stocks/research/{sources,parsers}/__init__.py`
-- Create: `crypto_stocks/research/kb/.gitignore`
+- Create: `markets/crypto/research/__init__.py`, `markets/crypto/research/{sources,parsers}/__init__.py`
+- Create: `markets/crypto/research/kb/.gitignore`
 
 - [ ] **Step 1: 创建目录 + 4 个包文件**
 
 Run:
 ```bash
-mkdir -p /workspace/mx_auto_strategy/crypto_stocks/research/{sources,parsers,kb}
+mkdir -p /workspace/mx_auto_strategy/markets/crypto/research/{sources,parsers,kb}
 ```
 
 Create 4 files:
 ```python
-# crypto_stocks/research/__init__.py
+# markets/crypto/research/__init__.py
 """Crypto Institutional Research Coverage —— 纯参考模块，不参与交易/回测决策。"""
 __version__ = "1.0.0"
 ```
 
 ```python
-# crypto_stocks/research/sources/__init__.py
+# markets/crypto/research/sources/__init__.py
 from .base import BaseResearchSource, compute_record_id, read_jsonl, append_jsonl_atomic
 from .exchange_research import ExchangeResearchSource
 from .media_keyword import MediaKeywordSource
@@ -65,12 +65,12 @@ def get_all_sources():
 ```
 
 ```python
-# crypto_stocks/research/parsers/__init__.py
+# markets/crypto/research/parsers/__init__.py
 """Parsers: 非结构化 → 结构化 Record。"""
 ```
 
 ```
-# crypto_stocks/research/kb/.gitignore
+# markets/crypto/research/kb/.gitignore
 *.jsonl
 *.html
 *.md
@@ -80,14 +80,14 @@ def get_all_sources():
 - [ ] **Step 2: 验证**
 
 ```bash
-ls /workspace/mx_auto_strategy/crypto_stocks/research/{__init__.py,sources/__init__.py,parsers/__init__.py,kb/.gitignore} | wc -l
+ls /workspace/mx_auto_strategy/markets/crypto/research/{__init__.py,sources/__init__.py,parsers/__init__.py,kb/.gitignore} | wc -l
 # Expected: 4
 ```
 
 - [ ] **Step 3: 提交**
 
 ```bash
-git add crypto_stocks/research/__init__.py crypto_stocks/research/{sources,parsers}/__init__.py crypto_stocks/research/kb/.gitignore
+git add markets/crypto/research/__init__.py markets/crypto/research/{sources,parsers}/__init__.py markets/crypto/research/kb/.gitignore
 git commit -m "feat(crypto-research): task1 scaffolding + kb gitignore"
 ```
 
@@ -96,7 +96,7 @@ git commit -m "feat(crypto-research): task1 scaffolding + kb gitignore"
 ## Task 2: config.py（白名单 + 同义映射 + 代币别名 + 分桶常量 + 4 个纯函数）
 
 **Files:**
-- Create: `crypto_stocks/research/config.py`
+- Create: `markets/crypto/research/config.py`
 - Create: `tests/test_research_config.py`
 
 - [ ] **Step 1: 创建 config.py**
@@ -117,7 +117,7 @@ pytest tests/test_research_config.py -v
 - [ ] **Step 4: 提交**
 
 ```bash
-git add crypto_stocks/research/config.py tests/test_research_config.py
+git add markets/crypto/research/config.py tests/test_research_config.py
 git commit -m "feat(crypto-research): task2 config with 4 normalizers + 11 tests pass"
 ```
 
@@ -126,7 +126,7 @@ git commit -m "feat(crypto-research): task2 config with 4 normalizers + 11 tests
 ## Task 3: seeds.py（15 条真实公开种子 + 规范化函数）
 
 **Files:**
-- Create: `crypto_stocks/research/seeds.py`
+- Create: `markets/crypto/research/seeds.py`
 - Append to `tests/test_research_config.py` (3个种子断言函数)
 
 - [ ] **Step 1: 创建 seeds.py**
@@ -145,7 +145,7 @@ SEED_RECORDS_RAW 列表含 BTC 8 条（渣打×2/Galaxy/ARK/JPM/VanEck×2/Fideli
 - [ ] **Step 4: 提交 seeds.py**
 
 ```bash
-git add crypto_stocks/research/seeds.py
+git add markets/crypto/research/seeds.py
 git commit -m "feat(crypto-research): task3 15 seeds (BTC8/ETH4/SOL3 from tier1 public)"
 ```
 
@@ -154,7 +154,7 @@ git commit -m "feat(crypto-research): task3 15 seeds (BTC8/ETH4/SOL3 from tier1 
 ## Task 4: sources/base.py（去重 id + JSONL 原子读写 + 代理 HTTP + 抽象基类）
 
 **Files:**
-- Create: `crypto_stocks/research/sources/base.py`
+- Create: `markets/crypto/research/sources/base.py`
 - Create: `tests/test_research_sources_base.py`
 
 - [ ] **Step 1: 创建 base.py**
@@ -182,7 +182,7 @@ pytest tests/test_research_config.py tests/test_research_sources_base.py -v
 - [ ] **Step 4: 提交**
 
 ```bash
-git add crypto_stocks/research/sources/base.py tests/test_research_sources_base.py tests/test_research_config.py
+git add markets/crypto/research/sources/base.py tests/test_research_sources_base.py tests/test_research_config.py
 git commit -m "feat(crypto-research): task4 base with id dedup + atomic JSONL + proxy HTTP + 17 tests PASS"
 ```
 
@@ -191,9 +191,9 @@ git commit -m "feat(crypto-research): task4 base with id dedup + atomic JSONL + 
 ## Task 5: 三个抓取源桩实现（失败降级 return []，不抛异常）
 
 **Files:**
-- Create: `crypto_stocks/research/sources/exchange_research.py`
-- Create: `crypto_stocks/research/sources/media_keyword.py`
-- Create: `crypto_stocks/research/sources/price_target_agg.py`
+- Create: `markets/crypto/research/sources/exchange_research.py`
+- Create: `markets/crypto/research/sources/media_keyword.py`
+- Create: `markets/crypto/research/sources/price_target_agg.py`
 
 - [ ] **Step 1: 三源桩创建（fetch_latest 最后必须 self._finalize(records) → 即使 records 空也不抛）**
 
@@ -219,7 +219,7 @@ Expected：三行 "0 records" + "OK 三源桩不抛异常"
 - [ ] **Step 3: 提交**
 
 ```bash
-git add crypto_stocks/research/sources/{exchange_research,media_keyword,price_target_agg}.py
+git add markets/crypto/research/sources/{exchange_research,media_keyword,price_target_agg}.py
 git commit -m "feat(crypto-research): task5 3 research source stubs (fail-safe return [])"
 ```
 
@@ -228,7 +228,7 @@ git commit -m "feat(crypto-research): task5 3 research source stubs (fail-safe r
 ## Task 6: parsers/llm_extract.py（可选 LLM 层：未配置永远返回 []，永不中断）
 
 **Files:**
-- Create: `crypto_stocks/research/parsers/llm_extract.py`
+- Create: `markets/crypto/research/parsers/llm_extract.py`
 - Create: `tests/test_research_llm_extract.py`
 
 - [ ] **Step 1: 创建 llm_extract.py**
@@ -248,7 +248,7 @@ pytest tests/test_research_llm_extract.py -v
 - [ ] **Step 4: 提交**
 
 ```bash
-git add crypto_stocks/research/parsers/llm_extract.py tests/test_research_llm_extract.py
+git add markets/crypto/research/parsers/llm_extract.py tests/test_research_llm_extract.py
 git commit -m "feat(crypto-research): task6 llm_extract optional layer (degrades to [])"
 ```
 
@@ -257,7 +257,7 @@ git commit -m "feat(crypto-research): task6 llm_extract optional layer (degrades
 ## Task 7: aggregate.py（交叉聚合核心 + 9 个单元测试 ★业务逻辑）
 
 **Files:**
-- Create: `crypto_stocks/research/aggregate.py`
+- Create: `markets/crypto/research/aggregate.py`
 - Create: `tests/test_research_aggregate.py`
 
 - [ ] **Step 1: 写失败测试先行（tests/test_research_aggregate.py）—— 9 个断言**
@@ -296,7 +296,7 @@ pytest tests/test_research_aggregate.py -v
 - [ ] **Step 5: 提交**
 
 ```bash
-git add crypto_stocks/research/aggregate.py tests/test_research_aggregate.py
+git add markets/crypto/research/aggregate.py tests/test_research_aggregate.py
 git commit -m "feat(crypto-research): task7 aggregate core - bucketed min/max + honest zero coverage - 9 tests PASS"
 ```
 
@@ -305,7 +305,7 @@ git commit -m "feat(crypto-research): task7 aggregate core - bucketed min/max + 
 ## Task 8: main.py（argparse CLI 5 命令 + 终端格式化表格）★ 最大文件
 
 **Files:**
-- Create: `crypto_stocks/research/main.py`
+- Create: `markets/crypto/research/main.py`
 
 - [ ] **Step 1: 写 main.py（完整 9 部件）**
 
@@ -352,13 +352,13 @@ python3 -m crypto_stocks.research.main analyze DOGE
 # (d) report --top 10
 python3 -m crypto_stocks.research.main report --top 10
 # 期望报告写入 kb/research_coverage_report.{md,html}
-# 文件存在检查: ls -la crypto_stocks/research/kb/*.{md,html} 应有 2 个文件
+# 文件存在检查: ls -la markets/crypto/research/kb/*.{md,html} 应有 2 个文件
 ```
 
 - [ ] **Step 3: 提交 main.py**
 
 ```bash
-git add crypto_stocks/research/main.py
+git add markets/crypto/research/main.py
 git commit -m "feat(crypto-research): task8 CLI main.py - 5 commands (fetch/analyze/report/latest/add) + terminal formatter"
 ```
 
@@ -417,13 +417,13 @@ cd /workspace/mx_auto_strategy && python3 -m pytest tests/ -v --tb=short 2>&1 | 
 
 Expected: 尾部显示 "N passed"，没有 FAIL/ERROR。（新增的 research 测试文件会被自动算入，总数增加但全部 PASS）
 
-- [ ] **Step 2: 语法 lint（ruff）—— 只针对新增的 crypto_stocks/research/ 目录（避免全仓库被未通过风格挡住）**
+- [ ] **Step 2: 语法 lint（ruff）—— 只针对新增的 markets/crypto/research/ 目录（避免全仓库被未通过风格挡住）**
 
 ```bash
 cd /workspace/mx_auto_strategy
 python3 scripts/lint_all.py 2>&1 | tail -10
 # 或如果 lint_all 跑全工程有无关老错误，则：
-python3 -m ruff check crypto_stocks/research/ tests/test_research_*.py --select E9,F --exit-zero
+python3 -m ruff check markets/crypto/research/ tests/test_research_*.py --select E9,F --exit-zero
 # 期望：0 syntax errors（只查 E9 语法错误族 + F 未定义/未引用）
 ```
 

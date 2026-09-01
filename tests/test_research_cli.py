@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-CLI = ["python3", "-m", "crypto_stocks.research.main"]
+CLI = ["python3", "-m", "markets.crypto.research.main"]
 
 
 def _run(args, cwd=None, env=None):
     env = env or os.environ
     result = subprocess.run(
-        [sys.executable, "-m", "crypto_stocks.research.main", *args],
+        [sys.executable, "-m", "markets.crypto.research.main", *args],
         cwd=cwd, capture_output=True, text=True, env=env, timeout=60,
     )
     return result.returncode, result.stdout, result.stderr

@@ -8,8 +8,8 @@ portfolio_blend.py — 跨市场组合层 (mx_auto_strategy)  ·  v6.18 真值�
   - A股 : docs/data/nav.json  windows['full']['optimized']['mult']
           (v6.18 权威口径: 腾讯后复权 + momentum26 + 核心卫星0.5 + 死叉 + use_tech=False + trend_filter=False
            = 18.185x / CAGR22.31% / MDD-33.31%; export_nav.py 已对齐此配置, nav.json 与头条自洽。)
-  - 美股 : us_stocks/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权定价, 头条)
-  - 加密 : crypto_stocks/crypto_options_bt.py  run_bt(默认)  (448.6x, 期权三件套 + 封顶4.5x + 减半关, 头条)
+  - 美股 : markets/us/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权定价, 头条)
+  - 加密 : markets/crypto/crypto_options_bt.py  run_bt(默认)  (448.6x, 期权三件套 + 封顶4.5x + 减半关, 头条)
 
 ★ 诚实口径:
   - 加密真实倍数含幸存者偏差(现存主流币清单, 死币未纳入→偏高); 真实数据仅 2017 起。
@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(ROOT, 'crypto_stocks'))
+sys.path.insert(0, os.path.join(ROOT, 'markets', 'crypto'))
 
 # 共同窗口锁定为 v6.18 官方真值窗口: 三市场对齐到 [2017-08-11, 2026-08-14] (471 周周五网格).
 # 原因: 各子面板数据会随刷新向前/向后延伸, 若任由 inner-join 动态决定起点, 共同窗口会漂移,
@@ -38,11 +38,11 @@ def load_series():
     ash = pd.Series(w['mult'], index=pd.to_datetime(w['dates']), name='A股(nav.json)')
 
     # ---- 美股 (真实面板 + 公允 BS 期权定价, 头条 99.85x) ----
-    us = pd.read_csv(os.path.join(ROOT, 'us_stocks/data/us_nav_ai.csv'),
+    us = pd.read_csv(os.path.join(ROOT, 'markets', 'us', 'data', 'us_nav_ai.csv'),
                      parse_dates=['date']).set_index('date')['optimized_nav'].rename('美股(期权增强99.85x)')
 
     # ---- 加密 (期权三件套引擎, 头条 448.6x) ----
-    import crypto_options_bt as m
+    from markets.crypto import crypto_options_bt as m
     px = m._load_default()
     r = m.run_bt(px, dict(m.DEFAULT_CFG), label='crypto_opts')
     cry = pd.Series(r['nav'], index=pd.to_datetime(px.index), name='加密(期权增强448.6x)')
