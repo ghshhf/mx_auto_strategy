@@ -1,5 +1,9 @@
 # mx_auto_strategy — 网页自动发布流水线依赖
 # 仅覆盖「离线重算 + 生成 docs」所需；实时行情拉取(akshare 等)不在 CI 内使用。
+#
+# 可选依赖（实时/历史行情拉取）见 requirements-live.txt：
+#   本地跑数据刷新时需要，CI 刻意不装（依赖树重 + 代码内已有兜底路径）。
+#   安装：pip install -r requirements-live.txt
 pandas>=1.5
 numpy>=1.23
 matplotlib>=3.6

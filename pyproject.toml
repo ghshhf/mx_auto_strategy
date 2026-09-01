@@ -19,6 +19,13 @@ dev = [
     "pytest>=7",
     "ruff>=0.4",
 ]
+# 实时/历史行情拉取 (与 requirements-live.txt 一致)。
+# CI 不装: 代码内均为惰性 import + 有兜底路径, 缺失不会 ImportError。
+# 安装: pip install -e ".[live]"
+live = [
+    "akshare>=1.12",
+    "yfinance>=0.2",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
