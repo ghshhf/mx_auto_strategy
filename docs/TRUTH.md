@@ -56,9 +56,9 @@ A股 / 美股 / 加密 = 同源方法论的三套**研究回测引擎**（非实
 - 时间刻减仓虽 OOS 双维度显著，但**重度依赖四年周期规律成立**——若 ETF/机构化把周期拉平，crash+bear_bottom 的 13 个月低仓（30%）会变成长期踏空，这是该策略的**单点故障**
 
 ## 文档索引
-- 主 `README.md` / `CLAUDE.md` — 项目定位与分类
+- 主 `README.md` — 项目定位与分类（A股 live 智能体指南见 `_archive/CLAUDE.md`）
 - A股：`ashare_backtest/` + `docs/curves.html`
 - 美股：`us_stocks/README.md` + `us_stocks/data/us_nav_ai.csv`
 - 加密：`crypto_stocks/README.md` + `crypto_stocks/reports/crypto_17000_explainer.html`
 - 组合：`docs/portfolio_blend.html` + `docs/data/portfolio_blend.json`
-- OOS 证据：`crypto_stocks/crypto_oos_out*.txt`、`crypto_stocks/crypto_strong_offense_wf_out.txt`、`us_oos_out.txt`
+- OOS 证据：`crypto_stocks/crypto_oos_out*.txt`、`crypto_stocks/crypto_strong_offense_wf_out.txt`、`_archive/reports/us_oos_out.txt`

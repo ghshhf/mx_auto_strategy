@@ -19,6 +19,8 @@
 | `ashare_live/*.py` | 33 个已停用的 A股脚本（选股、网格、自动交易、记账、主题、预测等） |
 | `ashare_live/tests/` | 与上述脚本配套的 10 个单元测试，随脚本一并归档 |
 | `ashare_live/records/` | 历史模拟账户、交易流水 jsonl、A股周期研究笔记 |
+| `ashare_live/event_override.json` | A股 live「事件注入层」配置（仅手动提示时生效），2026-09-01 随清理从根目录移入 |
+| `ashare_live/weekly_theme.json` | A股 live 机器可读主题（由 `user_script.md` 解析生成），2026-09-01 从根目录移入 |
 
 ### 两个例外（保留在仓库根目录）
 
@@ -35,6 +37,22 @@ python -m pytest _archive/ashare_live/tests/ -v
 
 `_archive/ashare_live/conftest.py` 会把归档目录加入 `sys.path`，使
 `import auto_trader` 等仍可解析。CI 不执行此目录。
+
+## reports/ — 已归档的研究报告与实验日志（2026-09-01 归档）
+
+A股 live 时代遗留的研究报告（`.md`）与一次性实验输出（`.txt` 日志）。这些文件不再参与
+CI / Pages，且多数可由现役引擎重新生成，归档仅为可追溯、保持根目录整洁。
+
+> 注：根目录原 `backtest_report.md` 与 `docs/backtest_report.md` 内容不同，二者均有保留价值——
+> 根目录版本已并入本目录；门户 `docs/data/reports.json` 仍指向 `docs/backtest_report.md`，不受影响。
+
+| 路径 | 说明 |
+|---|---|
+| `reports/*.md` | 9 份 A股 研究/论证报告（`backtest_report`、`pool_analysis_report`、`strategy_*`、`user_script`、`weekly_report` 等） |
+| `reports/*.txt` | 3 份一次性实验日志（`crypto_oos_out`、`param_scan_out`、`us_oos_out`） |
+
+> `CLAUDE.md`（A股 live 智能体使用指南）已整体移入 `_archive/CLAUDE.md`；现役项目入口以根目录
+> `README.md` / `PITFALLS.md` / `TRUTH_AUTHORITY.md` 为准。
 
 ## crypto_btc_eth/ — BTC/ETH 配对再平衡一次性实验（2026-09-01 归档）
 

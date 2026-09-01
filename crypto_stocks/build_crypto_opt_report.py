@@ -5,8 +5,9 @@ build_crypto_opt_report.py - 由 cycle_crypto_asym.json 生成加密专属优化
 """
 import os, json
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-D = json.load(open(os.path.join(ROOT, "cycle_crypto_asym.json"), encoding="utf-8"))
+ROOT = os.path.dirname(os.path.abspath(__file__))   # crypto_stocks/
+REPO = os.path.dirname(ROOT)                         # 仓库根
+D = json.load(open(os.path.join(ROOT, "data", "cycle_crypto_asym.json"), encoding="utf-8"))
 scan, best, oos = D["scan"], D["best"], D["oos"]
 
 lines = []
@@ -61,7 +62,7 @@ lines.append("5. **实践建议**: 想要更高收益且能承受更大回撤 ->
 lines.append("---\n*数据: `cycle_crypto_asym.json` · 脚本: `optimize_crypto_asym.py` · 生成于 2026-08-11*")
 
 md = "\n".join(lines)
-with open(os.path.join(ROOT, "docs", "crypto_overlay_report.md"), "w", encoding="utf-8") as f:
+with open(os.path.join(REPO, "docs", "crypto_overlay_report.md"), "w", encoding="utf-8") as f:
     f.write(md)
 
 # ---- 简单 HTML ----
@@ -101,7 +102,7 @@ tr.best{{background:#fff7ed;font-weight:600}}
 这 4 个宏观周期对加密是<strong>顺周期动量确认</strong>, 不是逆周期保险。加密叠加层是一个<strong>收益/回撤 trade-off 旋钮</strong>, 不是风控装置。
 想要更高收益→开启(tilt 0.3~0.5); 想要回撤控制→ <code>cycle_overlay=False</code>。</div>
 </body></html>"""
-_REPORT_DIR = os.path.join(ROOT, "docs", "reports")
+_REPORT_DIR = os.path.join(REPO, "docs", "reports")
 os.makedirs(_REPORT_DIR, exist_ok=True)
 with open(os.path.join(_REPORT_DIR, "cycle_crypto_overlay_report.html"), "w", encoding="utf-8") as f:
     f.write(html)

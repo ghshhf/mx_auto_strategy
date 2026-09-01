@@ -42,7 +42,7 @@ echo "== 3/4 刷新报告 =="
 "$PY" build_cycle_report.py
 "$PY" build_cycle_opt_report.py
 "$PY" build_cycle_weights_report.py
-"$PY" build_crypto_opt_report.py
+"$PY" crypto_stocks/build_crypto_opt_report.py
 
 echo "== 4/4 提交并推送 =="
 git add docs/

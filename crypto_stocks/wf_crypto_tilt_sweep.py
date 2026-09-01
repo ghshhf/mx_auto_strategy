@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """wf_crypto_tilt_sweep.py - 用已 OOS 选出的加密权重, 扫 test tilt, 量化 收益/MDD 权衡。"""
 import os, sys, json, math
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.abspath(__file__))   # crypto_stocks/
+REPO = os.path.dirname(ROOT)                         # 仓库根
+sys.path.insert(0, REPO)
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "crypto_stocks"))
 
 def run_crypto(start, tilt, weights):
     import crypto_options_bt as cm
@@ -12,7 +13,7 @@ def run_crypto(start, tilt, weights):
                   cycle_overlay=True, cycle_tilt=tilt, cycle_weights=weights)
     return r["multiple"], r["mdd"] * 100
 
-data = json.load(open(os.path.join(ROOT, "cycle_wf_oos.json"), encoding="utf-8"))
+data = json.load(open(os.path.join(ROOT, "data", "cycle_wf_oos.json"), encoding="utf-8"))
 pairs = data["加密"]["pairs"]
 print(f"加密 OOS 窗口数={len(pairs)} (均为 ACTIVE, 权重来自各自 train 选出)")
 for tilt in (0.2, 0.3, 0.4, 0.5):

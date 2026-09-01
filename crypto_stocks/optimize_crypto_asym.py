@@ -19,9 +19,10 @@ optimize_crypto_asym.py - 加密专属叠加层机制优化 (v6.23)
 """
 import os, sys, json, math, datetime
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.abspath(__file__))   # crypto_stocks/
+REPO = os.path.dirname(ROOT)                         # 仓库根
+sys.path.insert(0, REPO)
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "crypto_stocks"))
 from cycles import specs as SP
 
 END_CRYPTO = "2026-07-24"
@@ -169,6 +170,6 @@ oos = dict(samples=len(tw), geo_ratio=round(geo, 4), t_mult=(round(t_mult, 2) if
 out = {"scan": scan, "best": best, "best_basis": basis,
        "best_asym": best_asym, "best_tilt": best_tilt,
        "oos": oos, "crypto_weights": CRYPTO_WEIGHTS}
-with open(os.path.join(ROOT, "cycle_crypto_asym.json"), "w", encoding="utf-8") as f:
+with open(os.path.join(ROOT, "data", "cycle_crypto_asym.json"), "w", encoding="utf-8") as f:
     json.dump(out, f, ensure_ascii=False, indent=2)
 print("\n已写入 cycle_crypto_asym.json")

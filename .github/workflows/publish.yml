@@ -71,7 +71,7 @@ jobs:
           python build_cycle_report.py
           python build_cycle_opt_report.py
           python build_cycle_weights_report.py
-          python build_crypto_opt_report.py
+          python crypto_stocks/build_crypto_opt_report.py
 
       - name: Commit & push docs
         run: |
