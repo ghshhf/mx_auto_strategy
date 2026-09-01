@@ -101,7 +101,9 @@ tr.best{{background:#fff7ed;font-weight:600}}
 这 4 个宏观周期对加密是<strong>顺周期动量确认</strong>, 不是逆周期保险。加密叠加层是一个<strong>收益/回撤 trade-off 旋钮</strong>, 不是风控装置。
 想要更高收益→开启(tilt 0.3~0.5); 想要回撤控制→ <code>cycle_overlay=False</code>。</div>
 </body></html>"""
-with open(os.path.join(ROOT, "cycle_crypto_overlay_report.html"), "w", encoding="utf-8") as f:
+_REPORT_DIR = os.path.join(ROOT, "docs", "reports")
+os.makedirs(_REPORT_DIR, exist_ok=True)
+with open(os.path.join(_REPORT_DIR, "cycle_crypto_overlay_report.html"), "w", encoding="utf-8") as f:
     f.write(html)
 
-print("已生成 docs/crypto_overlay_report.md + cycle_crypto_overlay_report.html")
+print("已生成 docs/crypto_overlay_report.md + docs/reports/cycle_crypto_overlay_report.html")

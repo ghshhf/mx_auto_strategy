@@ -309,7 +309,10 @@ Plotly.newPlot('nav5',[
 </script>
 </body></html>"""
 
-out_html = os.path.join(BASE, "nav_windows_v2.html")
+# 报告统一出口: docs/reports/ashare/ (门户 Pages 只发布 docs/, 报告中心自动扫描该目录)
+_REPORTS = os.path.join(os.path.dirname(BASE), "docs", "reports", "ashare")
+os.makedirs(_REPORTS, exist_ok=True)
+out_html = os.path.join(_REPORTS, "nav_windows.html")
 with open(out_html, "w", encoding="utf-8") as f:
     f.write(html)
 

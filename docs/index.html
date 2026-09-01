@@ -66,6 +66,10 @@
   .links a:hover{border-color:var(--us);box-shadow:var(--shadow)}
   .links .t{font-weight:600;font-size:13px}
   .links .d{font-size:11.5px;color:var(--sub);margin-top:2px}
+  .links .link-sec{grid-column:1/-1;font-size:13px;font-weight:700;margin:12px 0 0;
+    padding-top:10px;border-top:1px solid var(--line)}
+  .links .link-sec:first-child{border-top:none;margin-top:0;padding-top:0}
+  .links .link-sec .n{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:6px}
   footer{color:var(--sub);font-size:11.5px;margin-top:24px;text-align:center;line-height:1.7}
   .muted{color:var(--sub)}
   code{background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:12px}
@@ -146,7 +150,8 @@
   <!-- ============ REPORTS ============ -->
   <div id="view-reports" class="view" hidden">
     <div class="card">
-      <h2>原始报告与数据 <span class="tag">docs/</span></h2>
+      <h2>报告中心 <span class="tag">docs/reports/</span></h2>
+      <div id="reportMeta" style="font-size:11.5px;color:var(--sub);margin:-6px 0 12px"></div>
       <div class="links" id="reportLinks"></div>
     </div>
   </div>
@@ -510,32 +515,47 @@ function renderBlend(){
 }
 
 /* ============ REPORTS ============ */
-function renderReports(){
-  const links=[
-    ["TRUTH.md","单一真值源","审计后验证真值汇总"],
-    ["portfolio_blend.html","组合配置可视化","portfolio_blend 图形"],
-    ["portfolio_curves.html","三市场组合曲线","50/50 轮动与组合层"],
-    ["curves.html","A股回测曲线","腾讯后复权周线对照"],
-    ["backtest_curves.html","A股回测明细","逐年/分位/事件归因"],
-    ["cycle_opt_report.md","周期优化报告","walk-forward 优化结果"],
-    ["cycle_weights_report.md","周期权重报告","周期权重实验"],
-    ["cycle_windows_report.md","周期窗口报告","窗口划分 / OOS 验证"],
-    ["crypto_overlay_report.md","加密减半相位叠加","cycle_overlay 归因"],
-    ["portfolio_blend_report.md","组合层报告","跨市场组合论证"],
-    ["backtest_report.md","回测报告","总体结论"],
-    ["us-options-hedge-design.md","美股期权对冲设计","options_sim / LEAPS 说明"],
-    ["cycle_framework.md","周期框架","减半周期模型"],
-    ["CYCLE_DERISK.md","周期去风险","风险处置"],
-    ["THEME_SELECTION.md","主题选择","主题分层"],
-    ["README.md","项目手册","操作与口径"],
-    ["data/nav.json","A股 NAV (JSON)","docs/data/nav.json"],
-    ["data/nav_us.json","美股 NAV (JSON)","docs/data/nav_us.json"],
-    ["data/nav_crypto.json","加密 NAV (JSON)","docs/data/nav_crypto.json"],
-    ["data/portfolio_blend.json","组合 NAV (JSON)","docs/data/portfolio_blend.json"]
-  ].map(([h,t,d])=> h.endsWith('.md')
-      ? ["report.html?r="+h, t, d] : [h,t,d]);
-  document.getElementById("reportLinks").innerHTML=links.map(([h,t,d])=>
-    `<a href="${h}" target="_blank" rel="noopener"><div class="t">${t}</div><div class="d">${d}</div></a>`).join("");
+/* 清单由 scripts/build_report_index.py 扫描 docs/ 自动生成 data/reports.json。
+   新增报告只需放入 docs/reports/<market>/ 并重跑该脚本, 无需改动本文件。 */
+
+// 索引不可用时(如 file:// 直接打开)的兜底清单
+const FALLBACK_LINKS=[
+  ["report.html?r=TRUTH.md","单一真值源","审计后验证真值汇总"],
+  ["report.html?r=cycle_framework.md","周期框架","减半周期模型"],
+  ["portfolio_blend.html","组合配置可视化","portfolio_blend 图形"]
+];
+
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,c=>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function renderReports(){
+  const box=document.getElementById("reportLinks");
+  const meta=document.getElementById("reportMeta");
+  let data=null;
+  try{ data=await fetch("data/reports.json",{cache:"no-cache"}).then(r=>r.json()); }
+  catch(e){ console.warn("reports.json 加载失败, 回退内置清单",e); }
+
+  if(!(data && data.groups && data.groups.length)){
+    box.innerHTML=FALLBACK_LINKS.map(([h,t,d])=>
+      `<a href="${h}" target="_blank" rel="noopener"><div class="t">${t}</div><div class="d">${d}</div></a>`).join("");
+    if(meta)meta.textContent="索引不可用(需通过 HTTP 访问), 仅显示内置清单";
+    return;
+  }
+
+  let html="";
+  data.groups.forEach(g=>{
+    if(!g.items||!g.items.length)return;
+    html+=`<div class="link-sec">${esc(g.label)}<span class="n">${g.items.length} 项</span></div>`;
+    g.items.forEach(it=>{
+      html+=`<a href="${esc(it.path)}" target="_blank" rel="noopener">`
+          + `<div class="t">${esc(it.title)}</div>`
+          + `<div class="d">${it.size_kb} KB · ${esc(it.path)}</div></a>`;
+    });
+  });
+  box.innerHTML=html;
+  if(meta)meta.textContent=`索引生成 ${esc(data.generated_at||"—")} · 共 ${data.total} 项 · 新增报告运行 scripts/build_report_index.py 后自动上线`;
 }
 
 /* ============ TABS ============ */

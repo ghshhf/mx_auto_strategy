@@ -29,6 +29,7 @@ testpaths = ["tests"]
 target-version = "py311"
 line-length = 120
 extend-exclude = [
+    "_archive",                  # 已停用历史代码 (见 _archive/README.md)
     "crypto_stocks/archive",
     "crypto_stocks/scratch",
     "crypto_stocks/scripts/ops",

@@ -177,7 +177,11 @@ Plotly.newPlot('phase', [{x:D.dates, y:D.phase_map, type:'bar',
 </body></html>'''
 
 html = TEMPLATE.replace('__DATA__', json.dumps(data, ensure_ascii=False))
-with open('reports/crypto_17000_explainer.html','w',encoding='utf-8') as f:
+import os as _os
+_OUT_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'docs', 'reports', 'crypto')
+_OUT_DIR = _os.path.normpath(_OUT_DIR)
+_os.makedirs(_OUT_DIR, exist_ok=True)
+with open(_os.path.join(_OUT_DIR, 'crypto_17000_explainer.html'), 'w', encoding='utf-8') as f:
     f.write(html)
-print(f"已生成 crypto_17000_explainer.html")
+print(f"已生成 {_os.path.join(_OUT_DIR, 'crypto_17000_explainer.html')}")
 print(f"  17000x同参: {r_pub['multiple']:.1f}x | CAGR {r_pub['cagr']*100:.1f}% | MDD {r_pub['mdd']*100:.1f}% | Sharpe {r_pub.get('sharpe',0):.2f}")

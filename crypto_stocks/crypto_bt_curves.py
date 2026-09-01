@@ -6,6 +6,7 @@ crypto_bt_curves.py - 10y 回测 NAV 曲线 (PNG, 避免 HTML 白屏)
   BTC       : 买入持有基准
 输出: crypto_bt_curves.png (对数 NAV + 回撤子图)
 """
+import os
 import sys, json
 import pandas as pd
 import numpy as np
@@ -16,6 +17,11 @@ import matplotlib.ticker as mticker
 
 sys.path.insert(0, ".")
 from crypto_options_bt import run_bt
+
+# 回测产物目录 (PNG/JSON 等非 HTML 产物; HTML 报告统一走 docs/reports/)
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "out")
+os.makedirs(OUT, exist_ok=True)
 
 TENY = "data/weekly_adjclose_crypto50_10y.csv"
 START = "2016-08-11"
@@ -83,7 +89,7 @@ ax2.grid(True, alpha=0.3)
 ax2.axhline(-31.3, color="#999", ls=":", lw=0.8)
 
 plt.tight_layout()
-out = "reports/crypto_bt_curves.png"
+out = os.path.join(OUT, "crypto_bt_curves.png")
 plt.savefig(out, dpi=130)
 print("saved", out)
 
@@ -94,5 +100,5 @@ result = {
     "btc": {"multiple": round(mbtc, 1)},
 }
 print(json.dumps(result, ensure_ascii=False, indent=2))
-with open("reports/crypto_bt_curves.json", "w") as f:
+with open(os.path.join(OUT, "crypto_bt_curves.json"), "w") as f:
     json.dump(result, f, ensure_ascii=False, indent=2)

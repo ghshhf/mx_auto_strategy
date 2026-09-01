@@ -1,0 +1,272 @@
+{
+ "generated_at": "2026-09-01 14:20:45",
+ "total": 46,
+ "groups": [
+  {
+   "key": "ashare",
+   "label": "A股",
+   "items": [
+    {
+     "path": "reports/ashare/ashare_002236_601318_10y_curve.html",
+     "title": "A股轮动 大华股份/中国平安 10年",
+     "size_kb": 57
+    },
+    {
+     "path": "reports/ashare/ashare_002415_000651_10y_curve.html",
+     "title": "A股轮动 海康威视/格力电器 10年",
+     "size_kb": 57
+    },
+    {
+     "path": "reports/ashare/ashare_600519_600036_10y_curve.html",
+     "title": "A股轮动 贵州茅台/招商银行 10年",
+     "size_kb": 58
+    },
+    {
+     "path": "reports/ashare/ashare_600519_600276_20y_curve.html",
+     "title": "A股轮动 贵州茅台/恒瑞医药 20年",
+     "size_kb": 111
+    },
+    {
+     "path": "reports/ashare/ashare_alpha_engine_overview.html",
+     "title": "A股个股α引擎 · 诚实量化总览 (2016–2026)",
+     "size_kb": 43
+    },
+    {
+     "path": "reports/ashare/backtest_curves.html",
+     "title": "mx_auto_strategy v6.11b 回测曲线 · 16倍框架 + 时变木头姐渗透率倾斜",
+     "size_kb": 235
+    },
+    {
+     "path": "reports/ashare/curves.html",
+     "title": "mx_auto_strategy 回测曲线 · 数据驱动",
+     "size_kb": 8
+    },
+    {
+     "path": "reports/ashare/nav_windows.html",
+     "title": "动态选股升级 · 基线 vs 优化 对比面板",
+     "size_kb": 83
+    }
+   ]
+  },
+  {
+   "key": "us",
+   "label": "美股",
+   "items": [
+    {
+     "path": "reports/us/AMD_CRM_20y_curve.html",
+     "title": "AMD+Salesforce 20年轮动",
+     "size_kb": 142
+    },
+    {
+     "path": "reports/us/IBM_QCOM_20y_curve.html",
+     "title": "IBM+高通 20年轮动",
+     "size_kb": 142
+    },
+    {
+     "path": "reports/us/KO_JNJ_20y_curve.html",
+     "title": "可口可乐+强生 20年轮动",
+     "size_kb": 141
+    },
+    {
+     "path": "reports/us/us_KO_PG_10y_curve.html",
+     "title": "美股轮动 可口可乐/宝洁 10年",
+     "size_kb": 58
+    },
+    {
+     "path": "reports/us/us_MSFT_AAPL_10y_curve.html",
+     "title": "美股轮动 微软/苹果 10年",
+     "size_kb": 60
+    },
+    {
+     "path": "reports/us/us_NVDA_INTC_10y_curve.html",
+     "title": "美股轮动 英伟达/英特尔 10年",
+     "size_kb": 60
+    }
+   ]
+  },
+  {
+   "key": "crypto",
+   "label": "加密",
+   "items": [
+    {
+     "path": "reports/crypto/TRB_deep_analysis.html",
+     "title": "TRB (Tellor) 完整深度分析",
+     "size_kb": 28
+    },
+    {
+     "path": "reports/crypto/btc_eth_10y_curve.html",
+     "title": "BTC / ETH 轮动 vs 买入持有 (10年, 多平台交叉验证)",
+     "size_kb": 29
+    },
+    {
+     "path": "reports/crypto/crypto_17000_explainer.html",
+     "title": "17000x 是怎么来的",
+     "size_kb": 48
+    },
+    {
+     "path": "reports/crypto/crypto_alt_blindspot_2026-08.html",
+     "title": "crypto alt blindspot 2026 08",
+     "size_kb": 9
+    },
+    {
+     "path": "reports/crypto/crypto_cap_curve.html",
+     "title": "crypto cap curve",
+     "size_kb": 101
+    },
+    {
+     "path": "reports/crypto/crypto_param_attribution.html",
+     "title": "加密策略 · 逐参数边际贡献归因可视化",
+     "size_kb": 1066
+    },
+    {
+     "path": "reports/crypto/crypto_sector_forecast_2026-08.html",
+     "title": "加密赛道整合 & 下一轮领涨预判",
+     "size_kb": 15
+    },
+    {
+     "path": "reports/crypto/ltc_etc_10y_curve.html",
+     "title": "LTC / ETC 轮动 vs 买入持有 (10年, 多平台交叉验证)",
+     "size_kb": 28
+    },
+    {
+     "path": "reports/crypto/zec_xmr_10y_curve.html",
+     "title": "ZEC / XMR 轮动 vs 买入持有 (10年, 多平台交叉验证)",
+     "size_kb": 26
+    }
+   ]
+  },
+  {
+   "key": "cross",
+   "label": "跨市场 / 周期",
+   "items": [
+    {
+     "path": "reports/cycle_crypto_overlay_report.html",
+     "title": "加密叠加层机制优化",
+     "size_kb": 4
+    },
+    {
+     "path": "reports/cycle_opt_report.html",
+     "title": "cycle opt report",
+     "size_kb": 12
+    },
+    {
+     "path": "reports/cycle_weights_report.html",
+     "title": "cycle weights report",
+     "size_kb": 6
+    },
+    {
+     "path": "reports/cycle_windows_report.html",
+     "title": "三引擎 × 周期叠加层 回测报告",
+     "size_kb": 14
+    },
+    {
+     "path": "reports/index_buyhold_rebal.html",
+     "title": "指数买入持有 · 三种权重对比",
+     "size_kb": 15
+    },
+    {
+     "path": "reports/portfolio_curves.html",
+     "title": "mx_auto_strategy · 跨市场组合层原型",
+     "size_kb": 44
+    },
+    {
+     "path": "reports/rotation_summary.html",
+     "title": "跨市场 50/50 再平衡轮动 汇总 (12组)",
+     "size_kb": 8
+    }
+   ]
+  },
+  {
+   "key": "docs",
+   "label": "文档 (Markdown)",
+   "items": [
+    {
+     "path": "report.html?r=CYCLE_DERISK.md",
+     "title": "CYCLE DERISK",
+     "size_kb": 25
+    },
+    {
+     "path": "report.html?r=README.md",
+     "title": "README",
+     "size_kb": 2
+    },
+    {
+     "path": "report.html?r=THEME_SELECTION.md",
+     "title": "THEME SELECTION",
+     "size_kb": 8
+    },
+    {
+     "path": "report.html?r=TRUTH.md",
+     "title": "TRUTH",
+     "size_kb": 6
+    },
+    {
+     "path": "report.html?r=backtest_report.md",
+     "title": "backtest report",
+     "size_kb": 7
+    },
+    {
+     "path": "report.html?r=crypto_overlay_report.md",
+     "title": "crypto overlay report",
+     "size_kb": 4
+    },
+    {
+     "path": "report.html?r=cycle_framework.md",
+     "title": "cycle framework",
+     "size_kb": 17
+    },
+    {
+     "path": "report.html?r=cycle_opt_report.md",
+     "title": "cycle opt report",
+     "size_kb": 4
+    },
+    {
+     "path": "report.html?r=cycle_weights_report.md",
+     "title": "cycle weights report",
+     "size_kb": 4
+    },
+    {
+     "path": "report.html?r=cycle_windows_report.md",
+     "title": "cycle windows report",
+     "size_kb": 4
+    },
+    {
+     "path": "report.html?r=portfolio_blend_report.md",
+     "title": "portfolio blend report",
+     "size_kb": 4
+    },
+    {
+     "path": "report.html?r=us-options-hedge-design.md",
+     "title": "us options hedge design",
+     "size_kb": 20
+    }
+   ]
+  },
+  {
+   "key": "data",
+   "label": "数据层 (JSON)",
+   "items": [
+    {
+     "path": "data/nav.json",
+     "title": "数据层 · nav.json",
+     "size_kb": 294
+    },
+    {
+     "path": "data/nav_crypto.json",
+     "title": "数据层 · nav_crypto.json",
+     "size_kb": 72
+    },
+    {
+     "path": "data/nav_us.json",
+     "title": "数据层 · nav_us.json",
+     "size_kb": 169
+    },
+    {
+     "path": "data/portfolio_blend.json",
+     "title": "数据层 · portfolio_blend.json",
+     "size_kb": 7
+    }
+   ]
+  }
+ ]
+}

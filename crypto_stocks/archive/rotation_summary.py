@@ -10,7 +10,15 @@ import csv, os, math, datetime, json
 FEE = 0.0010          # 单边费率 0.10% (零售现货 taker)
 BAND = 0.01           # 偏离 50% 超过 1% 即再平衡
 CAPITAL = 200.0       # 起始本金 (两标的各 100)
-CSV_DIR = "data"
+# 跨市场数据已于 2026-09-01 归位到各自市场目录; 加密面板仍在 crypto_stocks/data。
+_HERE = os.path.dirname(os.path.abspath(__file__))     # crypto_stocks/archive
+_CRYPTO = os.path.dirname(_HERE)                        # crypto_stocks
+_ROOT = os.path.dirname(_CRYPTO)                        # 仓库根
+CSV_DIRS = {
+    "加密": os.path.join(_CRYPTO, "data"),
+    "A股": os.path.join(_ROOT, "ashare_backtest", "data"),
+    "美股": os.path.join(_ROOT, "us_stocks", "data"),
+}
 
 # (市场, 配对标签, csv 文件名, 是否加密)
 GROUPS = [
@@ -74,7 +82,7 @@ def cagr(end_val, years):
 def main():
     rows = []
     for market, label, fn, is_crypto in GROUPS:
-        dates, a, b = load(os.path.join(CSV_DIR, fn))
+        dates, a, b = load(os.path.join(CSV_DIRS[market], fn))
         rot, hold = backtest(a, b)
         d0 = datetime.datetime.strptime(dates[0], "%Y-%m-%d")
         d1 = datetime.datetime.strptime(dates[-1], "%Y-%m-%d")

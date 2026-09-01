@@ -26,7 +26,10 @@ import crypto_adoption_v2 as c  # noqa: E402
 import crypto_options_bt as eng  # noqa: E402
 
 DATA = os.path.join(HERE, 'data', 'weekly_adjclose_crypto50.csv')
-OUT = os.path.join(HERE, 'backtest_report.html')
+# 报告统一出口: docs/reports/crypto/ (门户 Pages 只发布 docs/, 报告中心自动扫描该目录)
+_REPORTS = os.path.join(os.path.dirname(HERE), 'docs', 'reports', 'crypto')
+os.makedirs(_REPORTS, exist_ok=True)
+OUT = os.path.join(_REPORTS, 'backtest_report.html')
 
 # 池子 → CoinGecko id 映射 (覆盖全部 35 币)
 CG = {

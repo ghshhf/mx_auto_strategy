@@ -121,5 +121,11 @@ window.addEventListener('resize',function(){{chart.resize();}});
 </script>
 </body></html>"""
 
-open('reports/index_buyhold_rebal.html', 'w', encoding='utf-8').write(HTML)
-print('written index_buyhold_rebal.html  (', len(HTML), 'bytes )')
+import os as _os
+_OUT_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+                         'docs', 'reports')
+_os.makedirs(_OUT_DIR, exist_ok=True)
+_OUT = _os.path.join(_OUT_DIR, 'index_buyhold_rebal.html')
+
+open(_OUT, 'w', encoding='utf-8').write(HTML)
+print('written', _OUT, '(', len(HTML), 'bytes )')

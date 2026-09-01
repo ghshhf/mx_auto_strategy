@@ -13,7 +13,8 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXCLUDE_DIRS = {".git", "__pycache__", "node_modules"}
+# _archive 为已停用历史代码, 不参与质量门禁 (见 _archive/README.md)
+EXCLUDE_DIRS = {".git", "__pycache__", "node_modules", "_archive"}
 
 
 def find_py_files():
