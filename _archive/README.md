@@ -73,6 +73,18 @@ CI / Pages，且多数可由现役引擎重新生成，归档仅为可追溯、�
   基准的 **2.7%**，而买入持有只掉到 68% —— 因为再平衡每周都在卖掉活着的币给尸体输血。
   该风险当前无代码保护，且实测无法用价格阈值规避。
 
+## crypto_stocks_scratch/ — 加密模块一次性探索脚本（2026-09-01 归置）
+
+原 `crypto_stocks/scratch/` 目录，含 22 个 `_scratch_*` / `_old_*` 实验脚本 + 5 个
+json/csv 中间产物（如 `_scratch_17000_*` 系列、`_scratch_cycle_universal.*`、
+`_scratch_sector_*`）。这些是为特定问题临时写的探索脚本，无活代码 import、不参与 CI，
+长期堆在现役加密模块目录里属于"模块内混杂"。归置到 `_archive/` 仅作可追溯，现役开发不再引用。
+
+## us_stocks_scratch_bs_compare.py — 美股期权定价对照实验（2026-09-01 归置）
+
+原 `us_stocks/_scratch_bs_compare.py`，对照"平面费率期权"与"BS 行权价/DTE 实时定价"的实验脚本，
+同属一次性探索，已移出现役目录。
+
 ### 彻底删除
 
 若确认不再需要，整目录删除即可（git 历史中仍可追溯）：
