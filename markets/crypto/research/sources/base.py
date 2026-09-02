@@ -143,9 +143,21 @@ def _default_timeout() -> int:
         return 10
 
 
+def _resolve_opener():
+    """代理统一走仓库根 net_config（设计铁律 §9-2：不走裸环境变量，
+    规避沙箱注入的坏代理 59953/61350；net_config 内部按 MX_PROXY→
+    实测存活的 DEFAULT_PROXY(3067)→环境变量 顺序解析）。
+    导入失败（如模块被移出仓库单独用）降级为默认 urlopen。"""
+    try:
+        import net_config  # 仓库根公共工具
+        return net_config.proxy_opener()
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _http_request(url: str, method: str = "GET", headers: dict | None = None,
                   timeout: int | None = None) -> tuple[int, str]:
-    """最小化 urllib 抓取：遵守 HTTP_PROXY/HTTPS_PROXY 环境变量。
+    """最小化 urllib 抓取：代理由 net_config 统一解析（见 _resolve_opener）。
 
     返回 (status_code, body_text)；网络错误/超时返回 (0, "")。
     """
@@ -161,8 +173,15 @@ def _http_request(url: str, method: str = "GET", headers: dict | None = None,
             **(headers or {}),
         },
     )
+    opener = _resolve_opener()
+
+    def _open(request, **kw):
+        if opener is not None:
+            return opener.open(request, **kw)
+        return urllib.request.urlopen(request, **kw)
+
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with _open(req, timeout=timeout) as resp:
             body_bytes = resp.read()
             charset = resp.headers.get_content_charset() or "utf-8"
             body = body_bytes.decode(charset, errors="replace")
