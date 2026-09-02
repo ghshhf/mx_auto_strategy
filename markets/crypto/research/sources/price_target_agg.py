@@ -1,6 +1,12 @@
-"""源桩 3：PriceTarget 聚合页（CoinCodeCap / TradingBeasts 类静态页面）。
+"""源 3：PriceTarget 聚合（基于 CoinGecko 币种描述抽取机构提及+目标价）。
 
 网络失败/空 → []；绝不伪造任何值。
+
+修复记录（2026-09-03）：
+- 原 FIRM 正则只覆盖 10 个机构，漏掉白名单其余成员；改为复用 config.TRACKED_INSTITUTIONS 全量匹配。
+- 注意：CoinGecko 描述为中性百科文字，极少含「机构名+具体目标价」，本源对绝大多数币天然 0 条，
+  属数据源限制（非代码 bug）。若需真实分析师目标价，应使用 Messari/Glassnode/CryptoPanic 等
+  需 key 的研报 API（见 media_keyword / exchange_research 的接入方式）。
 """
 from __future__ import annotations
 import json
@@ -8,6 +14,7 @@ import logging
 import re
 
 from .base import BaseResearchSource
+from ..config import TRACKED_INSTITUTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +39,12 @@ class PriceTargetAggSource(BaseResearchSource):
         "GT": "gatechain-token", "OKB": "okb", "DYDX": "dydx-v4",
         "HYPE": "hyperliquid", "GLM": "golem", "RENDER": "render-token",
         "ONDO": "ondo-finance", "ETHFI": "ether-fi",
-        "PENDLE": "pendle",
+        "PENDLE": "pendle", "TAO": "bittensor",
+        "SHIB": "shiba-inu", "PEPE": "pepe", "ARB": "arbitrum",
     }
 
-    # 机构词（我们只抓 coingecko 描述中出现此类词 + 数字价才产出）
-    FIRM = re.compile(
-        r"(Standard Chartered|JPMorgan|Goldman Sachs|Morgan Stanley|ARK Invest|"
-        r"Fidelity|BlackRock|VanEck|Galaxy Digital|Coinbase)", re.IGNORECASE)
+    # 机构词（复用白名单全量，描述中出现此类词 + 数字价才产出）
+    FIRM = re.compile("|".join(re.escape(f) for f in TRACKED_INSTITUTIONS), re.IGNORECASE)
     TARGET = re.compile(r"\$?\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]+))")
 
     def _fetch_coins_impl(self, coins):
@@ -55,7 +61,6 @@ class PriceTargetAggSource(BaseResearchSource):
             except json.JSONDecodeError:
                 continue
             description = (data.get("description") or {}).get("en") or ""
-            # 按句号切片段落
             sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", description) if len(s) > 10]
             for s in sentences:
                 fmatch = self.FIRM.search(s)

@@ -106,6 +106,7 @@ COIN_ALIASES: dict[str, str] = {
     "狗狗币": "DOGE", "doge": "DOGE",
     "dot": "DOT", "波卡": "DOT", "Polkadot": "DOT",
     "matic": "POL", "polygon": "POL",
+    "arb": "ARB", "Arbitrum": "ARB", "arbitrum": "ARB",
     "uni": "UNI", "Uniswap": "UNI",
     "ltc": "LTC", "莱特币": "LTC",
     "link": "LINK", "Chainlink": "LINK",
@@ -147,8 +148,8 @@ SUPPORTED_COINS_UPPER: list[str] = [
     "SOL", "ADA", "AVAX", "INJ", "DOT", "NEAR", "APT", "ICP", "HBAR",
     # 支付链 6
     "XLM", "TRX", "GRAM", "LTC", "XRP", "BCH",
-    # L2 1
-    "POL",
+    # L2 2
+    "POL", "ARB",
     # DeFi 4
     "UNI", "AAVE", "PENDLE", "ETHFI",
     # 平台币 3
