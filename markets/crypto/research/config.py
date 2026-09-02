@@ -10,18 +10,23 @@ from __future__ import annotations
 TIER1_TRADITIONAL: list[str] = [
     "Standard Chartered", "JPMorgan", "Goldman Sachs", "Morgan Stanley",
     "ARK Invest", "Fidelity", "BlackRock", "VanEck", "Deutsche Bank",
-    "Citi", "Bank of America", "UBS",
+    "Citi", "Bank of America", "UBS", "Grayscale",
+    "Franklin Templeton",   # 富兰克林邓普顿 $1.5T+ AUM，2026 FOBXX 上线 Aptos
+    "Intercontinental Exchange",   # ICE / 纽交所母公司 2026-03 $250亿入股东方交易所
 ]
 
 TIER2_EXCHANGE_NATIVE: list[str] = [
     "Galaxy Digital", "Binance Research", "OKX Insights",
     "Coinbase Research", "Kraken Intelligence",
     "Glassnode", "Messari", "Delphi Digital",
+    "Bitwise", "21Shares", "Canary Capital",
 ]
 
 TIER3_MEDIA_MENTION: list[str] = [
     "Bernstein", "Matrixport", "Fundstrat",
-    "Cantor Fitzgerald", "Pantera Capital",
+    "Cantor Fitzgerald", "Pantera Capital", "CoinDCX",
+    "Multicoin Capital", "T. Rowe Price",
+    "Windsor Drake",   # 代幣化基礎設施估值 Q3 2026 研究
 ]
 
 TRACKED_INSTITUTIONS: list[str] = TIER1_TRADITIONAL + TIER2_EXCHANGE_NATIVE + TIER3_MEDIA_MENTION
@@ -59,6 +64,19 @@ INSTITUTION_SYNONYMS: dict[str, str] = {
     "Kraken": "Kraken Intelligence",
     "Alliance Bernstein": "Bernstein",
     "Tom Lee": "Fundstrat", "Fundstrat Global Advisors": "Fundstrat",
+    "Multicoin": "Multicoin Capital",
+    "T Rowe Price": "T. Rowe Price", "TRowe": "T. Rowe Price",
+    # ICE / 纽交所母公司
+    "ICE": "Intercontinental Exchange", "NYSE": "Intercontinental Exchange",
+    "洲际交易所": "Intercontinental Exchange",
+    "Intercontinental Exchange Inc": "Intercontinental Exchange",
+    # Franklin Templeton
+    "Franklin": "Franklin Templeton", "Templeton": "Franklin Templeton",
+    "Franklin Resources": "Franklin Templeton", "富兰克林邓普顿": "Franklin Templeton",
+    # Windsor Drake
+    "WindsorDrake": "Windsor Drake",
+    # Canary Capital
+    "Canary": "Canary Capital",
 }
 
 def normalize_institution(raw_name: str) -> str:
@@ -95,7 +113,9 @@ COIN_ALIASES: dict[str, str] = {
     "aave": "AAVE",
     "xlm": "XLM", "恒星币": "XLM",
     "trx": "TRX", "波场": "TRX",
-    "ton": "GRAM", "toncoin": "GRAM",
+    "ton": "GRAM", "toncoin": "GRAM", "ton blockchain": "GRAM",
+    "the open network": "GRAM", "telegram open network": "GRAM",
+    "toncoin (ton)": "GRAM", "gram (ton)": "GRAM",
     "bch": "BCH", "比特现金": "BCH",
     "zec": "ZEC", "大零币": "ZEC",
     "fil": "FIL", "Filecoin": "FIL",
@@ -110,11 +130,14 @@ COIN_ALIASES: dict[str, str] = {
     "okb": "OKB",
     "dydx": "DYDX",
     "hype": "HYPE",
+    "tao": "TAO", "Bittensor": "TAO",
     "glm": "GLM", "Golem": "GLM",
     "render": "RENDER", "RNDR": "RENDER",
     "ondo": "ONDO",
     "ethfi": "ETHFI", "Ether.fi": "ETHFI",
     "pendle": "PENDLE",
+    "shib": "SHIB", "Shiba Inu": "SHIB", "shiba inu": "SHIB",
+    "pepe": "PEPE", "Pepe": "PEPE",
 }
 
 SUPPORTED_COINS_UPPER: list[str] = [
@@ -138,10 +161,12 @@ SUPPORTED_COINS_UPPER: list[str] = [
     "RENDER", "GLM", "FIL",
     # 隐私 1
     "ZEC",
-    # Memecoin/支付补充 1
-    "DOGE",
+    # Memecoin/支付补充 3
+    "DOGE", "SHIB", "PEPE",
     # RWA 1
     "ONDO",
+    # AI 基础设施 1
+    "TAO",
 ]
 
 def normalize_coin(raw_token: str):
