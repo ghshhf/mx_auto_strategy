@@ -71,7 +71,8 @@ def cmd_fetch(args, deps):
     n = append_jsonl_atomic(kb, scraped)
     print(_h1("机构研报抓取 fetch 结果"))
     print(f"  目标币:         {coins}")
-    print(f"  抓取源数:       {len(sources)} (Binance Research, OKX Insights, CoinGecko desc)")
+    src_names = ", ".join(getattr(s, "source_name", "?") for s in sources)
+    print(f"  抓取源数:       {len(sources)} ({src_names})")
     print(f"  抓取新记录:     {n} 条（去重后写入 kb）")
     print(f"  知识库路径:     {kb}")
     if n > 0:
