@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 from .config import HORIZON_BUCKETS, LATEST_WINDOW_DAYS, SUPPORTED_COINS_UPPER
 from .config import normalize_coin
+from .sources.base import read_jsonl
 
 
 def _months_between(pub_date_iso: str, target_date_iso) -> int:
@@ -94,10 +95,24 @@ def analyze_coins(
     kb_path: str | None = None,
     scraped_records: list[dict] | None = None,
     current_prices: dict[str, float] | None = None,
+    mentions_path: str | None = None,
 ) -> list[dict]:
-    """按币返回结构化分析结果（覆盖数 / 分桶上下区间 / 分歧度 / 上行空间）。"""
+    """按币返回结构化分析结果（覆盖数 / 分桶上下区间 / 分歧度 / 上行空间）。
+
+    另含 mention 信号（新闻/ETF/上线/监管/机构提及）的计数与样本——这是「别只盯机构」
+    的扩展检索层；无机构目标价但有提及的币也会如实呈现。
+    """
     current_prices = current_prices or {}
     all_records = _load_all_records(seed_records, kb_path, scraped_records)
+
+    # 广义提及（与机构目标价解耦，独立知识库）
+    mention_records = read_jsonl(mentions_path) if mentions_path else []
+    per_coin_mentions: dict[str, list[dict]] = {c: [] for c in coins}
+    for r in mention_records:
+        if not isinstance(r, dict) or r.get("record_type") != "mention":
+            continue
+        if r.get("coin") in per_coin_mentions:
+            per_coin_mentions[r["coin"]].append(r)
 
     # 归一化请求币
     req_coins: list[str] = []
@@ -118,19 +133,34 @@ def analyze_coins(
     results: list[dict] = []
     for coin in req_coins:
         recs = per_coin[coin]
+        mentions = per_coin_mentions.get(coin, [])
+        mention_sample = sorted(mentions, key=lambda x: x.get("pub_date") or "", reverse=True)[:5]
+
         if coin not in SUPPORTED_COINS_UPPER:
             # 连币都不认识：仅返回 0 覆盖说明
             results.append({
                 "coin": coin,
                 "coverage_count": 0,
+                "mention_count": len(mentions),
                 "note": "代币不在 SUPPORTED_COINS 白名单 + 暂未收录机构研报",
             })
             continue
-        if not recs:
+        if not recs and not mentions:
             results.append({
                 "coin": coin,
                 "coverage_count": 0,
+                "mention_count": 0,
                 "note": "暂未收录机构研报",
+            })
+            continue
+        if not recs and mentions:
+            # 有提及但无机构目标价：如实呈现，不伪造目标价区间
+            results.append({
+                "coin": coin,
+                "coverage_count": 0,
+                "mention_count": len(mentions),
+                "mentions_sample": mention_sample,
+                "note": f"暂无机构目标价，但有 {len(mentions)} 条新闻/ETF 等提及信号",
             })
             continue
 
@@ -166,6 +196,8 @@ def analyze_coins(
             "tier_distribution": tier_dist,
             "total_records": len(recs),
             "target_price_ranges": target_price_ranges,
+            "mention_count": len(mentions),
+            "mentions_sample": mention_sample,
         })
     return results
 
@@ -177,8 +209,12 @@ def latest(
     scraped_records: list[dict] | None = None,
     window_days: int = LATEST_WINDOW_DAYS,
     limit: int = 10,
+    mentions_path: str | None = None,
 ) -> dict:
-    """返回指定币近 N 天的按 tier 汇总 + 最新 N 条列表。空覆盖返回 {note}。"""
+    """返回指定币近 N 天的按 tier 汇总 + 最新 N 条列表。空覆盖返回 {note}。
+
+    同时附带 mention 信号（新闻/ETF/上线等）的计数与样本。
+    """
     nc = normalize_coin(coin)
     all_records = _load_all_records(seed_records, kb_path, scraped_records)
     cutoff = (datetime.now(timezone.utc) - timedelta(days=window_days)).date().isoformat()
@@ -186,8 +222,14 @@ def latest(
         r for r in all_records
         if r.get("coin") == nc and (r.get("pub_date") or "") >= cutoff
     ]
+
+    # 广义提及（全量，不限于时间窗；按发布日倒序取样）
+    mentions = [r for r in read_jsonl(mentions_path) if isinstance(r, dict)
+                and r.get("record_type") == "mention" and r.get("coin") == nc] if mentions_path else []
+    mentions_sample = sorted(mentions, key=lambda x: x.get("pub_date") or "", reverse=True)[:limit]
+
     if nc is None:
-        return {"coin": coin, "coverage_count": 0,
+        return {"coin": coin, "coverage_count": 0, "mention_count": len(mentions),
                 "note": "代币不在 SUPPORTED_COINS 白名单 + 暂未收录机构研报", "records": []}
     if not filtered:
         # 无近 N 天：也返回全部，但 note 说明
@@ -198,11 +240,16 @@ def latest(
         summary = {
             "coin": nc,
             "coverage_count": len({r["institution"] for r in all_coin_recs}),
+            "mention_count": len(mentions),
+            "mentions_sample": mentions_sample,
             "note": f"近 {window_days} 天无更新；以下为全部历史记录（{len(all_coin_recs)} 条）",
             "records": all_coin_recs[:limit],
         }
         if not all_coin_recs:
-            summary["note"] = "暂未收录机构研报"
+            if mentions:
+                summary["note"] = f"暂无机构研报，但有 {len(mentions)} 条新闻/ETF 等提及信号"
+            else:
+                summary["note"] = "暂未收录机构研报"
             summary["records"] = []
             summary["coverage_count"] = 0
         return summary
@@ -223,15 +270,19 @@ def latest(
         "coverage_count": len(insts),
         "institutions_in_window": insts,
         "divergence_ratio_within_1y": divergence,
+        "mention_count": len(mentions),
+        "mentions_sample": mentions_sample,
         "records": filtered_sorted[:limit],
     }
 
 
 def build_report(coins: list[str], seed_records, kb_path=None, scraped_records=None,
-                 current_prices=None) -> dict:
+                 current_prices=None, mentions_path=None) -> dict:
     """整合 analyze + latest，返回一份完整报告 dict。"""
-    analyzed = analyze_coins(coins, seed_records, kb_path, scraped_records, current_prices)
-    latests = {c: latest(c, seed_records, kb_path, scraped_records) for c in coins}
+    analyzed = analyze_coins(coins, seed_records, kb_path, scraped_records,
+                             current_prices, mentions_path=mentions_path)
+    latests = {c: latest(c, seed_records, kb_path, scraped_records,
+                         mentions_path=mentions_path) for c in coins}
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     return {
         "generated_at": generated_at,

@@ -40,6 +40,19 @@ def compute_record_id(record: dict) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:8]
 
 
+def compute_mention_id(record: dict) -> str:
+    """mention（广义提及）的稳定去重 ID：币 × 类别 × 标题 × 来源url × 发布日。"""
+    parts = (
+        (record.get("coin") or "").strip().upper(),
+        (record.get("category") or "").strip().lower(),
+        (record.get("title") or "").strip().lower(),
+        (record.get("source_url") or "").strip().lower(),
+        (record.get("pub_date") or "").strip(),
+    )
+    key = json.dumps(parts, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:8]
+
+
 # ══════════════════ JSONL 原子读写 ══════════════════
 
 def read_jsonl(path: str) -> list[dict]:
@@ -77,20 +90,35 @@ def append_jsonl_atomic(path: str, records: Iterable[dict]) -> int:
     for r in records_list:
         if not r:
             continue
-        if not r.get("id"):
-            r["id"] = compute_record_id(r)
-        if r["id"] in existing_ids:
-            continue
-        # 再做一次门槛过滤：机构 tier / 代币白名单 / 目标价正数
-        if tier_of(r.get("institution", "")) == "unknown":
-            continue
-        coin_norm = normalize_coin(r.get("coin"))
-        if coin_norm is None:
-            continue
-        r["coin"] = coin_norm
-        if not r.get("target_price") or float(r["target_price"]) <= 0:
-            continue
-        to_write.append(json.dumps(r, ensure_ascii=False))
+        is_mention = r.get("record_type") == "mention"
+        if is_mention:
+            # mention 路径：不要求机构 tier / 目标价，只需白名单币 + 有标题
+            if not r.get("id"):
+                r["id"] = compute_mention_id(r)
+            if r["id"] in existing_ids:
+                continue
+            coin_norm = normalize_coin(r.get("coin"))
+            if coin_norm is None:
+                continue
+            r["coin"] = coin_norm
+            if not (r.get("title") or "").strip():
+                continue
+            to_write.append(json.dumps(r, ensure_ascii=False))
+        else:
+            # 既有目标价路径（行为不变）：机构 tier / 代币白名单 / 目标价正数
+            if not r.get("id"):
+                r["id"] = compute_record_id(r)
+            if r["id"] in existing_ids:
+                continue
+            if tier_of(r.get("institution", "")) == "unknown":
+                continue
+            coin_norm = normalize_coin(r.get("coin"))
+            if coin_norm is None:
+                continue
+            r["coin"] = coin_norm
+            if not r.get("target_price") or float(r["target_price"]) <= 0:
+                continue
+            to_write.append(json.dumps(r, ensure_ascii=False))
 
     if not to_write:
         return 0
@@ -273,17 +301,59 @@ class BaseResearchSource:
         record["id"] = compute_record_id(record)
         return record
 
+    def _normalize_mention(self, raw: dict) -> dict | None:
+        """mention（广义提及）的统一规范化；任何致命瑕疵返回 None（不抛错）。
+
+        与 _normalize_and_filter_record 不同：不要求机构/目标价，只需白名单币 + 有标题。
+        institution 字段允许非白名单（保留原始名作上下文），category 缺省为 news。
+        """
+        if not raw:
+            return None
+        coin = normalize_coin(raw.get("coin") or raw.get("token") or raw.get("symbol"))
+        if coin is None:
+            return None
+        title = (raw.get("title") or "").strip()
+        if not title:
+            return None
+        from datetime import datetime, timezone
+        rec = {
+            "id": None,
+            "record_type": "mention",
+            "coin": coin,
+            "category": (raw.get("category") or "news").strip().lower() or "news",
+            "institution": normalize_institution(raw.get("institution") or "") or None,
+            "title": title[:200],
+            "source": (raw.get("source") or self.source_name or "").strip() or None,
+            "pub_date": (raw.get("pub_date") or "").strip() or None,
+            "source_url": (raw.get("source_url") or "").strip() or None,
+            "excerpt": (raw.get("excerpt") or "").strip()[:200] or None,
+            "source_type": self.source_type,
+            "fetched_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        }
+        rec["id"] = compute_mention_id(rec)
+        return rec
+
 
 def fetch_all_sources(coins: list[str], sources: list[BaseResearchSource]) -> list[dict]:
-    """按顺序抓取所有源，合并并去重；失败源静默跳过。"""
+    """按顺序抓取所有源，合并并去重；失败源静默跳过。
+
+    返回的记录混合两种 record_type：
+    - "target_price"（默认，无 record_type 字段的旧记录也属此类）：机构目标价
+    - "mention"：广义提及（新闻/ETF/上线/监管/机构提及），由 _normalize_mention 处理
+    """
     merged: dict[str, dict] = {}
     for src in sources:
         try:
             for raw in src.fetch_coins(coins):
-                rec = src._normalize_and_filter_record(raw) if isinstance(raw, dict) and not raw.get("id") else raw
+                if not isinstance(raw, dict):
+                    continue
+                if raw.get("record_type") == "mention":
+                    rec = src._normalize_mention(raw)
+                else:
+                    rec = src._normalize_and_filter_record(raw) if not raw.get("id") else raw
                 if rec:
                     if rec.get("id") is None:
-                        rec["id"] = compute_record_id(rec)
+                        rec["id"] = compute_mention_id(rec) if rec.get("record_type") == "mention" else compute_record_id(rec)
                     # 先到者优先（靠前的源优先级更高），除非后到者 confidence 更高
                     prev = merged.get(rec["id"])
                     if prev is None:

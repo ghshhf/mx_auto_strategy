@@ -21,6 +21,14 @@ from datetime import datetime, timezone
 # 模块根路径：markets/crypto/research/ 相对文件位置
 MODULE_DIR = Path(__file__).resolve().parent
 DEFAULT_KB_PATH = MODULE_DIR / "kb" / "coverage.jsonl"
+# 广义提及（新闻/ETF/上线/监管/机构提及）独立知识库，与机构目标价解耦
+DEFAULT_MENTION_KB = MODULE_DIR / "kb" / "mentions.jsonl"
+
+
+def _mentions_kb_path(kb: str) -> str:
+    """mentions 知识库路径：优先环境变量，否则与 --kb 同目录派生 mentions.jsonl，
+    保证测试/临时 kb 的提及不污染模块主库。"""
+    return os.environ.get("RESEARCH_MENTIONS_KB", str(Path(kb).with_name("mentions.jsonl")))
 
 # ── 终端格式化（纯 ASCII，避免 Windows 颜色问题）────────────────
 def _h1(text: str) -> str: return f"\n{'=' * 72}\n  {text}\n{'=' * 72}"
@@ -67,17 +75,35 @@ def cmd_fetch(args, deps):
     sources = deps["get_all_sources"]()
     from .sources.base import fetch_all_sources, append_jsonl_atomic
     scraped = fetch_all_sources(coins, sources)
+    # 分流：机构目标价 → coverage KB；广义提及 → mentions KB
+    targets = [r for r in scraped if r.get("record_type") != "mention"]
+    mentions = [r for r in scraped if r.get("record_type") == "mention"]
     kb = os.environ.get("RESEARCH_KB", str(args.kb))
-    n = append_jsonl_atomic(kb, scraped)
-    print(_h1("机构研报抓取 fetch 结果"))
+    mention_kb = _mentions_kb_path(kb)
+    n_target = append_jsonl_atomic(kb, targets)
+    n_mention = append_jsonl_atomic(mention_kb, mentions)
+    print(_h1("研报抓取 fetch 结果（机构目标价 + 广义提及）"))
     print(f"  目标币:         {coins}")
     src_names = ", ".join(getattr(s, "source_name", "?") for s in sources)
     print(f"  抓取源数:       {len(sources)} ({src_names})")
-    print(f"  抓取新记录:     {n} 条（去重后写入 kb）")
-    print(f"  知识库路径:     {kb}")
-    if n > 0:
-        insts = sorted({r["institution"] for r in scraped})
+    print(f"  机构目标价:     {n_target} 条（去重后写入 {kb}）")
+    print(f"  广义提及:       {n_mention} 条（新闻/ETF/上线等，写入 {mention_kb}）")
+    if n_target > 0:
+        insts = sorted({r["institution"] for r in targets})
         print(f"  命中机构:       {', '.join(insts[:20])}{'…' if len(insts) > 20 else ''}")
+    if n_mention > 0:
+        cats = sorted({r.get("category", "news") for r in mentions})
+        print(f"  提及类别:       {', '.join(cats)}")
+    # 可观测性：必须区分「该币确实没消息」与「抓取失败导致 0 条」。
+    # 后者极易被误读为前者（2026-09-03 全币实测：BCH/APT/BNB 因间歇超时被静默跳过，
+    # 表现为"0 提及"，差点被当成"这些币没新闻"）。
+    for s in sources:
+        failed = getattr(s, "last_failed", None)
+        if failed:
+            print(f"  ⚠ 抓取失败:     {getattr(s, 'source_name', '?')} → "
+                  f"{', '.join(failed[:10])}{'…' if len(failed) > 10 else ''}")
+            print(f"                  共 {len(failed)} 个请求失败，属「抓取失败」"
+                  f"而非「没消息」，建议重跑。")
     return 0
 
 
@@ -95,17 +121,27 @@ def cmd_analyze(args, deps):
         scraped = fetch_all_sources(coins, deps["get_all_sources"]())
 
     current = _parse_current_prices(args.current)
-    results = deps["analyze_coins"](coins, seeds, kb, scraped, current_prices=current)
+    mentions_kb = _mentions_kb_path(kb)
+    results = deps["analyze_coins"](coins, seeds, kb, scraped, current_prices=current,
+                                    mentions_path=mentions_kb)
 
     if args.json:
         print(json.dumps({"coins": results}, ensure_ascii=False, indent=2))
         return 0
 
-    print(_h1(f"机构研报交叉聚合 analyze | {datetime.now().date().isoformat()}"))
+    print(_h1(f"研报交叉聚合 analyze | {datetime.now().date().isoformat()}"))
     for r in results:
-        print(_h2(f"{r['coin']} — 覆盖机构 {r['coverage_count']} 家"))
+        print(_h2(f"{r['coin']} — 覆盖机构 {r['coverage_count']} 家"
+                  + (f" / 广义提及 {r.get('mention_count', 0)} 条" if r.get('mention_count') else "")))
         if r.get("note"):
             print(f"    Note: {r['note']}")
+        mc = r.get("mention_count", 0)
+        if mc:
+            print(f"    广义提及 ({mc}):")
+            for m in r.get("mentions_sample", [])[:5]:
+                print(f"      - [{m.get('category','news')}] {m.get('title','')[:80]}"
+                      + (f"  ({m.get('source')})" if m.get('source') else ""))
+        if r.get("note") and not r.get("target_price_ranges"):
             continue
         insts = r["institutions"]
         print(f"    机构列表 ({len(insts)}):  {', '.join(insts)}")
@@ -141,20 +177,31 @@ def cmd_latest(args, deps):
         scraped = fetch_all_sources([args.coin], deps["get_all_sources"]())
 
     out = deps["latest"](args.coin, seeds, kb, scraped,
-                         window_days=args.days, limit=args.limit)
+                         window_days=args.days, limit=args.limit,
+                         mentions_path=_mentions_kb_path(kb))
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
 
     window = out.get("window_days", args.days)
-    print(_h1(f"最新机构研报 latest | {out.get('coin')} | 近 {window} 天"))
+    print(_h1(f"最新研报 latest | {out.get('coin')} | 近 {window} 天"))
     print(f"  覆盖机构: {out.get('coverage_count')} 家")
+    mc = out.get("mention_count", 0)
+    if mc:
+        print(f"  广义提及: {mc} 条（新闻/ETF/上线/监管等）")
     if out.get("note"):
         print(f"  Note:     {out['note']}")
     if out.get("institutions_in_window"):
         print(f"  机构:     {', '.join(out['institutions_in_window'])}")
     if out.get("divergence_ratio_within_1y") is not None:
         print(f"  1y内分歧:  max÷min = {out['divergence_ratio_within_1y']:.2f}x")
+    # 广义提及样本
+    if out.get("mentions_sample"):
+        print(f"\n  {'类别':<16} {'来源':<14} {'标题'}")
+        print(f"  {'─'*16} {'─'*14} {'─'*40}")
+        for m in out["mentions_sample"][:8]:
+            print(f"  {(m.get('category') or 'news'):<16} {(m.get('source') or '-'):<14} "
+                  f"{(m.get('title') or '')[:60]}")
     print()
     print(f"  {'Date':<12} {'Institution':<22} {'Coin':<5} {'Target':>10} "
           f"{'Hor(m)':>6} {'Rating':<8} {'Tier':<5}")
@@ -183,7 +230,8 @@ def cmd_report(args, deps):
         from .sources.base import fetch_all_sources
         scraped = fetch_all_sources(coins, deps["get_all_sources"]())
     current = _parse_current_prices(args.current)
-    report = deps["build_report"](coins, seeds, kb, scraped, current_prices=current)
+    report = deps["build_report"](coins, seeds, kb, scraped, current_prices=current,
+                                  mentions_path=_mentions_kb_path(kb))
     md = _render_markdown_report(report)
     if args.out:
         Path(args.out).write_text(md, encoding="utf-8")
@@ -290,8 +338,20 @@ def _render_markdown_report(rep: dict) -> str:
     for item in rep.get("analyze", []):
         c = item["coin"]
         lines.append(f"## {c} — 覆盖机构 {item.get('coverage_count', 0)} 家")
-        if item.get("note"):
+        if item.get("note") and not item.get("target_price_ranges"):
             lines.append(f"- **Note**: {item['note']}")
+        mc = item.get("mention_count", 0)
+        if mc:
+            lines.append(f"- **广义提及（新闻/ETF/上线/监管）**: {mc} 条")
+            lines.append("")
+            lines.append("| 类别 | 来源 | 标题 | 发布日 |")
+            lines.append("|---|---|---|---|")
+            for m in item.get("mentions_sample", [])[:8]:
+                lines.append(f"| {m.get('category','news')} | {m.get('source') or '-'} | "
+                             f"{((m.get('title') or '').replace('|','/'))[:90]} | "
+                             f"{m.get('pub_date') or '-'} |")
+            lines.append("")
+        if item.get("note") and not item.get("target_price_ranges"):
             lines.append("")
             continue
         lines.append(f"- 机构列表（{item['coverage_count']}）: {', '.join(item.get('institutions', []))}")
@@ -336,7 +396,8 @@ def _render_markdown_report(rep: dict) -> str:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="research-cli",
-        description="机构研报子模块 CLI：查询主流机构（渣打/ARK/摩根等）对代币的目标价、覆盖数与上下区间。",
+        description="研报子模块 CLI：查询主流机构（渣打/ARK/摩根等）对代币的目标价，"
+                    "同时聚合新闻/ETF/上线/监管等广义提及信号（不限于机构）。",
     )
     p.add_argument("--kb", default=str(DEFAULT_KB_PATH),
                    help=f"本地知识库 JSONL 路径（默认: {DEFAULT_KB_PATH}）")
