@@ -56,6 +56,8 @@
 
 ### ✅ 期权三件套引擎（crypto_options_bt.py，v6.18 审计）
 
+> 🛑 **2026-08-31 已临时关闭**：审计（2026-08-17）发现 put 保险层被误建模为收益引擎，导致头条倍率虚高 5~6 个数量级。关闭后期权四开关降级为无操作路径，逐腿拆解验证倍率变化恒为 Δ=+0.0%（见根目录 `TRUTH_AUTHORITY.md` §1.3）。**本节下表（448.6x 等）为关闭前历史口径，不可作为现真值引用**；当前真值 = 现货轮动 + 减半相位叠加（7,637.77x 发布 NAV / 8,488x reconcile 10y FULL）。
+
 > 在 `backtest_v2.py` 之上迁移 A 股/美股同源的**期权三件套**：止盈 covered call + 止盈后做空闭环 + 极度高估主动 call + 双层保护性 put。
 > ⚠️ **2026-08-11 默认已翻转**：`halving_cycle_enabled=True` + `crash/bear_bottom risk_scale=0.3` + `pre_halving_start_month=31`，减半周期「时间刻减仓」**升为主干层**（此前默认关是测试错误所致，详见 [`docs/CYCLE_DERISK.md`](../docs/CYCLE_DERISK.md)）。下表为旧默认（减半关）口径，保留作对照。
 

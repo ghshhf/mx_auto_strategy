@@ -2,7 +2,15 @@
 """
 export_nav_crypto.py — 加密 NAV 导出 docs/data/nav_crypto.json (数据层)
 
-产出单条序列: 10y cycle(减半相位叠加开启, tilt=0.3) -> 真值 28,092x (加密权威口径)
+产出单条序列: 10y cycle(减半相位叠加开启, tilt=0.3), 起点 2016-08-11。
+
+真值口径沿革（2026-09-04 统一，详见 TRUTH_AUTHORITY.md）:
+  - 当前权威(本脚本实跑): **7,637.77x** / MDD -69.6% / Sharpe 1.64 / CAGR 142.8%
+    （cycle_overlay 口径, 34 币池 + 期权三件套已关闭 + 三面板已修复为真值）
+  - reconcile 10y FULL(inv_vol+1.2+周期) 为 8,488x, 与本脚本 cycle_overlay 口径不同, 勿混用
+  - 28,092x 为 2026-08 前的旧口径（43 币 + 期权开启），**已废弃，勿再引用**
+  - 59,361,202x 同为期权时代数字（见 crypto_options_bt.py 配置注释），已废弃
+
 复用 A股 export_nav.py 窗口逻辑(按日期切 10y/5y/3y/full, 归一化倍数+MDD+CAGR)。
 
 数据为渲染分离: docs/index.html 通过 fetch 读取本文件。
@@ -74,7 +82,7 @@ for ny, tag in [(10, "10y"), (5, "5y"), (3, "3y")]:
 
 out = dict(
     generated_at=dt.date.today().isoformat(),
-    source="加密本地面板(62币, 10y, 腾讯/Binance/OKX/CMC)",
+    source="加密本地面板(34币, 10y, Binance/OKX/Gate; 三面板已修复对齐, 期权层已关闭)",
     last_date=dates[-1],
     windows={"cycle": windows},
     truth=dict(

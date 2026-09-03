@@ -8,12 +8,12 @@ portfolio_blend.py — 跨市场组合层 (mx_auto_strategy)  ·  v6.18 真值�
   - A股 : docs/data/nav.json  windows['full']['optimized']['mult']
           (v6.18 权威口径: 腾讯后复权 + momentum26 + 核心卫星0.5 + 死叉 + use_tech=False + trend_filter=False
            = 18.185x / CAGR22.31% / MDD-33.31%; export_nav.py 已对齐此配置, nav.json 与头条自洽。)
-  - 美股 : markets/us/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权定价, 头条)
-  - 加密 : markets/crypto/crypto_options_bt.py  run_bt(默认)  (448.6x, 期权三件套 + 封顶4.5x + 减半关, 头条)
+  - 美股 : markets/us/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权模拟层; 模拟层非稳健真值, 仅供对照)
+  - 加密 : docs/data/nav_crypto.json  windows['cycle']['full']  (7,637.77x, 现货轮动 + 减半相位叠加; 期权三件套已于 2026-08-31 关闭, 头条)
 
 ★ 诚实口径:
   - 加密真实倍数含幸存者偏差(现存主流币清单, 死币未纳入→偏高); 真实数据仅 2017 起。
-  - 美股/加密期权层为公允定价下的可辩护值, 非「更对」的数字 (美股 93-183x 可信带)。
+  - 加密期权层已于 2026-08-31 关闭 (审计证实 put 保险层被误建模为收益引擎), 当前头条为现货轮动+减半相位叠加; 美股期权模拟层 (BS 定价) 仍为可辩护值但非稳健真值 (93-183x 可信带)。
   - 本原型为方法论证, 非未来业绩承诺。
   - 三序列周收盘日不同, 统一 resample 到 W-FRI 再 inner join。
   - 共同窗口 = 三序列交集 (由数据动态决定, 见运行输出)。
@@ -37,16 +37,20 @@ def load_series():
     w = d['windows']['full']['optimized']
     ash = pd.Series(w['mult'], index=pd.to_datetime(w['dates']), name='A股(nav.json)')
 
-    # ---- 美股 (真实面板 + 公允 BS 期权定价, 头条 99.85x) ----
+    # ---- 美股 (真实面板 + 公允 BS 期权模拟层, 头条 99.85x; 模拟层非稳健真值) ----
     us = pd.read_csv(os.path.join(ROOT, 'markets', 'us', 'data', 'us_nav_ai.csv'),
-                     parse_dates=['date']).set_index('date')['optimized_nav'].rename('美股(期权增强99.85x)')
+                     parse_dates=['date']).set_index('date')['optimized_nav'].rename('美股(期权模拟99.85x)')
 
-    # ---- 加密 (期权三件套引擎, 头条 448.6x) ----
-    from markets.crypto import crypto_options_bt as m
-    px = m._load_default()
-    r = m.run_bt(px, dict(m.DEFAULT_CFG), label='crypto_opts')
-    cry = pd.Series(r['nav'], index=pd.to_datetime(px.index), name='加密(期权增强448.6x)')
-    print(f"  [加密引擎] 448 档实跑: {r['multiple']:.1f}x | CAGR {r['cagr']*100:.1f}% | MDD {r['mdd']*100:.1f}%")
+    # ---- 加密 (现货轮动 + 减半相位叠加; 期权三件套已于 2026-08-31 关闭) ----
+    # 直接取已发布的 nav_crypto.json (export_nav_crypto.py 产出), 保证与站点头条自洽, 不再重跑引擎打旧标签.
+    nav_c = json.load(open(os.path.join(ROOT, 'docs/data/nav_crypto.json')))
+    wc = nav_c['windows']['cycle']['full']
+    t = nav_c['truth']['cycle']
+    cry = pd.Series([float(x) for x in wc['mult']],
+                    index=pd.to_datetime(wc['dates']),
+                    name=f"加密(周期引擎{t['final_mult']:.1f}x)")
+    print(f"  [加密引擎] 取自 nav_crypto.json: {t['final_mult']:.1f}x | "
+          f"CAGR {t['cagr']}% | MDD {t['mdd']}% | Sharpe {t['sharpe']}")
 
     raw = pd.concat([ash, us, cry], axis=1, sort=False)
     raw = raw.resample('W-FRI').last().ffill()
@@ -167,6 +171,7 @@ def main():
 
 def _html(df, single, schemes, blends):
     dates = [str(d.date()) for d in df.index]
+    crypto_label = [c for c in df.columns if c.startswith('加密')][0]
     series = {c: [round(float(x), 4) for x in df[c].values] for c in df.columns}
     bnav = {n: [round(float(x), 4) for x in nav.values] for n, nav in schemes.items()}
 
@@ -197,7 +202,7 @@ td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
 .note{{color:#9aa3b2;font-size:13px;line-height:1.7;}}</style></head>
 <body>
 <h1>跨市场组合层 · v6.18 真值刷新</h1>
-<div class="sub">A股(nav.json) + 美股(期权增强99.85x) + 加密(期权增强448.6x) · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非承诺</div>
+<div class="sub">A股(nav.json) + 美股(期权模拟99.85x) + {crypto_label} · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非承诺 · 期权层已关闭</div>
 
 <div class="card"><h3 style="margin-top:0">单市场 vs 组合 (对数轴净值)</h3>
 <div id="c1" style="width:100%;height:420px"></div></div>

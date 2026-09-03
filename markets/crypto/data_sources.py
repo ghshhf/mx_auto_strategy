@@ -9,8 +9,8 @@ data_sources.py - 加密行情数据源统一接口层 (v1, 加法重构)
   - 纯标准库 (urllib/json/csv/datetime), 不依赖 pandas, 任何环境可跑, 不污染现有引擎。
   - 无 import 副作用: 代理在方法内按需构造, 不 install_opener 全局。
   - 防御式取数: 任何源失败都返回 {} 并降级到下一个, 绝不抛错中断回测。
-  - 加法存在: 不删除/替换 sync_crypto_panel.py 与 crypto_hist_data.py, 现有 28,092x
-    管线不受影响。本模块是它们的"干净继任者", 迁移时再删旧代码。
+  - 加法存在: 不删除/替换 sync_crypto_panel.py 与 crypto_hist_data.py; 旧 28,092x
+    管线为期权时代口径, 已废弃, 现真值为 34 币现货+周期(约 7,638x). 本模块是它们的"干净继任者", 迁移时再删旧代码。
 
 接口:
   BaseCryptoSource
@@ -80,7 +80,7 @@ COINGECKO_IDS = {
     'NEAR': 'near', 'APT': 'aptos', 'GLM': 'golem', 'AAVE': 'aave',
     'INJ': 'injective', 'FIL': 'filecoin', 'SAND': 'the-sandbox', 'MANA': 'decentraland',
     'DYDX': 'dydx', 'ZEC': 'zcash',
-    'JUP': 'jupiter', 'ONDO': 'ondo-finance', 'GRAM': 'the-open-network',
+    'JUP': 'jupiter', 'GRAM': 'the-open-network',
     'GT': 'gate-token',
     'CFG': 'centrifuge', 'ICP': 'internet-computer',
     'XLM': 'stellar',
@@ -96,7 +96,7 @@ CMC_IDS = {
     'DOT': 6636, 'DYDX': 28324, 'ICP': 8916,
     'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'JUP': 29210, 'LINK': 1975, 'LTC': 2,
     'CFG': 4160, 'POL': 6690, 'NEAR': 6535,
-    'OKB': 3897, 'ONDO': 21159, 'INJ': 20646, 'XRP': 52,
+    'OKB': 3897, 'INJ': 20646, 'XRP': 52,
     'RENDER': 5690, 'SOL': 5426,
     'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
     'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, }

@@ -149,7 +149,7 @@ THEME_COINS = {
     "存储": ['FIL'],
     "GameFi": [],
     "隐私":    ['ZEC'],  # 2026-08-18 删DASH, 留ZEC押隐私beta
-    "RWA": ['ONDO'],
+    "RWA": [],
 }
 
 # 去重后的进攻代币列表 (48个)
@@ -160,8 +160,9 @@ for _coins in THEME_COINS.values():
 OFFENSE_COINS = sorted(_OFFENSE_SET)
 # 确保总数 (2026-08-13: 池子持续精简后 45 下限过时, 下调至 40; 2026-08-17 删SUI/CRV 降至 38;
 # 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 再加 RAY(DEX) → 净 +1 = 38; 下限留 2 缓冲设 36;
-# 2026-09-01 删 FET/TIA/AR(净 -3 = 35), 下限同步下调至 33 留 2 缓冲; 引擎每轮只选 3-4 个)
-assert len(OFFENSE_COINS) >= 33, f"进攻代币不足 33, 当前 {len(OFFENSE_COINS)}"
+# 2026-09-01 删 FET/TIA/AR(净 -3 = 35), 下限同步下调至 33 留 2 缓冲; 引擎每轮只选 3-4 个;
+# 2026-09-03 删 ONDO(治理代币, RWA赛道置空) → 净 -1 = 32, 下限同步下调至 30 留 2 缓冲)
+assert len(OFFENSE_COINS) >= 30, f"进攻代币不足 30, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -444,7 +445,6 @@ COIN_META = {
     'FIL': {'name': 'Filecoin', 'role': 'offense', 'theme': '存储', 'launch': 2020},
     'ZEC': {'name': 'Zcash', 'role': 'offense', 'theme': '隐私', 'launch': 2016},
     # RWA
-    'ONDO': {'name': 'Ondo', 'role': 'offense', 'theme': 'RWA', 'launch': 2024},
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'BCH': {'name': 'Bitcoin Cash', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
     'ICP': {'name': 'Internet Computer', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
