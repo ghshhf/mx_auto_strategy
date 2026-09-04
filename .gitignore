@@ -34,6 +34,11 @@ Thumbs.db
 
 # 回测数据面板 (历史大文件, 本地保留不提交)
 markets/ashare/WK/
+# A股重建面板 (腾讯后复权周线; 由 markets/ashare/tencent_hfq_rebuild.py 本地生成, 不入库)
+# 缺失时基线完整性 / 周期叠加等测试会 skip, 属预期行为(跑一次 rebuild 即恢复)
+markets/ashare/data/ashare_weekly_em/
+markets/ashare/data/ashare_panel_close_em.csv
+markets/ashare/data/ashare_panel_volume_em.csv
 # 注: markets/ashare/data/ashare (A股日线/资金流缓存, 需上传GitHub作公共数据源) 不忽略, 正常提交
 
 # 旧的瞬时节点的缓存(已迁移到 data/ashare 并随仓库提交)
