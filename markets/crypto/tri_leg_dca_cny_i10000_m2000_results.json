@@ -1,0 +1,34 @@
+{
+  "window": [
+    "2017-01-06",
+    "2026-09-04"
+  ],
+  "first_off": "2017-11-03",
+  "fx_note": "FRED DEXCHUS 月末/周ffill, 期末 6.7260 CNY/USD",
+  "initial_cny": 10000.0,
+  "monthly_cny": 2000.0,
+  "n_deposits": 116,
+  "total_contrib_cny": 242000.0,
+  "structure": "30%US_idx(SPY/QQQ/DIA) + 30%BTC/ETH(cap) + 40%smallcap(capW) monthly",
+  "main_capW": {
+    "final_cny": 12765830.704164274,
+    "final_usd": 1897982.5608332255,
+    "multiple_cny": 52.75136654613336,
+    "irr_annual_cny": 0.7712853189997357,
+    "mdd_cny": -0.6291005289470373
+  },
+  "equalW_offense_final_cny": 9341309.889924997,
+  "usd100_ref_final_cny": 6109230.396284047,
+  "year_end_cny": {
+    "2017": 462708.18,
+    "2018": 275295.01,
+    "2019": 419055.4,
+    "2020": 1208670.85,
+    "2021": 4983438.83,
+    "2022": 2618467.23,
+    "2023": 5114070.07,
+    "2024": 11614925.67,
+    "2025": 12692655.33,
+    "2026": 12765830.7
+  }
+}

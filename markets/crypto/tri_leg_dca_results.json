@@ -1,0 +1,21 @@
+{
+  "window": [
+    "2017-01-06",
+    "2026-09-04"
+  ],
+  "first_off": "2017-11-03",
+  "initial_usd": 1000.0,
+  "monthly_usd": 100.0,
+  "n_deposits": 116,
+  "total_contrib": 12600.0,
+  "structure": "30%US_idx(SPY/QQQ/DIA) + 30%BTC/ETH(cap) + 40%smallcap(capW)",
+  "main_capW": {
+    "final_usd": 908300.6833606968,
+    "total_contrib": 12600.0,
+    "multiple": 72.08735582227752,
+    "irr_annual": 0.8078293343801131,
+    "acct_mdd": -0.6299266292538543
+  },
+  "equalW_offense_final_usd": 666577.9333102233,
+  "equalW_offense_total_contrib": 12600.0
+}
