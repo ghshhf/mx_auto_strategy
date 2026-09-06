@@ -19,7 +19,9 @@
 
 - **美股 SOX 原始数据**：`markets/us/data/raw_sox_historyofmarket.json`（502K）被 `markets/us/extend_panel_real_indices.py` 读取，**勿删**（非重新生成则美股面板缺 SOX 真实指数）。
 
-- **加密面板**：`weekly_adjclose_crypto50.csv`（c50，主，34 币）与 `weekly_adjclose_crypto50_10y.csv`（10y，真值基准，34 币）及 `weekly_adjclose_crypto50_v3.csv`（v3）三面板已于 2026-09-04 修复对齐（此前 v3 为合成数据、c50 有上线前假历史，均已按 10y 真值回填）。增币须同时回填三面板对齐日期，早期空缺列引擎按周自动排除，不会报错。
+- **加密面板**：`weekly_adjclose_crypto50.csv`（c50，主，32 币）与 `weekly_adjclose_crypto50_10y.csv`（10y，真值基准，32 币）及 `weekly_adjclose_crypto50_v3.csv`（v3）三面板已于 2026-09-04 修复对齐（此前 v3 为合成数据、c50 有上线前假历史，均已按 10y 真值回填）。增币须同时回填三面板对齐日期，早期空缺列引擎按周自动排除，不会报错。
+
+- **`held_weeks.json` 是回测统计，不是个人持仓**【2026-09-07 教训】。它记录"最终回测给某币权重>0 的周数"，held=0 表示"策略几乎不选/纯占位"，**与个人买没买完全是两回事**。仓库里没有个人持仓文件，权威=用户口述。文件顶层已带 `_meta` 字段声明该语义，勿按裸 list 消费；`refresh_stats.py` 终检按 `{"_meta":…, "coins":[…]}` 结构读取。
 
 ---
 

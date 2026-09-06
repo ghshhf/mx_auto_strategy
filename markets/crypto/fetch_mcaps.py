@@ -6,7 +6,8 @@
 2026-09-01 修复:
   1. 原脚本硬编码 socks5h://127.0.0.1:1080 —— 该端口实测未监听(HTTP 000), 脚本直接
      跑不通("解析失败: Expecting value: line 1 column 1")。改走 net_config 统一代理。
-  2. 补全缺失的 CoinGecko id: GT / INJ / RAY (均已实测校验市值可返回; ONT 已于 2026-09-01 移出面板)。
+  2. 补全缺失的 CoinGecko id: GT / RAY (均已实测校验市值可返回; ONT 已于 2026-09-01 移出面板;
+     INJ 已于 2026-09-06 随持仓删减移出面板, 其 CG 映射一并清理)。
   3. 移除僵尸映射 API3 / JOE (三面板均无此二币)。
   4. 去掉对外部 curl 的依赖, 改用 urllib (避免 curl 缺失/编码问题)。
 
@@ -35,11 +36,12 @@ PANEL = os.path.join(HERE, "data", "weekly_adjclose_crypto50.csv")
 
 # CoinGecko id 映射 (格式被 manage_token.py 正则依赖, 勿改结构)
 CG = {
+    # 2026-09-07
     'HYPE': 'hyperliquid',  # 2026-09-01
     'ETHFI': 'ether-fi',  # 2026-09-01
     'HBAR': 'hedera-hashgraph',  # 2026-08-31
     'GT': 'gatechain-token',  # 2026-09-01
-    'INJ': 'injective-protocol',  # 2026-09-01
+    # 2026-09-01
     'RAY': 'raydium',  # 2026-09-01
     # 2026-09-01
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
@@ -52,8 +54,7 @@ CG = {
     'DYDX': 'dydx',
     'ZEC': 'zcash',
     'JUP': 'jupiter', 'GRAM': 'the-open-network',
-    'XLM': 'stellar', 'LTC': 'litecoin', 'ICP': 'internet-computer',
-    'RENDER': 'render-token', 'XRP': 'ripple',
+    'XLM': 'stellar', 'LTC': 'litecoin', 'RENDER': 'render-token', 'XRP': 'ripple',
     'PENDLE': 'pendle',
 }
 

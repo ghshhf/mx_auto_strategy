@@ -3,7 +3,8 @@
 test_crypto_panel_quality.py — 加密三面板数据质量回归测试 (P3)
 
 锁死 2026-09-04 的修复成果, 防止未来 sync/增币时再次引入合成漂移:
-  1. 三面板 (c50 / 10y / v3) 列集合必须完全一致 (34 币)
+  1. 三面板 (c50 / 10y / v3) 列集合必须完全一致, 且列数 == 运营池规模
+     (2026-09-04 为 34 币; 2026-09-06 删 ICP/INJ 后为 32 币, 测试动态取运营池, 不再硬编码)
   2. 在 10y 有值处, c50 与 v3 必须 == 10y (修复后三面板对齐; 任何偏差 = 合成漂移)
   3. 每币活跃区间内无内部空洞 (NaN 洞 = 未对齐)
 
@@ -12,8 +13,8 @@ test_crypto_panel_quality.py — 加密三面板数据质量回归测试 (P3)
 不能用作合成/拼接错误的判别信号。拼接错误改由上游 repair_panels 的
 -3 口径 + 交易所交叉校验把关。
 
-运行:
-  E:/xmanbian/_venv/mx_quant/Scripts/python.exe -m pytest tests/test_crypto_panel_quality.py -q
+运行 (仓库根):
+  python -m pytest tests/test_crypto_panel_quality.py -q
 """
 import os
 import sys
@@ -35,6 +36,12 @@ def _load(name):
 class TestPanelQuality(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # 池规模以运营池 (crypto_adoption_v2.ALL_COINS) 为唯一真值, 避免每次增删币硬改数字
+        try:
+            import crypto_adoption_v2 as ca2
+            cls.expected = len(ca2.ALL_COINS)
+        except Exception:  # 导入失败时退回面板自身一致性校验
+            cls.expected = None
         cls.c50 = _load("weekly_adjclose_crypto50.csv")
         cls.ten = _load("weekly_adjclose_crypto50_10y.csv")
         cls.v3 = _load("weekly_adjclose_crypto50_v3.csv")
@@ -45,9 +52,10 @@ class TestPanelQuality(unittest.TestCase):
                          "c50 列须与 10y 真值基准完全一致")
         self.assertEqual(set(self.v3.columns), cols,
                          "v3 列须与 10y 真值基准完全一致")
-        # 34 币池
-        self.assertEqual(len(cols), 34,
-                         f"当前应为 34 币池, 实际 {len(cols)} 币")
+        # 池规模须与运营池一致 (2026-09-06: 删 ICP/INJ 后为 32 币)
+        if self.expected is not None:
+            self.assertEqual(len(cols), self.expected,
+                             f"面板列数应等于运营池 {self.expected} 币, 实际 {len(cols)} 币")
 
     def test_c50_v3_match_10y(self):
         ten = self.ten

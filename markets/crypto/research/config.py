@@ -122,9 +122,7 @@ COIN_ALIASES: dict[str, str] = {
     "fil": "FIL", "Filecoin": "FIL",
     "near": "NEAR", "near protocol": "NEAR", "NEAR Protocol": "NEAR",
     "apt": "APT", "Aptos": "APT",
-    "inj": "INJ", "Injective": "INJ",
     "hbar": "HBAR", "Hedera": "HBAR",
-    "icp": "ICP", "internet computer": "ICP", "Internet Computer": "ICP",
     "jup": "JUP", "Jupiter": "JUP",
     "ray": "RAY", "Raydium": "RAY",
     "gt": "GT", "GateToken": "GT",
@@ -144,8 +142,8 @@ COIN_ALIASES: dict[str, str] = {
 SUPPORTED_COINS_UPPER: list[str] = [
     # 防御核 2
     "BTC", "ETH",
-    # L1公链 9
-    "SOL", "ADA", "AVAX", "INJ", "DOT", "NEAR", "APT", "ICP", "HBAR",
+    # L1公链 7 (2026-09-06: 删 INJ/ICP, 详见 crypto_adoption_v2 池变更)
+    "SOL", "ADA", "AVAX", "DOT", "NEAR", "APT", "HBAR",
     # 支付链 6
     "XLM", "TRX", "GRAM", "LTC", "XRP", "BCH",
     # L2 2

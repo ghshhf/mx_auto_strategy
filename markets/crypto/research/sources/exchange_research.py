@@ -51,7 +51,7 @@ class ExchangeResearchSource(BaseResearchSource):
     # 币符号（大写简写）出现在文本中即认为覆盖该币
     COIN_HINT_RE = re.compile(r"\b(BTC|ETH|SOL|BNB|XRP|ADA|DOGE|DOT|POL|UNI|LTC|"
                                r"LINK|AVAX|AAVE|XLM|TRX|GRAM|BCH|ZEC|FIL|NEAR|APT|"
-                               r"INJ|HBAR|ICP|JUP|RAY|GT|OKB|DYDX|HYPE|RENDER|GLM|"
+                               r"HBAR|JUP|RAY|GT|OKB|DYDX|HYPE|RENDER|GLM|"
                                r"ONDO|ETHFI|PENDLE|SHIB|PEPE|ARB|TAO)\b")
 
     def _fetch_coins_impl(self, coins):

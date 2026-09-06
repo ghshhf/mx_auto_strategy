@@ -20,10 +20,12 @@
 用法:
   python manage_token.py list
   python manage_token.py add    RAY --track DEX --launch 2021 --name Raydium
+  python manage_token.py add    TAO --track AI+加密 --launch 2023 --no-refresh   # 收尾不自动重算统计
   python manage_token.py remove SKY
   python manage_token.py refresh GT            # 自动选源重拉全历史修列
   python manage_token.py refresh GT --source gate
   python manage_token.py doctor               # 全面板对齐体检
+注: add/remove 收尾会自动跑 refresh_stats.py 重算四件派生统计(可 --no-refresh 跳过).
 """
 import argparse
 import csv
@@ -431,6 +433,20 @@ def cmd_list(args):
     if orphan:
         print(f"\n⚠ 面板有列但不在运营池: {sorted(orphan)}")
 
+def _maybe_refresh_stats(no_refresh):
+    """add/remove 收尾: 自动重算四件派生统计, 防止旧快照残留 (可用 --no-refresh 跳过)."""
+    if no_refresh:
+        print("\n[跳过] 派生统计重算 (--no-refresh)\n"
+              "  提醒: 四件 JSON (held_weeks/mcap_snapshot/cycle_participation/coin_attribution)\n"
+              "  仍停留在变更前的池版本。需要时手动跑:  python refresh_stats.py")
+        return
+    print("\n[收尾] 自动重算派生统计 (refresh_stats.py 全量, 约 2-4 分钟; 可 --no-refresh 跳过)...")
+    r = subprocess.run([sys.executable, os.path.join(HERE, 'refresh_stats.py')], cwd=HERE)
+    if r.returncode != 0:
+        print("\n⚠ refresh_stats.py 未通过终检, 请人工检查派生统计 JSON 与池的一致性。")
+    else:
+        print("\n✓ 派生统计已对齐当前池。")
+
 def cmd_add(args):
     sym = args.sym.upper()
     print(f"[1/5] 拉取 {sym} 周K (Binance→OKX→Gate)...")
@@ -469,7 +485,8 @@ def cmd_add(args):
                         'verify', sym], capture_output=True, text=True,
                        encoding='utf-8')
     print(r.stdout or r.stderr)
-    print(f"✓ {sym} 完成。后续建议: 跑 backtest_v2.py 验证; 需要时重生成 nav json.")
+    print(f"✓ {sym} 完成。")
+    _maybe_refresh_stats(args.no_refresh)
 
 def cmd_remove(args):
     sym = args.sym.upper()
@@ -494,6 +511,7 @@ def cmd_remove(args):
                        encoding='utf-8')
     print(r.stdout or r.stderr)
     print(f"✓ {sym} 已完整移除。")
+    _maybe_refresh_stats(args.no_refresh)
 
 def cmd_refresh(args):
     sym = args.sym.upper()
@@ -597,8 +615,12 @@ def main():
     p.add_argument('--cg-id', default=None, help='CoinGecko id (默认自动解析)')
     p.add_argument('--cmc-id', default=None, type=int, help='CMC id (可选)')
     p.add_argument('--source', default=None, choices=['binance', 'okx', 'gate'])
+    p.add_argument('--no-refresh', action='store_true',
+                   help='收尾不自动重算派生统计 (默认自动 refresh_stats.py)')
     p = sub.add_parser('remove', help='删币: 面板+池子+映射全清')
     p.add_argument('sym')
+    p.add_argument('--no-refresh', action='store_true',
+                   help='收尾不自动重算派生统计 (默认自动 refresh_stats.py)')
     p = sub.add_parser('refresh', help='重拉全历史重写列 (修错位/错源)')
     p.add_argument('sym')
     p.add_argument('--source', default=None, choices=['binance', 'okx', 'gate'])

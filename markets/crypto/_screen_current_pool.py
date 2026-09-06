@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """对当前 v3 面板(40币)重算三轮减半周期参与度，按档分组输出可扫读筛选视图。"""
 import os, sys, json
+import datetime as dt
 import numpy as np
 import pandas as pd
 
@@ -63,7 +64,8 @@ def main():
         note = " [太新留观]" if r['nobs']<=1 else " [弱币]"
         print(line(r)+note)
     print(f"\n总计: {len(obs)}币有观测 | 涨过>=1轮 {len(obs)-len(never)} | 从没涨过 {len(never)}")
-    out = {'generated':'2026-08-17','panel':'v3(40)','never':never['coin'].tolist(),
+    out = {'generated': dt.date.today().isoformat(), 'panel': f'v3({len(cols)})',
+           'never':never['coin'].tolist(),
            'once':once['coin'].tolist(),'twice':twice['coin'].tolist(),
            'thrice':thrice['coin'].tolist(),'detail':obs.to_dict(orient='records')}
     with open(os.path.join(HERE,'_screen_current_pool.json'),'w',encoding='utf-8') as f:

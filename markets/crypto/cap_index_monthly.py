@@ -7,12 +7,13 @@ cap_index_monthly.py — 当前34币池「全部买入 + 市值加权 + 每月�
   - 成分币首根有价即纳入, 未上市币权重为 0, 上市后首个再平衡日进入(贴近真实指数。
 
 数据: data/weekly_adjclose_crypto50_10y.csv (截到 2017-01-01, 与动量策略同窗口)
-      mcap_snapshot.json (当前市值快照, 仅取池内34币)
+      mcap_snapshot.json (当前市值快照, 仅取池内币)
 输出: 倍数/CAGR/MDD/Sharpe + 可选 --nav 存 index_nav_cap_monthly.csv + 可选 --chart 出四线对比图
 """
 import os
 import sys
 import json
+import datetime
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -27,7 +28,22 @@ import backtest_v2 as bt
 
 PANEL = os.path.join(HERE, "data", "weekly_adjclose_crypto50_10y.csv")
 SNAP = os.path.join(HERE, "mcap_snapshot.json")
-OUT_PNG = "E:/xmanbian/reports_archive/crypto_backtest_10y_capindex_5line_2026-09-04.png"
+
+# 输出图默认落到"上级归档目录"(E:/xmanbian/reports_archive, 由 __file__ 推导,
+# 换机器自动回退到脚本本地 out/), 文件名带运行日期避免覆盖旧档; --out 可覆盖。
+_REPORTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(HERE))), "reports_archive")
+if not os.path.isdir(_REPORTS):
+    _REPORTS = os.path.join(HERE, "out")
+OUT_PNG = os.path.join(_REPORTS, f"crypto_backtest_10y_capindex_5line_{datetime.date.today():%Y-%m-%d}.png")
+
+
+def _pick_out():
+    """--out <path> 覆盖默认输出图路径."""
+    if "--out" in sys.argv:
+        i = sys.argv.index("--out")
+        if i + 1 < len(sys.argv):
+            return sys.argv[i + 1]
+    return OUT_PNG
 
 
 def cap_monthly_nav(px, mc, symbols):
@@ -86,7 +102,7 @@ def main():
     px = pd.read_csv(PANEL, index_col=0, parse_dates=True).sort_index()
     px = px[px.index >= pd.Timestamp("2017-01-01")]
     raw = {d["sym"]: (d.get("mcap") or 0) for d in json.load(open(SNAP))}
-    symbols = [c for c in ca2.ALL_COINS if c in px.columns]  # 仅池内34币
+    symbols = [c for c in ca2.ALL_COINS if c in px.columns]  # 仅池内币
     mc = {s: raw.get(s, 0) for s in symbols}
     print(f"面板窗口: {px.index[0].date()} ~ {px.index[-1].date()} ({(px.index[-1]-px.index[0]).days/365.25:.1f}y)")
     print(f"市值加权成分币数: {len(symbols)} (池内 ALL_COINS={len(ca2.ALL_COINS)})")
@@ -134,7 +150,7 @@ def main():
                        float(btc_nav.pct_change().dropna().mean() /
                              btc_nav.pct_change().dropna().std() * np.sqrt(52)))
     print("\n" + "=" * 78)
-    print("同窗口(2017-01~2026-08) 四策略对比:")
+    print(f"同窗口({px.index[0]:%Y-%m}~{px.index[-1]:%Y-%m}) 四策略对比:")
     print(f"  进攻Top3基础       : {base['multiple']:.1f}x  CAGR {base['cagr']*100:.1f}%  MDD {base['mdd']*100:.1f}%  Sharpe {base['sharpe']:.2f}")
     print(f"  防御+Crash+VolT     : {guard['multiple']:.1f}x  CAGR {guard['cagr']*100:.1f}%  MDD {guard['mdd']*100:.1f}%  Sharpe {guard['sharpe']:.2f}")
     print(f"  BTC买入持有         : {bm:.1f}x   CAGR  -    MDD {bd*100:.1f}%  Sharpe {bsh:.2f}")
@@ -144,9 +160,10 @@ def main():
         cap_nav.to_csv(os.path.join(HERE, "index_nav_cap_monthly.csv"), header=True)
         print("\n输出 index_nav_cap_monthly.csv")
     if "--chart" in sys.argv:
+        out_png = _pick_out()
         make_chart(base, guard, btc_nav, bm, bd, bsh, cap_nav, m, c, d, sh,
-                   nav_ew, m3, c3, d3, sh3)
-        print(f"\n输出对比图: {OUT_PNG}")
+                   nav_ew, m3, c3, d3, sh3, out_png)
+        print(f"\n输出对比图: {out_png}")
 
 
 def cap_monthly_nav_static(px, mc, symbols):
@@ -205,7 +222,7 @@ def equal_monthly_nav(px, symbols):
 
 
 def make_chart(base, guard, btc_nav, bm, bd, bsh, cap_nav, m, c, d, sh,
-               ew_nav, ewm, ewc, ewd, ewsh):
+               ew_nav, ewm, ewc, ewd, ewsh, out_png):
     plt.rcParams.update({"axes.facecolor": "#fff", "figure.facecolor": "#fff",
                          "savefig.facecolor": "#fff", "axes.edgecolor": "#888",
                          "axes.labelcolor": "#222", "text.color": "#222",
@@ -226,7 +243,8 @@ def make_chart(base, guard, btc_nav, bm, bd, bsh, cap_nav, m, c, d, sh,
 
     ax1.set_yscale("log")
     ax1.yaxis.set_major_formatter(FuncFormatter(lambda y, _: f"{y:,.0f}x"))
-    ax1.set_title("Crypto Strategy 10Y Backtest - Equity Curve (2017-01 ~ 2026-08, 34-coin pool, log)",
+    end_s = cap_nav.index[-1].strftime("%Y-%m")
+    ax1.set_title(f"Crypto 10Y Backtest - Equity Curve ({cap_nav.index[0]:%Y-%m} ~ {end_s}, log)",
                   fontsize=12.5, fontweight="bold")
     ax1.grid(True, which="both", alpha=0.35)
     ax1.legend(loc="upper left", fontsize=8.2, framealpha=0.9)
@@ -253,7 +271,7 @@ def make_chart(base, guard, btc_nav, bm, bd, bsh, cap_nav, m, c, d, sh,
              family="DejaVu Sans", ha="right", va="bottom", linespacing=1.5,
              bbox=dict(boxstyle="round", fc="#f6f6f6", ec="#ccc"))
     plt.tight_layout()
-    plt.savefig(OUT_PNG, dpi=130)
+    plt.savefig(out_png, dpi=130)
     print("chart saved")
 
 

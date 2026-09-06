@@ -101,7 +101,7 @@ PHASE_HISTORY = {
                  (2023, 2026, "accelerating")],
     "DeFi借贷": [(2020, 2021, "accelerating"), (2022, 2026, "saturating")],
     "DEX":      [(2020, 2021, "accelerating"), (2022, 2026, "saturating")],
-    "AI+加密":  [(2023, 2024, "early"), (2025, 2026, "accelerating")],
+    "AI+加密": [],
     "模块化":   [(2023, 2024, "early"), (2025, 2026, "accelerating")],
     "DePIN":    [(2024, 2026, "early")],
     "存储":     [(2019, 2021, "early"), (2022, 2026, "early")],
@@ -134,7 +134,7 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链": ['SOL', 'ADA', 'AVAX', 'INJ', 'DOT', 'NEAR', 'APT', 'ICP', 'HBAR'],
+    "L1公链": ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'HBAR'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['POL'],
     "DeFi": ['UNI', 'AAVE', 'PENDLE', 'ETHFI'],
@@ -162,7 +162,8 @@ OFFENSE_COINS = sorted(_OFFENSE_SET)
 # 2026-08-31 删 OP/ARB(均L2, 留POL) + 加 HYPE(链上永续交易所) → 净 -1 = 37; 再加 RAY(DEX) → 净 +1 = 38; 下限留 2 缓冲设 36;
 # 2026-09-01 删 FET/TIA/AR(净 -3 = 35), 下限同步下调至 33 留 2 缓冲; 引擎每轮只选 3-4 个;
 # 2026-09-03 删 ONDO(治理代币, RWA赛道置空) → 净 -1 = 32, 下限同步下调至 30 留 2 缓冲)
-assert len(OFFENSE_COINS) >= 30, f"进攻代币不足 30, 当前 {len(OFFENSE_COINS)}"
+# 2026-09-06 删 ICP + INJ(均无硬顶/动态增发, 用户实研判定不持仓) → 净 -2 = 30, 下限同步下调至 28 留 2 缓冲)
+assert len(OFFENSE_COINS) >= 28, f"进攻代币不足 28, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -422,7 +423,6 @@ COIN_META = {
     # 区块链仍叫 The Open Network, 代币 1:1 无迁移/无新合约. Binance 现货对 TONUSDT->GRAMUSDT.
     'GRAM': {'name': 'Gram', 'role': 'offense', 'theme': '支付链', 'launch': 2018},
     'TRX': {'name': 'TRON', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
-    'INJ': {'name': 'Injective', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
     'XLM': {'name': 'Stellar', 'role': 'offense', 'theme': '支付链', 'launch': 2014},
     'LTC': {'name': 'Litecoin', 'role': 'offense', 'theme': '支付链', 'launch': 2011},
     'XRP': {'name': 'XRP', 'role': 'offense', 'theme': '支付链', 'launch': 2012},
@@ -447,7 +447,6 @@ COIN_META = {
     # RWA
     'BNB': {'name': 'BNB', 'role': 'offense', 'theme': '平台币', 'launch': 2017},
     'BCH': {'name': 'Bitcoin Cash', 'role': 'offense', 'theme': '支付链', 'launch': 2017},
-    'ICP': {'name': 'Internet Computer', 'role': 'offense', 'theme': 'L1公链', 'launch': 2021},
 }
 
 

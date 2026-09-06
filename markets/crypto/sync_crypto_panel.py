@@ -10,12 +10,13 @@ sync_crypto_panel.py - 增量同步加密周K面板到今天 (Binance > OKX > CM
   3. CoinMarketCap pro-api.coinmarketcap.com (日线聚合周五, 需 API key, 兜底)
 
 目标文件 (回测实际读取的):
-  data/weekly_adjclose_crypto50.csv      (crypto_options_bt.py)
-  data/weekly_adjclose_crypto50_10y.csv  (OOS/10y 脚本)
+  data/weekly_adjclose_crypto50.csv      (crypto_options_bt.py, 主工作面板)
+  data/weekly_adjclose_crypto50_v3.csv   (池管理面板, 与 c50 同币同源)
+  data/weekly_adjclose_crypto50_10y.csv  (OOS/10y 真值面板)
 
 用法:
-  python sync_crypto_panel.py
-  CMC_API_KEY=xxx python sync_crypto_panel.py   # 可选, 无则跳过 CMC
+  python sync_crypto_panel.py                     # 单面板逐币取数
+  python scripts/ops/sync_all_panels.py           # 单次取数 -> 复用三面板 (推荐)
 """
 import os
 import sys
@@ -69,8 +70,7 @@ _CMC_ID_MAP = {
     'AAVE': 7278,   'ADA': 2010,
     'APT': 21794,    'AVAX': 5805,
     'BTC': 1, 'BCH': 1831, 'XLM': 512,
-    'DOT': 6636,    'ICP': 8916,
-    'DYDX': 28324,    'ETH': 1027,
+    'DOT': 6636,    'DYDX': 28324,    'ETH': 1027,
     'GLM': 1455,     'FIL': 2280,    'JUP': 29210,    'LINK': 1975,    'LTC': 2,       'POL': 6690,
     'NEAR': 6535,    'OKB': 3897,
     'RENDER': 5690,    'SOL': 5426,
@@ -148,7 +148,14 @@ def fetch_coin_from(start_date, binance_sym, okx_sym, cmc_id=None):
     return {}
 
 
-def sync_file(fname):
+def sync_file(fname, prefetched=None):
+    """增量同步单个面板 CSV.
+
+    prefetched: 可选 dict {coin: {date: close}}. 传入时跳过逐币拉取, 直接用
+    预取结果并过滤 "晚于本面板末日" 的行——供 sync_all_panels 单次取数后
+    复用到 c50/v3/10y 三张同币池面板, 消除三份网络取数造成的末行漂移.
+    列顺序不同的面板(10y)按 header 列名写回, 与取数顺序无关.
+    """
     path = os.path.join(DATA, fname)
     if not os.path.exists(path):
         print(f"[跳过] {fname} 不存在")
@@ -161,12 +168,17 @@ def sync_file(fname):
     coins = header[1:]
     last_date = data[-1][0]
     cmc_status = "ON" if _CMC_KEY else "OFF"
-    print(f"\n=== {fname} ===  现有末日={last_date}  币种={len(coins)}  CMC={cmc_status}")
+    src_tag = f"  预取源={len(prefetched) if prefetched else 0}币"
+    print(f"\n=== {fname} ===  现有末日={last_date}  币种={len(coins)}  CMC={cmc_status}{src_tag}")
 
     syms = chd.all_coin_symbols()
     new_series = {}
     empty_coins = []
     for coin in coins:
+        if prefetched is not None:
+            w = {d: p for d, p in prefetched.get(coin, {}).items() if d > last_date}
+            new_series[coin] = w
+            continue
         cfg = syms.get(coin)
         cmc_id = _CMC_ID_MAP.get(coin)
         if not cfg:
@@ -207,6 +219,8 @@ def sync_file(fname):
 
 
 if __name__ == '__main__':
-    sync_file('weekly_adjclose_crypto50.csv')
-    sync_file('weekly_adjclose_crypto50_10y.csv')
+    for _f in ('weekly_adjclose_crypto50.csv',
+               'weekly_adjclose_crypto50_v3.csv',
+               'weekly_adjclose_crypto50_10y.csv'):
+        sync_file(_f)
     print("\n完成。")

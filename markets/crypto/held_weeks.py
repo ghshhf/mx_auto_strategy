@@ -69,8 +69,24 @@ for c, h, m, sec in rows:
     print(f"{c:<7}{h:>7}{ms:>12}  {sec:<12}  {note}")
 
 print(f"\n总周数={r['weeks']}  总币数={len(rows)}  held>0 的币={sum(1 for _,h,_,_ in rows if h>0)}")
-# 输出 JSON 供后续
-out = [{'sym':c,'held':h,'mcap_usd':snap.get(c),'sector':sec} for c,h,m,sec in rows]
-with open('held_weeks.json','w',encoding='utf-8') as f:
-    json.dump(out, f, ensure_ascii=False, indent=2)
-print("[*] 已写出 held_weeks.json")
+# 输出 JSON 供后续; 顶层带 _meta 语义标注, 防止再次被误当作"个人持仓"
+import datetime as _dt
+out = [{'sym': c, 'held': h, 'mcap_usd': snap.get(c), 'sector': sec}
+       for c, h, m, sec in rows]
+_payload = {
+    "_meta": {
+        "semantics": "回测统计: 最终回测给该币权重>0 的周数. "
+                     "【非个人持仓】个人持仓无文件记录, 以用户口述为准.",
+        "generated": _dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "panel": "data/weekly_adjclose_crypto50.csv (默认 cfg run_bt)",
+        "weeks_total": r["weeks"],
+        "coins_total": len(rows),
+        "coins_held": sum(1 for x in out if x["held"] > 0),
+        "note_held0": "held=0 的币=指数敏感/纯占位: 回测几乎不选, 删了只改相位; 与其个人是否买入无关",
+        "schema": {"_meta": "元信息(勿当数据行)", "coins": [{"sym": "币符号", "held": "回测权重>0周数", "mcap_usd": "市值", "sector": "赛道"}]},
+    },
+    "coins": out,
+}
+with open('held_weeks.json', 'w', encoding='utf-8') as f:
+    json.dump(_payload, f, ensure_ascii=False, indent=2)
+print("[*] 已写出 held_weeks.json (带 _meta 语义标注)")

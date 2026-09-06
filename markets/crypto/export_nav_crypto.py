@@ -5,9 +5,10 @@ export_nav_crypto.py — 加密 NAV 导出 docs/data/nav_crypto.json (数据层)
 产出单条序列: 10y cycle(减半相位叠加开启, tilt=0.3), 起点 2016-08-11。
 
 真值口径沿革（2026-09-04 统一，详见 TRUTH_AUTHORITY.md）:
-  - 当前权威(本脚本实跑): **7,637.77x** / MDD -69.6% / Sharpe 1.64 / CAGR 142.8%
-    （cycle_overlay 口径, 34 币池 + 期权三件套已关闭 + 三面板已修复为真值）
-  - reconcile 10y FULL(inv_vol+1.2+周期) 为 8,488x, 与本脚本 cycle_overlay 口径不同, 勿混用
+  - 当前权威(本脚本实跑): **5,662.51x** / MDD -70.4% / Sharpe 1.60 / CAGR 135.7%
+    （cycle_overlay 口径, **32 币池** + 期权三件套已关闭 + 三面板已修复为真值）
+  - 2026-09-06 池变更: 删 ICP + INJ (34 → 32 币), 旧 34 币 7,637.77x / -69.6% / Sharpe 1.64 **已作废**
+  - reconcile 10y FULL(inv_vol+1.2+周期) 为 6,030x (12y 18,622x), 与本脚本 cycle_overlay 口径不同, 勿混用
   - 28,092x 为 2026-08 前的旧口径（43 币 + 期权开启），**已废弃，勿再引用**
   - 59,361,202x 同为期权时代数字（见 crypto_options_bt.py 配置注释），已废弃
 
