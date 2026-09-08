@@ -1,257 +1,482 @@
 {
  "sh000001": {
-  "updated": "2026-08-14",
-  "rows": 5250,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 8721,
+  "source": "sina"
  },
  "000002": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5066,
+  "source": "tencent"
  },
  "000333": {
-  "updated": "2026-08-14",
-  "rows": 2774,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3091,
+  "source": "tencent"
  },
  "000568": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5161,
+  "source": "tencent"
  },
  "000651": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5063,
+  "source": "tencent"
  },
  "000661": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5171,
+  "source": "tencent"
  },
  "000858": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5141,
+  "source": "tencent"
  },
  "002415": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3901,
+  "source": "tencent"
  },
  "002475": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3852,
+  "source": "tencent"
  },
  "300760": {
-  "updated": "2026-08-14",
-  "rows": 1902,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 1919,
+  "source": "tencent"
  },
  "600030": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5172,
+  "source": "tencent"
  },
  "600036": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5197,
+  "source": "tencent"
  },
  "600048": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4862,
+  "source": "tencent"
  },
  "600276": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5227,
+  "source": "tencent"
  },
  "600519": {
-  "updated": "2026-08-14",
-  "rows": 3100,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5198,
+  "source": "tencent"
  },
  "600585": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5214,
+  "source": "tencent"
  },
  "600887": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5173,
+  "source": "tencent"
  },
  "601166": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 4737,
+  "source": "sina_hfq"
  },
  "601318": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 1000,
+  "source": "tencent"
  },
  "601398": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 2000,
+  "source": "tencent"
  },
  "603288": {
-  "updated": "2026-08-14",
-  "rows": 2745,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3062,
+  "source": "eastmoney"
  },
  "002371": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3924,
+  "source": "tencent"
  },
  "002594": {
-  "updated": "2026-08-14",
-  "rows": 2100,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3680,
+  "source": "tencent"
  },
  "300014": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4035,
+  "source": "tencent"
  },
  "300015": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4073,
+  "source": "tencent"
  },
  "300059": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3938,
+  "source": "tencent"
  },
  "300122": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3798,
+  "source": "tencent"
  },
  "300124": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3853,
+  "source": "tencent"
  },
  "300274": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3581,
+  "source": "tencent"
  },
  "300750": {
-  "updated": "2026-08-14",
-  "rows": 1986,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 2003,
+  "source": "tencent"
  },
  "300782": {
-  "updated": "2026-08-14",
-  "rows": 1739,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 1756,
+  "source": "tencent"
  },
  "601012": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3463,
+  "source": "tencent"
  },
  "601888": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 1000,
+  "source": "tencent"
  },
  "603259": {
-  "updated": "2026-08-14",
-  "rows": 2010,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 2027,
+  "source": "eastmoney"
  },
  "603501": {
-  "updated": "2026-08-14",
-  "rows": 2085,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 2102,
+  "source": "sina"
  },
  "603986": {
-  "updated": "2026-08-14",
-  "rows": 2100,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 2236,
+  "source": "sina"
  },
  "002230": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4368,
+  "source": "tencent"
  },
  "002241": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4417,
+  "source": "tencent"
  },
  "300316": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3381,
+  "source": "tencent"
  },
  "300450": {
-  "updated": "2026-08-14",
-  "rows": 2586,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 2603,
+  "source": "tencent"
  },
  "603605": {
-  "updated": "2026-08-14",
-  "rows": 2100,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 2141,
+  "source": "sina"
  },
  "002714": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 3042,
+  "source": "tencent"
  },
  "600009": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5216,
+  "source": "tencent"
  },
  "600019": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5127,
+  "source": "tencent"
  },
  "600050": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5130,
+  "source": "tencent"
  },
  "600309": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5079,
+  "source": "tencent"
  },
  "600660": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 5215,
+  "source": "tencent"
  },
  "600893": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4635,
+  "source": "tencent"
  },
  "600900": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-08",
+  "rows": 4000,
+  "source": "tencent"
  },
  "601088": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 4522,
+  "source": "sina_hfq"
  },
  "601899": {
-  "updated": "2026-08-14",
-  "rows": 2800,
-  "source": "tdx"
+  "updated": "2026-09-09",
+  "rows": 4422,
+  "source": "sina_hfq"
+ },
+ "159537": {
+  "updated": "2026-09-08",
+  "rows": 709,
+  "source": "tencent"
+ },
+ "159611": {
+  "updated": "2026-09-08",
+  "rows": 1132,
+  "source": "tencent"
+ },
+ "159732": {
+  "updated": "2026-09-08",
+  "rows": 1223,
+  "source": "tencent"
+ },
+ "159755": {
+  "updated": "2026-09-08",
+  "rows": 1265,
+  "source": "tencent"
+ },
+ "159819": {
+  "updated": "2026-09-08",
+  "rows": 1444,
+  "source": "tencent"
+ },
+ "159837": {
+  "updated": "2026-09-08",
+  "rows": 1361,
+  "source": "tencent"
+ },
+ "159865": {
+  "updated": "2026-09-08",
+  "rows": 1338,
+  "source": "tencent"
+ },
+ "159870": {
+  "updated": "2026-09-08",
+  "rows": 1341,
+  "source": "tencent"
+ },
+ "159886": {
+  "updated": "2026-09-08",
+  "rows": 1302,
+  "source": "tencent"
+ },
+ "159928": {
+  "updated": "2026-09-08",
+  "rows": 3155,
+  "source": "tencent"
+ },
+ "159992": {
+  "updated": "2026-09-08",
+  "rows": 1557,
+  "source": "tencent"
+ },
+ "159995": {
+  "updated": "2026-09-08",
+  "rows": 1600,
+  "source": "tencent"
+ },
+ "159996": {
+  "updated": "2026-09-08",
+  "rows": 1575,
+  "source": "tencent"
+ },
+ "399006": {
+  "updated": "2026-09-08",
+  "rows": 3952,
+  "source": "tencent"
+ },
+ "510880": {
+  "updated": "2026-09-08",
+  "rows": 4772,
+  "source": "tencent"
+ },
+ "512000": {
+  "updated": "2026-09-08",
+  "rows": 2423,
+  "source": "tencent"
+ },
+ "512010": {
+  "updated": "2026-09-08",
+  "rows": 3130,
+  "source": "tencent"
+ },
+ "512070": {
+  "updated": "2026-09-08",
+  "rows": 2952,
+  "source": "tencent"
+ },
+ "512170": {
+  "updated": "2026-09-08",
+  "rows": 1756,
+  "source": "tencent"
+ },
+ "512200": {
+  "updated": "2026-09-08",
+  "rows": 2173,
+  "source": "tencent"
+ },
+ "512400": {
+  "updated": "2026-09-08",
+  "rows": 2189,
+  "source": "tencent"
+ },
+ "512480": {
+  "updated": "2026-09-08",
+  "rows": 1759,
+  "source": "tencent"
+ },
+ "512660": {
+  "updated": "2026-09-08",
+  "rows": 2450,
+  "source": "tencent"
+ },
+ "512670": {
+  "updated": "2026-09-08",
+  "rows": 1723,
+  "source": "tencent"
+ },
+ "512690": {
+  "updated": "2026-09-08",
+  "rows": 1785,
+  "source": "tencent"
+ },
+ "512720": {
+  "updated": "2026-09-08",
+  "rows": 1713,
+  "source": "tencent"
+ },
+ "512800": {
+  "updated": "2026-09-08",
+  "rows": 2210,
+  "source": "tencent"
+ },
+ "512880": {
+  "updated": "2026-09-08",
+  "rows": 2450,
+  "source": "tencent"
+ },
+ "512890": {
+  "updated": "2026-09-08",
+  "rows": 1852,
+  "source": "tencent"
+ },
+ "512980": {
+  "updated": "2026-09-08",
+  "rows": 2095,
+  "source": "tencent"
+ },
+ "515030": {
+  "updated": "2026-09-08",
+  "rows": 1583,
+  "source": "tencent"
+ },
+ "515210": {
+  "updated": "2026-09-08",
+  "rows": 1585,
+  "source": "tencent"
+ },
+ "515220": {
+  "updated": "2026-09-08",
+  "rows": 1585,
+  "source": "tencent"
+ },
+ "515230": {
+  "updated": "2026-09-08",
+  "rows": 1342,
+  "source": "tencent"
+ },
+ "515790": {
+  "updated": "2026-09-08",
+  "rows": 1388,
+  "source": "tencent"
+ },
+ "515880": {
+  "updated": "2026-09-08",
+  "rows": 1698,
+  "source": "tencent"
+ },
+ "516750": {
+  "updated": "2026-09-08",
+  "rows": 1176,
+  "source": "tencent"
+ },
+ "516780": {
+  "updated": "2026-09-08",
+  "rows": 1338,
+  "source": "tencent"
+ },
+ "516850": {
+  "updated": "2026-09-08",
+  "rows": 1329,
+  "source": "tencent"
+ },
+ "518880": {
+  "updated": "2026-09-08",
+  "rows": 3190,
+  "source": "tencent"
+ },
+ "560080": {
+  "updated": "2026-09-08",
+  "rows": 948,
+  "source": "tencent"
+ },
+ "560620": {
+  "updated": "2026-09-08",
+  "rows": 469,
+  "source": "tencent"
+ },
+ "560800": {
+  "updated": "2026-09-08",
+  "rows": 1132,
+  "source": "tencent"
+ },
+ "561320": {
+  "updated": "2026-09-08",
+  "rows": 910,
+  "source": "tencent"
+ },
+ "sz399006": {
+  "updated": "2026-09-09",
+  "rows": 3953,
+  "source": "sina"
  }
 }
