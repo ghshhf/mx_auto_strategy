@@ -73,16 +73,15 @@ def align_friday(ts_ms):
 COINGECKO_IDS = {
     # 2026-09-07
     'HYPE': 'hyperliquid',  # 2026-09-01
-    'HBAR': 'hedera-hashgraph',  # 2026-08-31
+    # 2026-08-31
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'XRP': 'ripple', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOGE': 'dogecoin', 'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
     'TRX': 'tron', 'ATOM': 'cosmos', 'UNI': 'uniswap', 'LTC': 'litecoin',
-    'NEAR': 'near', 'APT': 'aptos', 'GLM': 'golem', 'AAVE': 'aave',
+    'APT': 'aptos', 'GLM': 'golem', 'AAVE': 'aave',
     'FIL': 'filecoin', 'SAND': 'the-sandbox', 'MANA': 'decentraland',
-    'DYDX': 'dydx', 'ZEC': 'zcash',
-    'JUP': 'jupiter', 'GRAM': 'the-open-network',
-    'GT': 'gate-token',
+    'ZEC': 'zcash',
+    'GRAM': 'the-open-network',
     'CFG': 'centrifuge', 'XLM': 'stellar',
     'APEX': 'apex-protocol', 'BCH': 'bitcoin-cash',
     'ETHFI': 'ether-fi', 'PENDLE': 'pendle', 'RENDER': 'render-token',
@@ -91,14 +90,13 @@ COINGECKO_IDS = {
 # CMC id 映射 (从 sync_crypto_panel._CMC_ID_MAP 迁来, 自此以本模块为唯一真相源;
 # 迁移完成后旧文件里的副本可删)。
 CMC_IDS = {
-    'HBAR': 4642,  # 2026-08-31
+    # 2026-08-31
     'AAVE': 7278, 'ADA': 2010, 'APT': 21794, 'AVAX': 5805, 'BCH': 1831, 'BTC': 1, 'XLM': 512,
-    'DOT': 6636, 'DYDX': 28324, 'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'JUP': 29210, 'LINK': 1975, 'LTC': 2,
-    'CFG': 4160, 'POL': 6690, 'NEAR': 6535,
-    'OKB': 3897, 'XRP': 52,
+    'DOT': 6636, 'ETH': 1027, 'GLM': 1455, 'FIL': 2280, 'LINK': 1975, 'LTC': 2,
+    'CFG': 4160, 'POL': 6690, 'OKB': 3897, 'XRP': 52,
     'RENDER': 5690, 'SOL': 5426,
     'GRAM': 11419, 'TRX': 1958, 'UNI': 7083, 'ZEC': 1437,
-    'GT': 4269, 'ETHFI': 29814, 'PENDLE': 9481, }
+    'ETHFI': 29814, 'PENDLE': 9481, }
 
 
 # ---------------- 抽象基类 ----------------

@@ -134,22 +134,23 @@ def defense_weights():
 
 # 进攻代币池 (47个, 按 12 赛道分类) - 赛道: [代币列表]
 THEME_COINS = {
-    "L1公链": ['SOL', 'ADA', 'AVAX', 'DOT', 'NEAR', 'APT', 'HBAR'],
+    "L1公链": ['SOL', 'ADA', 'AVAX', 'DOT', 'APT'],
     "支付链":  ['XLM', 'TRX', 'GRAM', 'LTC', 'XRP', 'BCH'],  # 2026-08-13 从L1拆分: 稳定币结算/跨境支付叙事
     "L2扩容":  ['POL'],
     "DeFi": ['UNI', 'AAVE', 'PENDLE', 'ETHFI'],
     "DeFi借贷": ['AAVE'],  # 与 DeFi 重叠, 复用
-    "DEX":     ['UNI', 'JUP', 'RAY'],  # 2026-08-31 加 RAY (Raydium, Solana AMM/DEX, 2021 上线, 熊市幸存)
-    "平台币":  ['BNB', 'OKB', 'GT'],
-    "链上永续交易所": ['DYDX', 'HYPE'],
+    "DEX": ['UNI', 'RAY'],  # 2026-08-31 加 RAY (Raydium, Solana AMM/DEX, 2021 上线, 熊市幸存)
+    "平台币": ['BNB', 'OKB'],
+    "链上永续交易所": ['HYPE'],
     "基础设施": ['LINK'],
     "AI+加密": ['RENDER', 'GLM'],
     "模块化":   [],  # 2026-09-01 删 TIA(最后成员) 后赛道置空, 保留键以对齐 PHASE_HISTORY/引擎引用
+                     # 2026-09-08 用户裁定清零(性质澄清: 不是不想买, 是**指认不出该买谁**)——叙事龙头 TIA(Celestia, 专用 DA 层, 非 L1)自 ATH $20.85 跌至 ~$0.4-0.6(-98%), 市值仅 ~$4-5 亿(排名 ~126), DA 费用战致网络真实收入趋零, 线性解锁持续稀释(2026-08-31 再解 10.7M 枚≈1.1% 供给); 且赛道边界溶解(ETH rollup/EigenDA/Avail/以太坊 blob 全自称模块化), 模块化技术的价值实际被 ETH(blobs)承接——ETH 已在防御仓。无明确可买龙头 → 无标的可选
     "DePIN":   ['RENDER'],
     "存储": ['FIL'],
     "GameFi": [],
     "隐私":    ['ZEC'],  # 2026-08-18 删DASH, 留ZEC押隐私beta
-    "RWA": [],
+    "RWA":     ['XLM'],  # 2026-09-08 联网核实: XLM/Stellar = 非美主权债 RWA 龙头——代币化非美国债 ~$490M 全网第一(RWA.xyz 2026-08-20, 自 2026-02 起每日榜首, 已超 ETH), Etherfuse Stablebonds 上线巴西 Tesouro/墨西哥 CETES/韩国 KTB, Spiko 欧元 T-Bill $1.55B; 全网 RWA 总规模 $3.996B(2026-08-29, YTD +360%, 占全网 ~9%, 四强: ETH/BNB/SOL/XLM); DTCC 计划 2027H1 接入。XLM 兼具支付链身份(多主题复用, 参照 AAVE/UNI 先例)。⚠️ RWA 规模增长未传导到币价($0.18-0.20, YTD -11%)= 机构攒筹码期价格横盘, 正是再平衡加仓阶段
 }
 
 # 去重后的进攻代币列表 (48个)
@@ -163,7 +164,10 @@ OFFENSE_COINS = sorted(_OFFENSE_SET)
 # 2026-09-01 删 FET/TIA/AR(净 -3 = 35), 下限同步下调至 33 留 2 缓冲; 引擎每轮只选 3-4 个;
 # 2026-09-03 删 ONDO(治理代币, RWA赛道置空) → 净 -1 = 32, 下限同步下调至 30 留 2 缓冲)
 # 2026-09-06 删 ICP + INJ(均无硬顶/动态增发, 用户实研判定不持仓) → 净 -2 = 30, 下限同步下调至 28 留 2 缓冲)
-assert len(OFFENSE_COINS) >= 28, f"进攻代币不足 28, 当前 {len(OFFENSE_COINS)}"
+# 2026-09-08 删 DYDX(回购不销毁, 持币人零供给收缩) + HBAR(非解锁/通胀问题; treasury-funded激励/grant约2027耗尽, 年费收入~$1.5M远不足以替代激励+质押+节点支出, 经济模型不自洽) + NEAR(无硬顶+年通胀2.5%+现货ETF候审; 实测捕获~$8.2M/yr vs 增发稀释~$79M/yr≈需10x才抵, 跨链不回流, 净通缩门槛未达)(均进攻) → 净 -3 = 27, 下限同步下调至 25 留 2 缓冲;
+# 2026-09-08 删 GT(平台币, 用户: 两个平台币够了) → 净 -1 = 26, 下限同步下调至 24 留 2 缓冲;
+# 2026-09-08 删 JUP(DEX, held=0 占位, 用户从未买入) → 净 -1 = 25, 下限同步下调至 23 留 2 缓冲)
+assert len(OFFENSE_COINS) >= 23, f"进攻代币不足 23, 当前 {len(OFFENSE_COINS)}"
 
 ALL_COINS = DEFENSE_COINS + OFFENSE_COINS
 
@@ -406,7 +410,6 @@ def detect_regime(btc_price, btc_ma, params=None):
 # ========== 代币元信息 ==========
 COIN_META = {
     'ETHFI': {'name': 'ether.fi', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},  # 2026-09-01 added via manage_token.py
-    'HBAR': {'name': 'Hedera', 'role': 'offense', 'theme': 'L1公链', 'launch': 2019},  # 2026-08-31 added via manage_token.py
     'PENDLE': {'name': 'Pendle', 'role': 'offense', 'theme': 'DeFi', 'launch': 2021},  # 2026-08-31 added via manage_token.py
     # 防御
     'BTC': {'name': 'Bitcoin', 'role': 'defense', 'theme': 'L1公链', 'launch': 2009},
@@ -417,7 +420,6 @@ COIN_META = {
     'ADA': {'name': 'Cardano', 'role': 'offense', 'theme': 'L1公链', 'launch': 2017},
     'AVAX': {'name': 'Avalanche', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'DOT': {'name': 'Polkadot', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
-    'NEAR': {'name': 'NEAR Protocol', 'role': 'offense', 'theme': 'L1公链', 'launch': 2020},
     'APT': {'name': 'Aptos', 'role': 'offense', 'theme': 'L1公链', 'launch': 2022},
     # 2026-06-15 TON(Telegram Open Network 原生代币 Toncoin) 经社区投票(81.22%)更名为 Gram(GRAM),
     # 区块链仍叫 The Open Network, 代币 1:1 无迁移/无新合约. Binance 现货对 TONUSDT->GRAMUSDT.
@@ -432,12 +434,8 @@ COIN_META = {
     'UNI': {'name': 'Uniswap', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
     'LINK': {'name': 'Chainlink', 'role': 'offense', 'theme': '基础设施', 'launch': 2017},
     'AAVE': {'name': 'Aave', 'role': 'offense', 'theme': 'DeFi', 'launch': 2020},
-    'DYDX': {'name': 'dYdX', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2021},
     'HYPE': {'name': 'Hyperliquid', 'role': 'offense', 'theme': '链上永续交易所', 'launch': 2024},
-    'JUP': {'name': 'Jupiter', 'role': 'offense', 'theme': 'DeFi', 'launch': 2024},
     'RAY': {'name': 'Raydium', 'role': 'offense', 'theme': 'DEX', 'launch': 2021},
-    'GT': {'name': 'GateToken', 'role': 'offense', 'theme': '平台币', 'launch': 2024},
-    # AI
     'GLM': {'name': 'Golem', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2016},
     'RENDER': {'name': 'Render', 'role': 'offense', 'theme': 'AI+加密', 'launch': 2020},
     # 模块化

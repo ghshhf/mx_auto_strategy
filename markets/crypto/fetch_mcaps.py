@@ -39,21 +39,20 @@ CG = {
     # 2026-09-07
     'HYPE': 'hyperliquid',  # 2026-09-01
     'ETHFI': 'ether-fi',  # 2026-09-01
-    'HBAR': 'hedera-hashgraph',  # 2026-08-31
-    'GT': 'gatechain-token',  # 2026-09-01
+    # 2026-08-31
+    # 2026-09-01
     # 2026-09-01
     'RAY': 'raydium',  # 2026-09-01
     # 2026-09-01
     'BTC': 'bitcoin', 'ETH': 'ethereum', 'OKB': 'okb', 'SOL': 'solana',
     'BNB': 'binancecoin', 'ADA': 'cardano', 'AVAX': 'avalanche-2',
     'DOT': 'polkadot', 'LINK': 'chainlink', 'POL': 'polygon-ecosystem-token',
-    'TRX': 'tron', 'UNI': 'uniswap', 'NEAR': 'near', 'APT': 'aptos',
+    'TRX': 'tron', 'UNI': 'uniswap', 'APT': 'aptos',
     'GLM': 'golem',
     'AAVE': 'aave', 'FIL': 'filecoin',
     'BCH': 'bitcoin-cash',
-    'DYDX': 'dydx',
     'ZEC': 'zcash',
-    'JUP': 'jupiter', 'GRAM': 'the-open-network',
+    'GRAM': 'the-open-network',
     'XLM': 'stellar', 'LTC': 'litecoin', 'RENDER': 'render-token', 'XRP': 'ripple',
     'PENDLE': 'pendle',
 }

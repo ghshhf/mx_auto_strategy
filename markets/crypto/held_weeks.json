@@ -1,10 +1,10 @@
 {
   "_meta": {
     "semantics": "回测统计: 最终回测给该币权重>0 的周数. 【非个人持仓】个人持仓无文件记录, 以用户口述为准.",
-    "generated": "2026-09-07 03:03",
+    "generated": "2026-09-08 18:37",
     "panel": "data/weekly_adjclose_crypto50.csv (默认 cfg run_bt)",
     "weeks_total": 557,
-    "coins_total": 32,
+    "coins_total": 27,
     "coins_held": 18,
     "note_held0": "held=0 的币=指数敏感/纯占位: 回测几乎不选, 删了只改相位; 与其个人是否买入无关",
     "schema": {
@@ -23,193 +23,163 @@
     {
       "sym": "ETH",
       "held": 549,
-      "mcap_usd": 303582508178,
+      "mcap_usd": 304024237899,
       "sector": "防御"
     },
     {
       "sym": "BTC",
       "held": 549,
-      "mcap_usd": 1600219147304,
+      "mcap_usd": 1582734198465,
       "sector": "防御"
     },
     {
       "sym": "BNB",
-      "held": 160,
-      "mcap_usd": 99547050559,
+      "held": 161,
+      "mcap_usd": 100789989419,
       "sector": "平台币"
     },
     {
       "sym": "LINK",
-      "held": 119,
-      "mcap_usd": 9204184228,
+      "held": 122,
+      "mcap_usd": 9513062707,
       "sector": "基础设施"
     },
     {
       "sym": "ADA",
-      "held": 86,
-      "mcap_usd": 8187025867,
+      "held": 95,
+      "mcap_usd": 8264795827,
       "sector": "L1公链"
     },
     {
       "sym": "SOL",
-      "held": 50,
-      "mcap_usd": 62170425253,
+      "held": 59,
+      "mcap_usd": 60813545039,
       "sector": "L1公链"
     },
     {
+      "sym": "OKB",
+      "held": 40,
+      "mcap_usd": 2435841540,
+      "sector": "平台币"
+    },
+    {
       "sym": "POL",
-      "held": 48,
-      "mcap_usd": 1037050636,
+      "held": 36,
+      "mcap_usd": 1036144364,
       "sector": "L2扩容"
     },
     {
-      "sym": "LTC",
-      "held": 32,
-      "mcap_usd": 4231382106,
-      "sector": "支付链"
-    },
-    {
       "sym": "RENDER",
-      "held": 30,
-      "mcap_usd": 785203184,
+      "held": 28,
+      "mcap_usd": 792427084,
       "sector": "AI+加密"
-    },
-    {
-      "sym": "OKB",
-      "held": 30,
-      "mcap_usd": 2373203088,
-      "sector": "平台币"
     },
     {
       "sym": "XRP",
       "held": 23,
-      "mcap_usd": 88589312138,
+      "mcap_usd": 87833340039,
       "sector": "支付链"
     },
     {
       "sym": "XLM",
-      "held": 19,
-      "mcap_usd": 6409934264,
+      "held": 21,
+      "mcap_usd": 6665517113,
       "sector": "支付链"
     },
     {
       "sym": "ZEC",
-      "held": 19,
-      "mcap_usd": 20122017874,
+      "held": 20,
+      "mcap_usd": 19539860810,
       "sector": "隐私"
     },
     {
+      "sym": "LTC",
+      "held": 16,
+      "mcap_usd": 4317655650,
+      "sector": "支付链"
+    },
+    {
       "sym": "FIL",
-      "held": 15,
-      "mcap_usd": 656631800,
+      "held": 14,
+      "mcap_usd": 709362820,
       "sector": "存储"
     },
     {
-      "sym": "HBAR",
-      "held": 11,
-      "mcap_usd": 3525191581,
-      "sector": "L1公链"
-    },
-    {
       "sym": "AVAX",
-      "held": 9,
-      "mcap_usd": 3297427330,
+      "held": 7,
+      "mcap_usd": 3522371918,
       "sector": "L1公链"
     },
     {
       "sym": "AAVE",
-      "held": 3,
-      "mcap_usd": 2056048616,
+      "held": 5,
+      "mcap_usd": 2029366515,
       "sector": "DeFi"
     },
     {
       "sym": "HYPE",
-      "held": 3,
-      "mcap_usd": 19549780820,
+      "held": 4,
+      "mcap_usd": 18753715677,
       "sector": "链上永续交易所"
     },
     {
-      "sym": "DYDX",
-      "held": 0,
-      "mcap_usd": 100000000.0,
-      "sector": "链上永续交易所"
+      "sym": "TRX",
+      "held": 4,
+      "mcap_usd": 32126339074,
+      "sector": "支付链"
     },
     {
       "sym": "GLM",
       "held": 0,
-      "mcap_usd": 111594142,
+      "mcap_usd": 112931089,
       "sector": "AI+加密"
-    },
-    {
-      "sym": "PENDLE",
-      "held": 0,
-      "mcap_usd": 353418214,
-      "sector": "DeFi"
     },
     {
       "sym": "RAY",
       "held": 0,
-      "mcap_usd": 377309862,
+      "mcap_usd": 296599497,
       "sector": "DEX"
+    },
+    {
+      "sym": "PENDLE",
+      "held": 0,
+      "mcap_usd": 386170079,
+      "sector": "DeFi"
     },
     {
       "sym": "APT",
       "held": 0,
-      "mcap_usd": 531368976,
+      "mcap_usd": 567052499,
       "sector": "L1公链"
     },
     {
       "sym": "ETHFI",
       "held": 0,
-      "mcap_usd": 547037729,
+      "mcap_usd": 572624880,
       "sector": "DeFi"
-    },
-    {
-      "sym": "JUP",
-      "held": 0,
-      "mcap_usd": 620000000.0,
-      "sector": "DEX"
-    },
-    {
-      "sym": "GT",
-      "held": 0,
-      "mcap_usd": 969739243,
-      "sector": "平台币"
     },
     {
       "sym": "DOT",
       "held": 0,
-      "mcap_usd": 1641987434,
-      "sector": "L1公链"
-    },
-    {
-      "sym": "NEAR",
-      "held": 0,
-      "mcap_usd": 3130031012,
+      "mcap_usd": 1850525452,
       "sector": "L1公链"
     },
     {
       "sym": "GRAM",
       "held": 0,
-      "mcap_usd": 3954226809,
+      "mcap_usd": 3884662541,
       "sector": "支付链"
     },
     {
       "sym": "UNI",
       "held": 0,
-      "mcap_usd": 4487673055,
+      "mcap_usd": 4384828525,
       "sector": "DeFi"
     },
     {
       "sym": "BCH",
       "held": 0,
-      "mcap_usd": 5148906968,
-      "sector": "支付链"
-    },
-    {
-      "sym": "TRX",
-      "held": 0,
-      "mcap_usd": 31826300752,
+      "mcap_usd": 5181110261,
       "sector": "支付链"
     }
   ]
