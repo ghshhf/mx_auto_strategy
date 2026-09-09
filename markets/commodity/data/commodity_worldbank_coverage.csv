@@ -1,0 +1,72 @@
+﻿code,cn,en,unit,group,n,start,end,first,last
+BANANA_EUROPE,"Banana, Europe","Banana, Europe",$/kg,agri,348,1997-01-01,2025-12-01,0.9359,1.10484021482
+BANANA_US,"Banana, US","Banana, US",$/kg,agri,792,1960-01-01,2025-12-01,0.14308,1.1574255
+BARLEY,Barley,Barley,$/mt,agri,728,1960-01-01,2020-08-01,20.36480039462,80.37677083333
+BEEF,Beef **,Beef **,$/kg,agri,792,1960-01-01,2025-12-01,0.7055,7.3785424
+CHICKEN,Chicken **,Chicken **,$/kg,agri,792,1960-01-01,2025-12-01,0.29736879194,1.780704
+COCOA,Cocoa,Cocoa,$/kg,agri,792,1960-01-01,2025-12-01,0.634,5.78159
+COCONUT_OIL,Coconut oil,Coconut oil,$/mt,agri,792,1960-01-01,2025-12-01,390.0,2323.0
+COFFEE_ARABICA,"Coffee, Arabica","Coffee, Arabica",$/kg,agri,792,1960-01-01,2025-12-01,0.9409,8.404672826
+COFFEE_ROBUSTA,"Coffee, Robusta","Coffee, Robusta",$/kg,agri,792,1960-01-01,2025-12-01,0.6968643,4.201344334
+COTTON_A_INDEX,"Cotton, A Index","Cotton, A Index",$/kg,agri,792,1960-01-01,2025-12-01,0.6486,1.63252111
+FISH_MEAL,Fish meal,Fish meal,$/mt,agri,564,1979-01-01,2025-12-01,381.0,1823.55974985787
+GROUNDNUTS,Groundnuts,Groundnuts,$/mt,agri,552,1980-01-01,2025-12-01,869.0,1200.0
+GROUNDNUT_OIL,Groundnut oil **,Groundnut oil **,$/mt,agri,792,1960-01-01,2025-12-01,334.0,1621.0
+LAMB,Lamb **,Lamb **,$/kg,agri,660,1971-01-01,2025-12-01,0.8026,6.3691152
+MAIZE,Maize,Maize,$/mt,agri,792,1960-01-01,2025-12-01,45.0,205.69623777778
+ORANGE,Orange,Orange,$/kg,agri,792,1960-01-01,2025-12-01,0.1151,0.9246449032
+PALM_KERNEL_OI,Palm kernel oil,Palm kernel oil,$/mt,agri,360,1996-01-01,2025-12-01,686.0,2113.06214259769
+PALM_OIL,Palm oil,Palm oil,$/mt,agri,792,1960-01-01,2025-12-01,233.0,980.51
+RAPESEED_OIL,Rapeseed oil,Rapeseed oil,$/mt,agri,287,2002-02-01,2025-12-01,423.45,1258.91261669412
+RICE_THAI_25,"Rice, Thai 25% ","Rice, Thai 25% ",$/mt,agri,472,1986-01-01,2025-12-01,83.26352,414.0
+RICE_THAI_5,"Rice, Thai 5% ","Rice, Thai 5% ",$/mt,agri,792,1960-01-01,2025-12-01,104.45,424.0
+RICE_THAI_A_1,"Rice, Thai A.1","Rice, Thai A.1",$/mt,agri,480,1986-01-01,2025-12-01,98.0,389.44
+RICE_VIET_NAME,"Rice, Viet Namese 5%","Rice, Viet Namese 5%",$/mt,agri,254,2003-12-01,2025-12-01,197.0,351.91
+SHRIMPS_MEXICA,"Shrimps, Mexican","Shrimps, Mexican",$/kg,agri,766,1960-01-01,2023-10-01,1.433003,8.598018
+SORGHUM,Sorghum,Sorghum,$/mt,agri,728,1960-01-01,2020-08-01,39.0,189.487089
+SOYBEANS,Soybeans,Soybeans,$/mt,agri,792,1960-01-01,2025-12-01,94.0,440.0
+SOYBEAN_MEAL,Soybean meal,Soybean meal,$/mt,agri,792,1960-01-01,2025-12-01,91.9,398.75
+SOYBEAN_OIL,Soybean oil,Soybean oil,$/mt,agri,792,1960-01-01,2025-12-01,204.0,1119.43
+SUGAR_EU,"Sugar, EU","Sugar, EU",$/kg,agri,792,1960-01-01,2025-12-01,0.12235641,0.382499728
+SUGAR_US,"Sugar, US","Sugar, US",$/kg,agri,792,1960-01-01,2025-12-01,0.11684486,0.731272454
+SUGAR_WORLD,"Sugar, world","Sugar, world",$/kg,agri,792,1960-01-01,2025-12-01,0.0666,0.323197292
+SUNFLOWER_OIL,Sunflower oil,Sunflower oil,$/mt,agri,282,2002-02-01,2025-12-01,578.0,1343.33
+TEA_AVG_3_AUCT,"Tea, avg 3 auctions","Tea, avg 3 auctions",$/kg,agri,792,1960-01-01,2025-12-01,1.0297,2.8760089781
+TEA_COLOMBO,"Tea, Colombo","Tea, Colombo",$/kg,agri,792,1960-01-01,2025-12-01,0.9303009,3.95011011076
+TEA_KOLKATA,"Tea, Kolkata","Tea, Kolkata",$/kg,agri,792,1960-01-01,2025-12-01,1.121401,2.42125015688
+TEA_MOMBASA,"Tea, Mombasa","Tea, Mombasa",$/kg,agri,792,1960-01-01,2025-12-01,1.0374,2.25666666667
+TOBACCO_US_IMP,"Tobacco, US import u.v.","Tobacco, US import u.v.",$/mt,agri,790,1960-01-01,2025-10-01,1736.87,6047.14036608
+UREA,Urea ,Urea ,$/mt,agri,792,1960-01-01,2025-12-01,42.25,392.5
+WHEAT_US_HRW,"Wheat, US HRW","Wheat, US HRW",$/mt,agri,792,1960-01-01,2025-12-01,59.89,242.8
+WHEAT_US_SRW,"Wheat, US SRW","Wheat, US SRW",$/mt,agri,557,1979-01-01,2025-12-01,140.36,223.173702846
+COAL_AUS,煤炭_澳洲,"Coal, Australian",$/mt,energy,672,1970-01-01,2025-12-01,7.8,107.67
+COAL_ZAF,煤炭_南非,"Coal, South African **",$/mt,energy,504,1984-01-01,2025-12-01,29.34,90.88
+LNG_JP,液化天然气_日本,"Liquefied natural gas, Japan",$/mmbtu,energy,588,1977-01-01,2025-12-01,2.77116287282,11.06069456869
+NG_EU,天然气_欧洲,"Natural gas, Europe",$/mmbtu,energy,792,1960-01-01,2025-12-01,0.40477399635,9.48260496782
+NG_INDEX,天然气指数,Natural gas index,2010=100,energy,588,1977-01-01,2025-12-01,18.53083076396,104.19993325038
+NG_US,天然气_美国,"Natural gas, US",$/mmbtu,energy,792,1960-01-01,2025-12-01,0.14,4.2514
+OIL_AVG,原油_均价,"Crude oil, average",$/bbl,energy,792,1960-01-01,2025-12-01,1.63000011444,60.88
+OIL_BRENT,原油_布伦特,"Crude oil, Brent",$/bbl,energy,792,1960-01-01,2025-12-01,1.63000011444,62.72
+OIL_DUBAI,原油_迪拜,"Crude oil, Dubai",$/bbl,energy,792,1960-01-01,2025-12-01,1.63000011444,61.98
+OIL_WTI,原油_WTI,"Crude oil, WTI",$/bbl,energy,528,1982-01-01,2025-12-01,35.3,57.94
+DAP,磷酸二铵,DAP,$/mt,fertilizer,708,1967-01-01,2025-12-01,68.5,627.5
+KCL,氯化钾,Potassium chloride **,$/mt,fertilizer,792,1960-01-01,2025-12-01,28.5,358.33
+PHOS_ROCK,磷矿石,Phosphate rock,$/mt,fertilizer,791,1960-01-01,2025-12-01,13.0,152.5
+TSP,过磷酸钙,TSP,$/mt,fertilizer,792,1960-01-01,2025-12-01,53.0,538.5
+AL,铝,Aluminum,$/mt,industrial,792,1960-01-01,2025-12-01,511.47183227539,2875.53
+CU,铜,Copper,$/mt,industrial,792,1960-01-01,2025-12-01,715.4,11785.25
+FE_ORE,铁矿石,"Iron ore, cfr spot",$/dmtu,industrial,792,1960-01-01,2025-12-01,11.42,104.59
+NI,镍,Nickel,$/mt,industrial,792,1960-01-01,2025-12-01,1631.0,14883.99
+PB,铅,Lead,$/mt,industrial,792,1960-01-01,2025-12-01,206.1,1939.79
+SN,锡,Tin,$/mt,industrial,792,1960-01-01,2025-12-01,2180.4,41219.52
+ZN,锌,Zinc,$/mt,industrial,792,1960-01-01,2025-12-01,260.8,3167.87
+XAG,白银,Silver,$/troy oz,precious,792,1960-01-01,2025-12-01,0.9137,62.342
+XAU,黄金,Gold,$/troy oz,precious,792,1960-01-01,2025-12-01,35.27,4309.23
+XPT,铂金,Platinum,$/troy oz,precious,792,1960-01-01,2025-12-01,83.5,1893.43
+LOG_CMR,原木_喀麦隆,"Logs, Cameroon",$/cubic meter,timber,672,1970-01-01,2025-12-01,42.99,409.955
+LOG_MYS,原木_马来西亚,"Logs, Malaysian",$/cubic meter,timber,792,1960-01-01,2025-12-01,31.94,190.94467336871
+PLYWOOD,胶合板,Plywood,cents/sheet,timber,564,1979-01-01,2025-12-01,270.0,350.23546040906
+RUB_RSS3,橡胶_RSS3,"Rubber, RSS3",$/kg,timber,792,1960-01-01,2025-12-01,0.8223,2.0619
+RUB_TSR20,橡胶_TSR20,"Rubber, TSR20 **",$/kg,timber,324,1999-01-01,2025-12-01,0.5979,1.7401
+SAWN_CMR,锯材_喀麦隆,"Sawnwood, Cameroon",$/cubic meter,timber,420,1970-01-01,2025-12-01,175.0,641.48955191193
+SAWN_MYS,锯材_马来西亚,"Sawnwood, Malaysian",$/cubic meter,timber,792,1960-01-01,2025-12-01,149.17497836621,729.646

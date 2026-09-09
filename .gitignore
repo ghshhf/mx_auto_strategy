@@ -17,6 +17,8 @@ __pycache__/
 /backtest_*_report.md
 
 # 环境变量/密钥（绝不提交）
+# API key 本地文件（数据源注册后存放，见 markets/commodity/DATA_SOURCES_REGISTER.md）
+keys.local.json
 .env
 *.env
 .env.*

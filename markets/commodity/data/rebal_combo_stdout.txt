@@ -1,0 +1,29 @@
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\check_rebal_combo.py:16: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  stock = pd.concat([load(f"data/{x}") for x in
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\check_rebal_combo.py:23: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  comm = pd.concat([wb, gas, eia], axis=1)
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\check_rebal_combo.py:26: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  allp = pd.concat([stock, comm, ga], axis=1).loc[:, ~pd.concat([stock,comm,ga],axis=1).columns.duplicated()]
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\check_rebal_combo.py:26: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  allp = pd.concat([stock, comm, ga], axis=1).loc[:, ~pd.concat([stock,comm,ga],axis=1).columns.duplicated()]
+跨资产月线宇宙: 1110 列 x 503 月
+清洗后: 股票 465 / 金属 11 / 油 4 / 气 4 / 债 5 / 汇 5
+
+==============================================================================
+A) 三组对照 (随机4, 取平均数)
+==============================================================================
+  纯股票                            有效 15000 | 持有中位   4.45% | 再平衡中位   4.07% | 超额中位   -0.33pp | 跑赢 34.9% | 负占 65.1%
+  纯商品+气体                         有效 14451 | 持有中位   0.29% | 再平衡中位   1.32% | 超额中位   +0.91pp | 跑赢 95.3% | 负占 4.7%
+  混编(股+商品随机4)                    有效 14712 | 持有中位   2.44% | 再平衡中位   2.56% | 超额中位   +0.12pp | 跑赢 55.0% | 负占 45.0%
+
+==============================================================================
+B) 用户结构: 2股票 + 1商品 + 1油/替补
+==============================================================================
+  2股+1金属+1油                      有效 15000 | 持有中位   3.31% | 再平衡中位   3.16% | 超额中位   -0.09pp | 跑赢 44.1% | 负占 55.9%
+  2股+1金属+1气                      有效 15000 | 持有中位   3.30% | 再平衡中位   3.32% | 超额中位   +0.07pp | 跑赢 54.1% | 负占 45.9%
+  2股+1金属+1债                      有效 15000 | 持有中位   3.21% | 再平衡中位   2.81% | 超额中位   -0.36pp | 跑赢 28.8% | 负占 71.2%
+  2股+1金属+1汇                      有效 15000 | 持有中位   3.23% | 再平衡中位   2.82% | 超额中位   -0.37pp | 跑赢 28.6% | 负占 71.4%
+  2股+1油+1气                       有效 15000 | 持有中位   2.81% | 再平衡中位   2.96% | 超额中位   +0.15pp | 跑赢 57.3% | 负占 42.7%
+  1股+1金属+1油+1气                   有效 15000 | 持有中位   2.39% | 再平衡中位   2.67% | 超额中位   +0.29pp | 跑赢 65.0% | 负占 35.0%
+
+已存 data/rebal_combo_result.csv

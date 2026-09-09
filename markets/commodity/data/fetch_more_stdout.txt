@@ -1,0 +1,140 @@
+现有宇宙 421 列 | 待抓 115 个 (已存在 53 个跳过)
+  [1/115] OK   ACMR     463 周  2017-10-30 ~ 2026-09-07
+  [2/115] OK   UCTT    1173 周  2004-03-22 ~ 2026-09-07
+  [3/115] OK   ICHR     510 周  2016-12-05 ~ 2026-09-07
+  [4/115] OK   CRUS    1945 周  1989-06-05 ~ 2026-09-07
+  [5/115] OK   DIOD    2235 周  1973-02-19 ~ 2026-09-07
+  [6/115] OK   RMBS    1531 周  1997-05-12 ~ 2026-09-07
+  [7/115] OK   ALGM     307 周  2020-10-26 ~ 2026-09-07
+  [8/115] OK   SITM     356 周  2019-11-18 ~ 2026-09-07
+  [9/115] OK   LSCC    1923 周  1989-11-06 ~ 2026-09-07
+  [10/115] OK   FORM    1214 周  2003-06-09 ~ 2026-09-07
+  [11/115] OK   COHU    2099 周  1980-03-17 ~ 2026-09-07
+  [12/115] OK   MRAM     519 周  2016-10-03 ~ 2026-09-07
+  [13/115] OK   MRNA     406 周  2018-12-03 ~ 2026-09-07
+  [14/115] OK   INCY    1715 周  1993-11-01 ~ 2026-09-07
+  [15/115] OK   BMRN    1416 周  1999-07-26 ~ 2026-09-07
+  [16/115] OK   UTHR    1422 周  1999-06-14 ~ 2026-09-07
+  FAIL EXAS: HTTPError HTTP Error 404: Not Found
+  [17/115] MISS EXAS
+  [18/115] OK   NBIX    1582 周  1996-05-20 ~ 2026-09-07
+  [19/115] OK   JAZZ    1007 周  2007-05-28 ~ 2026-09-07
+  [20/115] OK   IONS    1844 周  1991-05-13 ~ 2026-09-07
+  [21/115] OK   SRPT    1528 周  1997-06-02 ~ 2026-09-07
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\fetch_more_leaders.py:83: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  new = pd.concat(added, axis=1)
+  --- 阶段存盘: 宇宙 441 列 ---
+  [22/115] OK   RARE     659 周  2014-01-27 ~ 2026-09-07
+  FAIL FOLD: HTTPError HTTP Error 404: Not Found
+  [23/115] MISS FOLD
+  [24/115] OK   CRSP     517 周  2016-10-17 ~ 2026-09-07
+  [25/115] OK   NTLA     541 周  2016-05-02 ~ 2026-09-07
+  [26/115] OK   BEAM     345 周  2020-02-03 ~ 2026-09-07
+  [27/115] OK   EDIT     554 周  2016-02-01 ~ 2026-09-07
+  [28/115] OK   VIR      362 周  2019-10-07 ~ 2026-09-07
+  [29/115] OK   ARWR    1709 周  1993-12-13 ~ 2026-09-07
+  [30/115] OK   PCVX     327 周  2020-06-08 ~ 2026-09-07
+  [31/115] OK   KRYS     469 周  2017-09-18 ~ 2026-09-07
+  [32/115] OK   SEDG     599 周  2015-03-23 ~ 2026-09-07
+  [33/115] OK   RUN      580 周  2015-08-03 ~ 2026-09-07
+  [34/115] OK   CHPT     365 周  2019-09-16 ~ 2026-09-07
+  [35/115] OK   QS       317 周  2020-08-17 ~ 2026-09-07
+  [36/115] OK   SLDP     278 周  2021-05-17 ~ 2026-09-07
+  [37/115] OK   MVST     391 周  2019-03-18 ~ 2026-09-07
+  [38/115] OK   NXT      188 周  2023-02-06 ~ 2026-09-07
+  [39/115] OK   FLNC     255 周  2021-10-25 ~ 2026-09-07
+  [40/115] OK   STEM     310 周  2020-10-05 ~ 2026-09-07
+  [41/115] OK   WPM     1133 周  2004-12-27 ~ 2026-09-07
+  [42/115] OK   AU      1467 周  1998-08-03 ~ 2026-09-07
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\fetch_more_leaders.py:83: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  new = pd.concat(added, axis=1)
+  --- 阶段存盘: 宇宙 461 列 ---
+  [43/115] OK   KGC     2213 周  1981-03-16 ~ 2026-09-07
+  [44/115] OK   AG      1181 周  2001-07-30 ~ 2026-09-07
+  [45/115] OK   EXK     1064 周  2006-04-24 ~ 2026-09-07
+  [46/115] OK   IAG     1209 周  2003-07-14 ~ 2026-09-07
+  FAIL SAND: HTTPError HTTP Error 404: Not Found
+  [47/115] MISS SAND
+  [48/115] OK   FSM     1027 周  2007-01-08 ~ 2026-09-07
+  [49/115] OK   SVM     1125 周  2003-01-13 ~ 2026-09-07
+  [50/115] OK   LAC      939 周  2008-09-15 ~ 2026-09-07
+  [51/115] OK   UUUU    1017 周  2007-03-19 ~ 2026-09-07
+  [52/115] OK   DNN     1127 周  2005-02-07 ~ 2026-09-07
+  [53/115] OK   LEU     1469 周  1998-07-20 ~ 2026-09-07
+  FAIL OII: IncompleteRead IncompleteRead(66517 bytes read)
+  [54/115] MISS OII
+  [55/115] OK   NOV     1559 周  1996-10-28 ~ 2026-09-07
+  FAIL HP: IncompleteRead IncompleteRead(97837 bytes read)
+  [56/115] MISS HP
+  [57/115] OK   WFRD     297 周  2021-01-04 ~ 2026-09-07
+  [58/115] OK   LBRT     453 周  2018-01-08 ~ 2026-09-07
+  [59/115] OK   PUMP     496 周  2017-03-13 ~ 2026-09-07
+  FAIL CHX: HTTPError HTTP Error 404: Not Found
+  [60/115] MISS CHX
+  [61/115] OK   VAL      280 周  2021-05-03 ~ 2026-09-07
+  [62/115] OK   RIG     1738 周  1993-05-24 ~ 2026-09-07
+  [63/115] OK   NE       275 周  2021-06-07 ~ 2026-09-07
+  FAIL DO: HTTPError HTTP Error 404: Not Found
+  [64/115] MISS DO
+  [65/115] OK   PTEN    1715 周  1993-11-01 ~ 2026-09-07
+  [66/115] OK   NCLH     713 周  2013-01-14 ~ 2026-09-07
+  [67/115] OK   UAL     1075 周  2006-02-06 ~ 2026-09-07
+  --- 阶段存盘: 宇宙 481 列 ---
+  [68/115] OK   DAL     1012 周  2007-04-23 ~ 2026-09-07
+  [69/115] OK   AAL     1094 周  2005-09-26 ~ 2026-09-07
+  [70/115] OK   LUV     2437 周  1979-12-31 ~ 2026-09-07
+  [71/115] OK   ALK     2426 周  1980-03-17 ~ 2026-09-07
+  [72/115] OK   JBLU    1275 周  2002-04-08 ~ 2026-09-07
+  FAIL SNCY: HTTPError HTTP Error 404: Not Found
+  [73/115] MISS SNCY
+  [74/115] OK   ULCC     285 周  2021-03-29 ~ 2026-09-07
+  [75/115] OK   CZR      625 周  2014-09-22 ~ 2026-09-07
+  [76/115] OK   PENN    1686 周  1994-05-23 ~ 2026-09-07
+  [77/115] OK   DKNG     373 周  2019-07-22 ~ 2026-09-07
+  [78/115] OK   MCRI    1728 周  1993-08-02 ~ 2026-09-07
+  [79/115] OK   BYD     1718 周  1993-10-11 ~ 2026-09-07
+  [80/115] OK   BITF     367 周  2019-08-12 ~ 2026-08-31
+  [81/115] OK   HUT      445 周  2018-03-05 ~ 2026-09-07
+  [82/115] OK   BTBT     443 周  2018-03-19 ~ 2026-09-07
+  [83/115] OK   YMM      273 周  2021-06-21 ~ 2026-09-07
+  [84/115] OK   LEGN     328 周  2020-06-01 ~ 2026-09-07
+  [85/115] OK   GDS      515 周  2016-10-31 ~ 2026-09-07
+  [86/115] OK   VNET     804 周  2011-04-18 ~ 2026-09-07
+  [87/115] OK   DQ       832 周  2010-10-04 ~ 2026-09-07
+  [88/115] OK   JKS      853 周  2010-05-10 ~ 2026-09-07
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\fetch_more_leaders.py:83: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  new = pd.concat(added, axis=1)
+  --- 阶段存盘: 宇宙 501 列 ---
+  [89/115] OK   CSIQ    1036 周  2006-11-06 ~ 2026-09-07
+  [90/115] OK   NIU      413 周  2018-10-15 ~ 2026-09-07
+  [91/115] OK   QFIN     405 周  2018-12-10 ~ 2026-09-07
+  [92/115] OK   VWO     1123 周  2005-03-07 ~ 2026-09-07
+  [93/115] OK   EWP     1587 周  1996-03-18 ~ 2026-09-07
+  [94/115] OK   EWI     1591 周  1996-03-18 ~ 2026-09-07
+  [95/115] OK   EWL     1591 周  1996-03-18 ~ 2026-09-07
+  [96/115] OK   EWN     1591 周  1996-03-18 ~ 2026-09-07
+  [97/115] OK   EWQ     1591 周  1996-03-18 ~ 2026-09-07
+  [98/115] OK   EWK     1591 周  1996-03-18 ~ 2026-09-07
+  [99/115] OK   EZA      976 周  2007-12-31 ~ 2026-09-07
+  [100/115] OK   TUR      965 周  2008-03-17 ~ 2026-09-07
+  [101/115] OK   THD      964 周  2008-03-24 ~ 2026-09-07
+  [102/115] OK   EPU      901 周  2009-06-08 ~ 2026-09-07
+  [103/115] OK   ECH      982 周  2007-11-19 ~ 2026-09-07
+  [104/115] OK   ARGT     811 周  2011-02-28 ~ 2026-09-07
+  [105/115] OK   CQQQ     875 周  2009-12-07 ~ 2026-09-07
+  [106/115] OK   ASHR     671 周  2013-11-04 ~ 2026-09-07
+  [107/115] OK   GXC     1017 周  2007-03-19 ~ 2026-09-07
+  [108/115] OK   EWW     1591 周  1996-03-18 ~ 2026-09-07
+E:\xmanbian\mx_auto_strategy_repo\markets\commodity\fetch_more_leaders.py:83: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+  new = pd.concat(added, axis=1)
+  --- 阶段存盘: 宇宙 521 列 ---
+  [109/115] OK   EWS     1591 周  1996-03-18 ~ 2026-09-07
+  [110/115] OK   EWM     1591 周  1996-03-18 ~ 2026-09-07
+  [111/115] OK   EPHE     834 周  2010-09-20 ~ 2026-09-07
+  [112/115] OK   EIDO     855 周  2010-04-26 ~ 2026-09-07
+  [113/115] OK   ENZL     838 周  2010-08-23 ~ 2026-09-07
+  [114/115] OK   EIS      965 周  2008-03-17 ~ 2026-09-07
+  FAIL ERUS: HTTPError HTTP Error 404: Not Found
+  [115/115] MISS ERUS
+
+完成. 宇宙列数 → 527
