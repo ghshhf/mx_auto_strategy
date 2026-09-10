@@ -16,9 +16,7 @@ us_rebalance.py - 美股子系统周频再平衡引擎 (修正版, v6.14b)
   python us_rebalance.py --demo                     # 合成数据自测(无真实面板时验证逻辑可跑)
 """
 import os
-import sys
 import csv
-import math
 import argparse
 from datetime import datetime, timedelta
 

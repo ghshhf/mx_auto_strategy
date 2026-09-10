@@ -82,21 +82,21 @@ print(f"\n有效组合 {len(res)} 个")
 print(f"  实际超额: 中位 {res.excess.median():.2f}pp  均值 {res.excess.mean():.2f}pp")
 print(f"  离散度γ*: 中位 {res.gamma.median():.2f}%  均值 {res.gamma.mean():.2f}%")
 
-print(f"\n--- 谁更能解释超额? (相关系数) ---")
+print("\n--- 谁更能解释超额? (相关系数) ---")
 print(f"  离散度 γ*   vs 实际超额 : r = {res.gamma.corr(res.excess):.3f}")
 print(f"  平均波动率   vs 实际超额 : r = {res.avg_vol.corr(res.excess):.3f}")
 print(f"  平均相关性   vs 实际超额 : r = {res.avg_corr.corr(res.excess):.3f}")
 
-print(f"\n--- 按离散度 γ* 分档 → 实际能挣多少 ---")
+print("\n--- 按离散度 γ* 分档 → 实际能挣多少 ---")
 res['tier'] = pd.qcut(res.gamma, 4, labels=["Q1低离散","Q2","Q3","Q4高离散"])
 print(res.groupby('tier').agg(
     组合数=("excess","size"), γstar均值=("gamma","mean"), 平均波动=("avg_vol","mean"),
     平均相关=("avg_corr","mean"), 实际超额均值=("excess","mean"),
     再平衡CAGR=("rebal","mean"), 持有CAGR=("hold","mean")).round(2).to_string())
 
-print(f"\n--- 离散度最高 Top8 组合 (用户逻辑: 波动率差最大) ---")
+print("\n--- 离散度最高 Top8 组合 (用户逻辑: 波动率差最大) ---")
 print(res.nlargest(8, "gamma")[["combo","gamma","avg_corr","excess","rebal","hold"]].round(2).to_string(index=False))
-print(f"\n--- 实际超额最高 Top8 组合 ---")
+print("\n--- 实际超额最高 Top8 组合 ---")
 print(res.nlargest(8, "excess")[["combo","gamma","avg_corr","excess","rebal","hold"]].round(2).to_string(index=False))
 res.to_csv("data/dispersion_result.csv", index=False, encoding="utf-8-sig")
 print("\n已存 data/dispersion_result.csv")

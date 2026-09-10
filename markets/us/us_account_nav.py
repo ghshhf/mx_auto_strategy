@@ -3,7 +3,6 @@
 因为池内 2016-2026 单边同涨, 再平衡每月卖飞赢家。行业/跨资产池才有正超额。
 """
 import os
-import sys
 import importlib.util
 import random
 
@@ -91,7 +90,7 @@ def main():
 
     # 参照基准: 死拿等权 / SPY / QQQ(同窗口拉 us30)
     hold = sum(Pnorm_end.values()) / N
-    line(f"基准 · 50股死拿等权(买完不动)", [hold])
+    line("基准 · 50股死拿等权(买完不动)", [hold])
     spy = px_bench("SPY")
     if spy is not None:
         line("基准 · SPY(同期)", [spy])

@@ -197,7 +197,7 @@ def scan_anomalies(series, thr=0.5):
                 if chg > thr:
                     bad += 1
     if bad == 0:
-        print(f"[verify] 伪迹自检通过: 0 处单周异常跳变 (>50%), 数据可信 ✅")
+        print("[verify] 伪迹自检通过: 0 处单周异常跳变 (>50%), 数据可信 ✅")
     else:
         print(f"[verify] ⚠ 发现 {bad} 处单周异常跳变 (>50%), 数据可能含伪迹, 请核查源站返回。")
 

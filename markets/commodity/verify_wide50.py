@@ -3,7 +3,7 @@
 固化验证: ~50 跨行业龙头宽池 (vol>=45, N=50, 最小相关贪心)
 目标: 确认样本外(2016-2025)净 CAGR 稳定 >=20%, 且非单一贪心巧合。
 """
-import numpy as np, pandas as pd, sys
+import numpy as np, pandas as pd
 import core20 as E
 
 rng = np.random.default_rng(2026)
@@ -87,7 +87,7 @@ iu = np.triu_indices(len(sel), 1)
 print(f"池内平均相关性: {R[iu].mean():.3f}")
 
 # 随机化贪心 x40 稳健性 (每个池同时算全期 + 验证期)
-print(f"\n=== 随机化贪心 x40 (topk=3) 稳健性 ===")
+print("\n=== 随机化贪心 x40 (topk=3) 稳健性 ===")
 vs, vval = [], []
 for _ in range(40):
     s = greedy(pool, N, topk=3, rnd=rng)
@@ -107,7 +107,7 @@ print(f"夏普中位 {np.median(vsh):.2f} | 回撤中位 {np.median(vmd):.1f}%")
 print(f">=20% 占比 {(vn>=20).mean()*100:.1f}% | >=25% 占比 {(vn>=25).mean()*100:.1f}%")
 
 # 逐年 (验证期)
-print(f"\n=== 验证期逐年 (2016-2025) ===")
+print("\n=== 验证期逐年 (2016-2025) ===")
 px = E.allp.loc[E.VA0:E.VA1, sel].dropna(how="any")
 r = px.pct_change().dropna(how="any")
 years = sorted(set(r.index.year))

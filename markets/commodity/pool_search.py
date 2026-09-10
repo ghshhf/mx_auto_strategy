@@ -18,7 +18,6 @@
   python pool_search.py --search --k 4 --top 25 --window 2010
 """
 import argparse
-import itertools
 import os
 import warnings
 

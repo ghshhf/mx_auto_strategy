@@ -13,22 +13,18 @@ us_selection_opt2.py - 美股选币优化第二轮: 逆波动率加权 + 组合�
 2. 测试 equal vs score vs inv_vol 对比
 3. 最优组合OOS验证 (修复SPY bug)
 """
-import os, sys, time, json, math, statistics
-import pandas as pd
-import numpy as np
+import os, sys, time, statistics
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 
 from us_backtest_ai import (
-    load_panel, load_us_cfg, run_optimized,
-    select_optimized, eligible_universe, regime_of, death_cross_count,
-    pick_defense_lowvol, _ma, WARMUP, EXCLUDE, PANEL, series_proxy,
-    ai_mult_deterministic, sector_short_index, check_take_profit, check_stop_loss,
-    check_extreme_overvaluation, realized_vol, bs_call, bs_put
+    load_panel, load_us_cfg, select_optimized, eligible_universe, regime_of, death_cross_count,
+    pick_defense_lowvol, WARMUP, PANEL, series_proxy,
+    sector_short_index, check_take_profit, check_stop_loss,
+    check_extreme_overvaluation
 )
-import us_backtest_ai as usb
 
 # 加载面板
 dates, series = load_panel(PANEL)

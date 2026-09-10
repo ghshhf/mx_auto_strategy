@@ -4,13 +4,17 @@ export_nav_crypto.py — 加密 NAV 导出 docs/data/nav_crypto.json (数据层)
 
 产出单条序列: 10y cycle(减半相位叠加开启, tilt=0.3), 起点 2016-08-11。
 
-真值口径沿革（2026-09-04 统一，详见 TRUTH_AUTHORITY.md）:
-  - 当前权威(本脚本实跑): **5,662.51x** / MDD -70.4% / Sharpe 1.60 / CAGR 135.7%
-    （cycle_overlay 口径, **32 币池** + 期权三件套已关闭 + 三面板已修复为真值）
+真值口径沿革（详见 TRUTH_AUTHORITY.md）:
+  - 当前权威(本脚本实跑): **5,614.96x** / MDD -70.4% / Sharpe 1.59 / CAGR 135.2%
+    （cycle_overlay 口径, **27 币池** + 期权三件套已关闭 + 三面板已修复为真值, 2026-09-10 重跑）
+  - 2026-09-08 池变更: 32 → 27 币 (最终池, 见 _screen_current_pool.json 的 panel=v3(27))
   - 2026-09-06 池变更: 删 ICP + INJ (34 → 32 币), 旧 34 币 7,637.77x / -69.6% / Sharpe 1.64 **已作废**
-  - reconcile 10y FULL(inv_vol+1.2+周期) 为 6,030x (12y 18,622x), 与本脚本 cycle_overlay 口径不同, 勿混用
+  - reconcile 10y FULL(inv_vol+1.2+周期) 27 币下为 6,043x, 与本脚本 cycle_overlay 口径**不同, 勿混用**
   - 28,092x 为 2026-08 前的旧口径（43 币 + 期权开启），**已废弃，勿再引用**
   - 59,361,202x 同为期权时代数字（见 crypto_options_bt.py 配置注释），已废弃
+
+⚠️ 币池数量**不要写死**: 历史上 source 字符串硬编码 "34币" 而面板早已变成 27 币,
+   导致发布页长期挂着错误口径。现改为下方从面板列数动态推导。
 
 复用 A股 export_nav.py 窗口逻辑(按日期切 10y/5y/3y/full, 归一化倍数+MDD+CAGR)。
 
@@ -81,9 +85,12 @@ windows = {"full": compute_window(0, len(dates) - 1)}
 for ny, tag in [(10, "10y"), (5, "5y"), (3, "3y")]:
     windows[tag] = compute_window(lo_for(ny), len(dates) - 1)
 
+# 币数从面板动态读取 —— 写死会随池变更静默过期 (曾长期挂着 "34币" 而实为 27 币)。
+N_COINS = px.shape[1]
 out = dict(
     generated_at=dt.date.today().isoformat(),
-    source="加密本地面板(34币, 10y, Binance/OKX/Gate; 三面板已修复对齐, 期权层已关闭)",
+    source=f"加密本地面板({N_COINS}币, 10y, Binance/OKX/Gate; 三面板已修复对齐, 期权层已关闭)",
+    n_coins=N_COINS,
     last_date=dates[-1],
     windows={"cycle": windows},
     truth=dict(

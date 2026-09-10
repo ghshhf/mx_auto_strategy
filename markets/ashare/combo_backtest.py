@@ -13,7 +13,7 @@ combo_backtest.py —— 把"动几下"和"崩了减仓"组合, 在 50精选 上
   - Ck+T: 在 Ck 之上叠加篮子自身 MA250 趋势钟(破位减到防御仓 15%, 站回满仓)
 组合层用篮子"自身等权 NAV"当钟(非宽基指数, 见 ⑬ 修正), 避免钟错。
 """
-import os, sys, math
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import stock_backtest as sb
 import timing_extreme_backtest as te

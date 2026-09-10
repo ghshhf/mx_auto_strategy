@@ -94,5 +94,5 @@ if len(tech) >= 6:
     m = bt(tech[:6], 'M')
     if m: print(f"  定向科技6(月): 持有{m[0]:6.2f}% 再平衡{m[1]:6.2f}% 超额{m[2]:+6.2f}pp  {tech[:6]}")
 
-print(f"\n--- 港股波动前10 (可复核是否龙头) ---")
+print("\n--- 港股波动前10 (可复核是否龙头) ---")
 print(df.sort_values("vol", ascending=False).head(10).round(2).to_string())

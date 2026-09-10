@@ -19,7 +19,9 @@
 
 - **美股 SOX 原始数据**：`markets/us/data/raw_sox_historyofmarket.json`（502K）被 `markets/us/extend_panel_real_indices.py` 读取，**勿删**（非重新生成则美股面板缺 SOX 真实指数）。
 
-- **加密面板**：`weekly_adjclose_crypto50.csv`（c50，主，32 币）与 `weekly_adjclose_crypto50_10y.csv`（10y，真值基准，32 币）及 `weekly_adjclose_crypto50_v3.csv`（v3）三面板已于 2026-09-04 修复对齐（此前 v3 为合成数据、c50 有上线前假历史，均已按 10y 真值回填）。增币须同时回填三面板对齐日期，早期空缺列引擎按周自动排除，不会报错。
+- **加密面板**：`weekly_adjclose_crypto50.csv`（c50，主）与 `weekly_adjclose_crypto50_10y.csv`（10y，真值基准）及 `weekly_adjclose_crypto50_v3.csv`（v3）三面板已于 2026-09-04 修复对齐（此前 v3 为合成数据、c50 有上线前假历史，均已按 10y 真值回填）。增币须同时回填三面板对齐日期，早期空缺列引擎按周自动排除，不会报错。
+  - ⚠️ **文件名里的 "crypto50" 是历史遗留**：面板曾为 50 币，**2026-09-10 起实际只有 27 列**，勿按文件名推断币数。
+  - ⚠️ **币数不得写死在文档/导出脚本里**：`export_nav_crypto.py` 曾把 `source` 硬编码为 "34币"，面板早已变 27 币而发布页长期挂着错误口径。现已改为从 `px.shape[1]` 动态推导，并有 `tests/test_crypto_truth_consistency.py` 断言。
 
 - **`held_weeks.json` 是回测统计，不是个人持仓**【2026-09-07 教训】。它记录"最终回测给某币权重>0 的周数"，held=0 表示"策略几乎不选/纯占位"，**与个人买没买完全是两回事**。仓库里没有个人持仓文件，权威=用户口述。文件顶层已带 `_meta` 字段声明该语义，勿按裸 list 消费；`refresh_stats.py` 终检按 `{"_meta":…, "coins":[…]}` 结构读取。
 
@@ -77,7 +79,8 @@
 
 ## §6 工程 / 环境坑
 
-- **Python 环境**：默认 `python` 无 pandas。须用 quant venv：`G:/venv/quant/Scripts/python.exe`（pandas 3.0.5, plotly 6.9.0）。crypto 回测统一走它（约 49s/10y 档）。
+- **Python 环境**：默认 `python` 无 pandas。须用 quant venv：**`E:/xmanbian/_venv/mx_quant/Scripts/python.exe`**（pandas/numpy/plotly/requests + pytest/ruff 齐备）。
+  ⚠️ 早期记录的 `G:/venv/quant/...` **已失效（G 盘不可访问）**，勿再引用；C 盘托管 venv `~/.workbuddy/binaries/python/envs/default` 也已弃用（用户要求工具链走 E 盘，避免占 C 盘空间）。
 
 - **Git Bash 下 Python 不认 `/e/` 挂载点** → 解析成 `e:\` → FileNotFoundError。Python 读写文件用 Windows 绝对路径（`C:/Users/21393/...`、`E:/xmanbian/...`）；`head`/`cp` 等 Git Bash 工具认 `/e/` 但 Python 不认。
 
@@ -162,3 +165,87 @@ RWA 赛道代币池中 MANTRA (OM) 被替换为 CFG (Centrifuge)。用户经链�
 - **代币替换不能只看价格**：MANTRA 价格曾涨 200 倍，但 TVL/团队/链上活动全面崩坏。必须查链上数据（TVL、持币者分布、团队持仓、GitHub 活跃度、合作伙伴质量）。
 - **RWA 赛道真伪鉴别**：真 RWA = 有机构级资产上链（CFG: BlackRock/Janus Henderson/纽约人寿）；伪 RWA = 纯叙事包装（MANTRA: 中东资本收购后贴 RWA 标签，TVL 几十万美元）。
 - **高度控盘 = 红线**：团队持 90% 流通量 → 随时可砸盘，不是"有信心"而是"待出货"。
+
+---
+
+## §10 报告模板去重 + 注入安全修复（2026-09-10）
+
+### 背景
+`portfolio_blend.py` 与 5 个 `blend_*.py` 各自内联一份**完全相同**的 ~60 行
+`<style>` + Plotly CDN + `Plotly.newPlot` 样板（约 6×60 = 360 行重复，且已漂移出
+h1 字号 22/23/24px 三档、`.hl` 是否加粗两档）。改一次配色要同步 6 处。
+
+### 修复
+1. 新增 **`report_html.py`** —— 页面骨架 / 卡片 / 指标表 / 图表 / 数据注入的唯一来源。
+   6 个脚本的 `_html()` 改为组合该模块的 `page/card/metric_table/metrics_rows/nav_chart/data_block/line_traces`。
+2. **JS 注入安全**（隐患，非纯美化）：旧代码把 Python `dict` 的 `repr` 直接插值进
+   `<script>`（`const D = {series:{series}}`）。列名一旦含 `"` 或换行 → 生成非法 JS → **整页白屏**。
+   现统一走 `rh.jsdata()`（json.dumps + NaN/Inf→null + 紧凑分隔符）。
+3. 资产名/表头统一 `rh.esc()` HTML 转义。
+
+### 教训（给未来 AI）
+- **在 f-string 里拼 JS 对象字面量是灾难**：Plotly layout 本身满是 `{...}`，
+  每个都要写成 `{{`，漏一个就静默产出错括号的 JS。`report_html.nav_chart()` 刻意
+  **改用字符串拼接 + `+` 连接**而非 f-string —— 新增图表代码时别"顺手"改回 f-string。
+- 验证重构等价性不能只跑测试：要 diff **生成的 HTML**（本例用「数字单元格计数」
+  对比重构前后，6 个页面全部逐一对齐才判定安全）。
+- `json.dumps` 默认 `', '` 分隔会让大面板 HTML 无谓膨胀 ~8%，加 `separators=(",",":")`。
+
+### 同批清理
+- `ruff --select F401,F541 --fix`：清掉 **218 处**未使用导入 / 无占位符 f-string（全仓，CI 门禁仍只跑 E9）。
+- **P0 真 bug**：`markets/ashare/backtest_engine.py:1068` 在 `__main__` 里引用**从未定义**的
+  `panel_path` → 直接跑该脚本必 `NameError`。改为 `sys.argv[1]` 可选传入 + 缺省回落到 `DATA/`。
+- `.gitignore` 补 `.pytest_cache/ .ruff_cache/ .mypy_cache/ .coverage htmlcov/`。
+- 新增 `tests/test_report_html.py`（注入安全 + 括号配平）、`tests/test_dependency_consistency.py`
+  （`requirements.txt` ↔ `pyproject [project].dependencies` 不得漂移）。
+
+---
+
+## §11 面板尾部快照冻结 + run_all.py 真值回归（2026-09-10）
+
+### 事故 1：周内快照被永久冻结（`sync_crypto_panel.sync_file`）
+
+**现象**：三面板末日停在 2026-09-04，看起来「一周没刷新」——其实文件 mtime 是
+09-08，同步一直在跑，只是**没生效**。
+
+**根因**（两个叠加）：
+1. 同步只追加 `d > 面板末日` 的行。而面板行日期 = `kline_start` 往前的最近**周五**
+   （`rows_to_weekly_close`：`dt - (dt.weekday()-4)%7`）。于是「本周未完结的那一根」
+   一旦写入，之后 `d > last_date` 永远为假，**再也不会被更新**。
+2. 若某次同步恰好跑在周初，该行就永久冻结在周初价格上。
+
+**实测污染**：2026-08-30 那周 RAY 周内 +66%（0.772 → 1.286），面板记成 0.778
+（**−39%**）；ZEC −33%、UNI −30%。27 币尾部 10 周里 **25 个币**存在 >1% 偏差，
+93 格需要修正。
+
+**修复**：`sync_file` 改为**回溯重写尾部 8 周**（`TAIL_REFRESH_WEEKS`）+ 追加新周；
+`sync_all_panels.py` 取数起点同步前推 8 周。修正后残留偏差 ≤0.20%
+（只剩进行中那一周的日内漂移）。新增 `--dry-run` / `--tail=N`。
+
+**教训**：
+- 「末日看起来没动」≠「数据没刷新」。判断新鲜度要看 **mtime + 与交易所终值比对**，
+  不能只看末日（末日是「上一个周五」，天然滞后）。
+- 增量同步**必须**能修正最近几行。纯 append 语义 = 把快照当终值。
+- 改完要用 `fetch_binance_full` 独立复核一遍，别只信脚本自己的「已写入」。
+
+### 事故 2：真值碎片化（同一数字三处不同）
+
+本次顺带发现美股同样漂移：`nav_us.json` 自 09-07 起已是 **106.19x**，
+而 `docs/TRUTH.md` / `docs/README.md` / `markets/us/README.md` 仍写 **99.85x**，
+`portfolio_blend.py` 更把 99.85x **写死进列标签**（与加密侧曾写死「34币」同类）。
+
+**根治**：新增 **`run_all.py`** —— 单次产出三市场权威真值 + 数字回归断言：
+- 依次跑 `export_nav_crypto` / `export_nav_us` / `export_nav`（A股）/ `reconcile_truth`
+  / `portfolio_blend`，抽出**归一化标量**（倍数 / MDD% / CAGR% / Sharpe）；
+- 与 `reports/truth_baseline.json` 比对，超容差即 **exit 1**；
+- 始终写 `reports/truth_snapshot_<date>.json` 留档；
+- **阶段状态区分**：`NO_DATA`（A股面板 gitignore，需 `tencent_hfq_rebuild.py` 本地重建）
+  与 `ERROR`（脚本真失败）分开；被跳过的阶段其基线指标**不参与比对**，
+  否则 `--no-deep` 会让 reconcile 的 40 项全员 MISSING 而假红。
+
+用法：`python run_all.py` / `--baseline`（改池或修数据后必做）/ `--only us,crypto,blend` /
+`--no-deep`。CI 已接入 `--only us,crypto,blend`（跳过缺数据的 A股与 45s 的 reconcile）。
+
+**铁律**：任何改池、改引擎、修数据的提交，必须
+① 跑 `run_all.py`；② 若红，同步改 `TRUTH_AUTHORITY.md` / `docs/TRUTH.md` / `README.md`；
+③ 再跑 `run_all.py --baseline`。**不得**只改文档不改基线，也不得只 `--baseline` 不改文档。

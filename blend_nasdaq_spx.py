@@ -18,13 +18,13 @@ blend_nasdaq_spx.py — 纳斯达克综合指数(^IXIC) + 标普500(^GSPC) 10 �
   - 方法论证, 非未来业绩承诺. 共同窗口动态取交集, 锁定起点 2016-09 起以贴合"10年".
 """
 import os, sys, json
-import numpy as np
 import pandas as pd
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 from portfolio_blend import metrics, blend_equal, blend_rebalanced
 from blend_btc_sox import blend_rebalance_drift
+import report_html as rh
 
 # 10 年窗口起点 (数据实际末日 2026-09-03, 交集即全样本)
 WIN0 = "2016-09-01"
@@ -131,68 +131,39 @@ def main():
 
 
 def _html(df, single, schemes, blends, corr):
-    dates = [str(d.date()) for d in df.index]
-    series = {c: [round(float(x), 4) for x in df[c].values] for c in df.columns}
+    dates = rh.dates_of(df.index)
+    series = rh.series_of(df)
     bnav = {n: [round(float(x), 4) for x in nav.values] for n, nav in schemes.items()}
+    traces = rh.line_traces(series) + "," + rh.line_traces(schemes, y_root="D.bnav")
 
-    rows_single = "".join(
-        f"<tr><td>{c}</td><td class='r'>{m['multiple']:.1f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for c, m in single.items())
-    rows_blend = "".join(
-        f"<tr><td>{n}</td><td class='r'>{m['multiple']:.1f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for n, m in blends.items())
-
-    s_traces = "".join(
-        f"{{x:D.dates, y:series['{c}'], name:'{c}', mode:'lines'}},"
-        for c in df.columns)
-    b_traces = "".join(
-        f"{{x:D.dates, y:bnav['{n}'], name:'{n}', mode:'lines'}},"
-        for n in schemes)
-
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
-<title>纳指 + 标普500 10年混合再平衡</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-<style>body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1117;color:#e6e9ef;margin:0;padding:32px;}}
-h1{{font-size:24px;margin:0 0 4px;}} .sub{{color:#9aa3b2;margin-bottom:20px;}}
-.card{{background:#171a23;border:1px solid #262b38;border-radius:14px;padding:20px;margin-bottom:20px;}}
-table{{border-collapse:collapse;width:100%;font-size:14px;}} th,td{{border-bottom:1px solid #2a3040;padding:8px 10px;text-align:left;}}
-td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
-.note{{color:#9aa3b2;font-size:13px;line-height:1.7;}}</style></head>
-<body>
-<h1>纳斯达克综合指数 + 标普500 · 10年混合再平衡回测</h1>
-<div class="sub">纳指(^IXIC) + 标普500(^GSPC) · 共同窗口 {dates[0]} ~ {dates[-1]} · 数据截至 2026-09-03 · 方法论证非业绩承诺</div>
-
-<div class="card"><h3 style="margin-top:0">净值曲线 (对数轴, 起点=1)</h3>
-<div id="c1" style="width:100%;height:460px"></div></div>
-
-<div class="card"><h3 style="margin-top:0">单资产指标 (10年窗口)</h3>
-<table><tr><th>资产</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_single}</table></div>
-
-<div class="card"><h3 style="margin-top:0">组合方案对比</h3>
-<table><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_blend}</table>
-<p class="note">⚠️ <b>关键前提</b>: 纳指与标普500周收益相关系数 = <b>{corr:.3f}</b>, 两者长期高度同涨同跌 (都是美股宽基).
-因此"再平衡的波动收益(volatility harvesting)"在这里<b>非常有限</b> —— 与 BTC+SOX 这种跨资产低相关组合(相关系数常 &lt;0.3)不同,
-两个美股指数之间再平衡几乎不产生额外收益, 主要作用只是把组合拉向 50/50 的"平均"表现, 并轻微平滑极端偏离.
-<ul>
-<li><b>等权50/50 持有</b> ≈ 两指数等权买入持有, 倍数/回撤介于两者之间;</li>
-<li><b>等权50/50 季度/月度再平衡</b> 与持有几乎重合 (相关系数高 → 偏离小 → 再平衡买卖少);</li>
-<li><b>逆波动·封顶60%</b> 在单边行情下自动压低近期涨多的那一个、抬升跌多的, 但同样因高相关而效果有限;</li>
-<li><b>倾斜60/40 纳指-标普</b> 因纳指弹性更高, 长期略跑赢 50/50, 但 MDD 也略深.</li>
-</ul>
-结论: 对两个高相关美股宽基指数做再平衡, <b>10年倍数约等于两指数几何平均, 再平衡不是"免费午餐"</b>.
-真正的再平衡增益需来自低相关资产 (如 BTC+SOX, 或 纳指+黄金/美债). 本图仅作方法论演示.</p></div>
-
-<script>
-const D = {{dates:dates, series:{series}, bnav:{bnav}}};
-Plotly.newPlot('c1', [
-  {s_traces}
-  {b_traces}
-], {{paper_bgcolor:'#171a23',plot_bgcolor:'#171a23',font:{{color:'#e6e9ef'}},
-  yaxis:{{type:'log',title:'净值(对数,起点=1)'}}, xaxis:{{title:''}},
-  legend:{{orientation:'h',y:1.08}}, margin:{{t:20,b:40,l:60,r:20}}}}, {{responsive:true}});
-</script></body></html>"""
+    body = (
+        rh.data_block(dates=dates, series=series, bnav=bnav)
+        + rh.card("净值曲线 (对数轴, 起点=1)", rh.nav_chart("c1", traces, height=460))
+        + rh.card("单资产指标 (10年窗口)",
+                  rh.metric_table(["资产", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(single, mult_fmt="{:.1f}x")))
+        + rh.card("组合方案对比",
+                  rh.metric_table(["方案", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(blends, mult_fmt="{:.1f}x"))
+                  + f"<p class='note'>⚠️ <b>关键前提</b>: 纳指与标普500周收益相关系数 = <b>{corr:.3f}</b>, "
+                    "两者长期高度同涨同跌 (都是美股宽基)."
+                    "因此\"再平衡的波动收益(volatility harvesting)\"在这里<b>非常有限</b> —— 与 BTC+SOX 这种跨资产低相关组合(相关系数常 &lt;0.3)不同,"
+                    "两个美股指数之间再平衡几乎不产生额外收益, 主要作用只是把组合拉向 50/50 的\"平均\"表现, 并轻微平滑极端偏离."
+                    "<ul>"
+                    "<li><b>等权50/50 持有</b> ≈ 两指数等权买入持有, 倍数/回撤介于两者之间;</li>"
+                    "<li><b>等权50/50 季度/月度再平衡</b> 与持有几乎重合 (相关系数高 → 偏离小 → 再平衡买卖少);</li>"
+                    "<li><b>逆波动·封顶60%</b> 在单边行情下自动压低近期涨多的那一个、抬升跌多的, 但同样因高相关而效果有限;</li>"
+                    "<li><b>倾斜60/40 纳指-标普</b> 因纳指弹性更高, 长期略跑赢 50/50, 但 MDD 也略深.</li>"
+                    "</ul>"
+                    "结论: 对两个高相关美股宽基指数做再平衡, <b>10年倍数约等于两指数几何平均, 再平衡不是\"免费午餐\"</b>."
+                    "真正的再平衡增益需来自低相关资产 (如 BTC+SOX, 或 纳指+黄金/美债). 本图仅作方法论演示.</p>")
+    )
+    return rh.page(
+        title="纳指 + 标普500 10年混合再平衡",
+        h1="纳斯达克综合指数 + 标普500 · 10年混合再平衡回测",
+        sub=f"纳指(^IXIC) + 标普500(^GSPC) · 共同窗口 {dates[0]} ~ {dates[-1]} · 数据截至 2026-09-03 · 方法论证非业绩承诺",
+        body=body,
+    )
 
 
 if __name__ == '__main__':

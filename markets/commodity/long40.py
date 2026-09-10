@@ -155,7 +155,6 @@ for c in pool:
 # 成分来源
 def src(c):
     return "美股" if c in PX.columns and load_long.__name__ else "?"
-from collections import Counter
 print("池内平均训练期波动: %.1f%%" % np.mean([vol[c] for c in pool]))
 
 # 全期(含训练段) 与 纯样本外 两段

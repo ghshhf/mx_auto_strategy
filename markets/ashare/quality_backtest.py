@@ -8,9 +8,8 @@ quality_backtest.py —— 个股层选股下沉(质量/估值)概念验证
 诚实标注: 用"当前快照"给 2016-2026 组合加权 = 含前视偏差, 仅作方向性概念验证,
 不可作为实盘信号。真实无前视版本需逐期历史财务(tdx_api_data 仅 6 年, 不够全窗口)。
 """
-import os, sys, json, math
+import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import data_store as ds
 import stock_backtest as S
 
 BASE = os.path.dirname(os.path.abspath(__file__))

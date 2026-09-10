@@ -170,7 +170,7 @@ def main():
             s = annual_return(dates, arr, y)
             r = REAL_ANNUAL[y].get(etf)
             if s is None or r is None:
-                print(f"    --", end=""); continue
+                print("    --", end=""); continue
             d_pp = (s - r) * 100
             mark = "√" if (s >= 0) == (r >= 0) else "×"
             print(f"  {d_pp:>+5.1f}{mark}", end="")

@@ -146,7 +146,7 @@ def cmd_analyze(args, deps):
         insts = r["institutions"]
         print(f"    机构列表 ({len(insts)}):  {', '.join(insts)}")
         tier = r["tier_distribution"]
-        print(f"    Tier 分布:  " + ", ".join(f"{k}={v}" for k, v in sorted(tier.items())))
+        print("    Tier 分布:  " + ", ".join(f"{k}={v}" for k, v in sorted(tier.items())))
         print(f"    记录总数:   {r['total_records']}")
         print(f"    {'Horizon 分桶':<14}  {'Count':>5}  {'Min':>10}  {'Max':>10}  "
               f"{'Median':>10}  {'Mean':>10}  {'分歧':>6}  {'上行%':>6}")
@@ -247,7 +247,6 @@ def cmd_report(args, deps):
 def cmd_add(args, deps):
     from .sources.base import append_jsonl_atomic, compute_record_id
     from .config import normalize_institution, normalize_coin, tier_of, normalize_rating
-    from .seeds import get_seed_records  # 确保 seeds 模块路径一致
     institution = normalize_institution(args.institution)
     coin = normalize_coin(args.coin)
     tier = tier_of(institution)
@@ -328,7 +327,7 @@ def _parse_current_prices(raw: str | None) -> dict[str, float] | None:
 
 def _render_markdown_report(rep: dict) -> str:
     lines: list[str] = []
-    lines.append(f"# 机构研报交叉分析报告\n")
+    lines.append("# 机构研报交叉分析报告\n")
     lines.append(f"- 生成时间: {rep.get('generated_at')}")
     lines.append(f"- 分析币列表: {', '.join(rep.get('coins', []))}")
     lines.append("")
@@ -356,7 +355,7 @@ def _render_markdown_report(rep: dict) -> str:
             continue
         lines.append(f"- 机构列表（{item['coverage_count']}）: {', '.join(item.get('institutions', []))}")
         lines.append(f"- 记录总数: {item.get('total_records', 0)}")
-        lines.append(f"- Tier 分布: " + ", ".join(f"`{k}={v}`" for k, v in sorted(item.get("tier_distribution", {}).items())))
+        lines.append("- Tier 分布: " + ", ".join(f"`{k}={v}`" for k, v in sorted(item.get("tier_distribution", {}).items())))
         lines.append("")
         lines.append("| 时间窗口 | 条数 | 最低目标价 | 最高目标价 | 中位数 | 均价 | 分歧 max/min | 上行空间 (vs 当前) |")
         lines.append("|---|---:|---:|---:|---:|---:|---:|---:|")

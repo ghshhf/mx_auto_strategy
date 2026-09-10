@@ -3,7 +3,7 @@ sync_all_panels.py - 强制走用户 3067 代理, 单次取数增量同步全部
 绕过沙箱注入的 61350 代理(Binance 返回 502), 并对取数失败做指数退避重试.
 仅追加末日之后行, 不动历史.
 
-2026-09-07 重构: 三面板(c50/v3/10y)币池相同(32币), 旧实现逐面板各拉一遍行情,
+2026-09-07 重构: 三面板(c50/v3/10y)币池相同(2026-09-10 起为 27 币), 旧实现逐面板各拉一遍行情,
 造成 3 倍网络冗余 + 末行 <0.3% 漂移(两次取数间隙价差). 现改为:
   1. 读三面板 header, 取币种并集 + 最早末日;
   2. 对并集**单次** fetch_coin_from (含 5 次退避重试);
@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import csv
+import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE))))  # 仓库根
@@ -79,8 +80,13 @@ def main():
             if c not in seen:
                 seen.add(c)
                 coins_union.append(c)
-    start_date = min(last_dates)
-    print(f"币种并集={len(coins_union)}  各面板末日={last_dates}  取数起点={start_date}")
+    # 2026-09-10: 起点再往前推 TAIL_REFRESH_WEEKS 周 —— 尾部那些行可能是
+    # 周初快照(见 sync_crypto_panel.TAIL_REFRESH_NOTE), 必须重取终值覆盖.
+    _earliest = min(last_dates)
+    start_date = (datetime.datetime.strptime(_earliest, '%Y-%m-%d').date()
+                  - datetime.timedelta(weeks=sp.TAIL_REFRESH_WEEKS)).isoformat()
+    print(f"币种并集={len(coins_union)}  各面板末日={last_dates}")
+    print(f"取数起点={start_date}  (最早末日 {_earliest} 前推 {sp.TAIL_REFRESH_WEEKS} 周)")
 
     # 2) 单次取数 (并集币, 从最早末日开始)
     syms = chd.all_coin_symbols()
@@ -93,16 +99,17 @@ def main():
             continue
         w = sp.fetch_coin_from(start_date, cfg['binance'], cfg['okx'],
                                cmc_id=sp._CMC_ID_MAP.get(coin))
-        master[coin] = {d: p for d, p in w.items() if d > start_date}
+        master[coin] = {d: p for d, p in w.items() if d >= start_date}
         time.sleep(0.05)
     if missing_cfg:
         print(f"  [警告] 无符号映射: {missing_cfg}")
 
-    # 3) 单次结果复用到三面板 (sync_file 内部按各自末日过滤 + 列名写回)
+    # 3) 单次结果复用到三面板 (sync_file 内部按各自回溯窗口重写 + 列名写回)
+    _dry = '--dry-run' in sys.argv
     for fn in TARGETS:
-        sp.sync_file(fn, prefetched=master)
+        sp.sync_file(fn, prefetched=master, dry_run=_dry)
 
-    print("\nALL SYNC DONE")
+    print("\nALL SYNC DONE" + ("  (dry-run, 未落盘)" if _dry else ""))
 
 
 if __name__ == '__main__':

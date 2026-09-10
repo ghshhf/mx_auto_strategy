@@ -1,9 +1,5 @@
 """sources/base.py 的纯函数单元测试。"""
-import json
-import os
-import tempfile
 
-import pytest
 
 from markets.crypto.research.sources.base import (
     compute_record_id, read_jsonl, append_jsonl_atomic,

@@ -23,7 +23,6 @@ import sys
 import json
 import glob
 import re
-import datetime
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(BASE))

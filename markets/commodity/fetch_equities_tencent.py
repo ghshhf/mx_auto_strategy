@@ -12,7 +12,6 @@
   2. 🔴 港股长期 qfq(前复权) 会把早期价格压成负数 -> 收益率计算必须用 hfq(后复权)
   3. 单条串行 + 随机间隔, 避免风控
 """
-import json
 import os
 import random
 import time

@@ -17,7 +17,7 @@ cycle_backtest.py —— 从 K 线"自己找周期"(类加密 cycle 思路, 严�
 
 铁律: 任何决策点 t 只用 t 之前的数据。
 """
-import os, sys, json, math, argparse
+import os, sys, math, argparse
 import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 import data_store as ds

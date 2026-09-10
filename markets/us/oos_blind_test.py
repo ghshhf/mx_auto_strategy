@@ -9,17 +9,16 @@
 结果判据:
   如果TEST期倍数 期权增强 / 现货原版 > 1.5x 且 且 MDD 不恶化 → 无后视镜。
 """
-import os, sys, csv, json, argparse, statistics
+import os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 from us_backtest_ai import (load_panel, load_us_cfg, check_take_profit,
-    check_stop_loss, check_extreme_overvaluation, _ma, regime_of, death_cross_count,
-    select_baseline, select_optimized, pick_defense_lowvol, eligible_universe,
-    ai_mult_deterministic, BROAD, EXCLUDE, WARMUP, DEF_CANDIDATES,
-    STOCK_SECTOR, SECTOR_FALLBACK, sector_short_index, _mini_window_bt)
+    check_stop_loss, check_extreme_overvaluation, regime_of, death_cross_count,
+    select_optimized, pick_defense_lowvol, eligible_universe,
+    EXCLUDE, WARMUP, sector_short_index, _mini_window_bt)
 
 
 def real_window(dates, series, us_cfg, options_sim, start_w, end_w,
@@ -57,7 +56,6 @@ CFG_PATH = os.path.join(os.path.dirname(os.path.dirname(HERE)), "strategy_config
 def backtest_window(dates, series, us_cfg, options_sim, start_week, end_week,
                     short_underlying_override=None, short_by_sector_override=None):
     """回测 [start_week, end_week) 区间 (左闭右开). 返回{nav, short_pnl_pct等。"""
-    import copy as _copy
     cfg = us_cfg
     sim = dict(options_sim)
     if short_underlying_override:

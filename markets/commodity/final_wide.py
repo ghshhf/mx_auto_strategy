@@ -130,7 +130,7 @@ iu = np.triu_indices(len(sel), 1)
 print(f"池内平均相关性: {R[iu].mean():.3f} | 池内平均波动: "
       f"{np.mean([E.BASE.loc[c,'vol'] for c in sel]):.1f}%")
 
-print(f"\n-- 随机化贪心 x40 (topk=3) --")
+print("\n-- 随机化贪心 x40 (topk=3) --")
 vs = []
 for _ in range(40):
     s = greedy(pool, N, topk=3, rnd=rng)
@@ -147,7 +147,7 @@ if vs:
     print(f"  夏普中位 {np.median(vsh):.2f} | 回撤中位 {np.median(vmd):.1f}%")
     print(f"  >=20% 占比 {(vn>=20).mean()*100:.1f}% | >=25% 占比 {(vn>=25).mean()*100:.1f}%")
 
-print(f"\n-- 逐年收益 --")
+print("\n-- 逐年收益 --")
 px = E.allp.loc[E.TR0:E.VA1, sel].dropna(how="any")
 r = px.pct_change().dropna(how="any")
 years = sorted(set(r.index.year))

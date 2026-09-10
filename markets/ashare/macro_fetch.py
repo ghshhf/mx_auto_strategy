@@ -21,7 +21,6 @@ macro_fetch.py - 宏观周期数据抓取 (v6.17)
 import os
 import sys
 import csv
-from datetime import date
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")

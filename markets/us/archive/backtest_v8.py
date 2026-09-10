@@ -135,7 +135,7 @@ def run(px, band=5.0, weak_clear=0.0, signal_mode='dynamic', def_list=('KO', 'AB
 if __name__ == '__main__':
     full = load(full=True)
     y = (full.index[-1] - full.index[0]).days / 365.25
-    print(f"=== V8 扩展宇宙回测 ===")
+    print("=== V8 扩展宇宙回测 ===")
     print(f"窗口: {full.index[0].date()} ~ {full.index[-1].date()} ({y:.2f} 年) | 13 题材/~90 只 | 10 仓位\n")
 
     # ---- 引擎自检: 旧 31 列宇宙 + band=0.03 + weak_clear=1.0(全清) + 原始配置 应复现 V7a=16.54x ----
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     m = re.match(r'band(\d+) wc([\d.]+)', best['label'])
     bb, bw = float(m.group(1)) / 100, float(m.group(2))
     wk = run(full, band=bb, weak_clear=bw, off_n=10, core=3, core_share=0.90,
-             window=52, phase_tilt=True, asof_mode='week', label=f'最优 逐周无前视')
+             window=52, phase_tilt=True, asof_mode='week', label='最优 逐周无前视')
     print(f"{wk['label']:<44}{wk['multiple']:>8.2f}x  CAGR {wk['cagr']*100:5.1f}%  MDD {wk['mdd']*100:6.1f}%")
 
     bh = 10000 * full['SPY'].iloc[-1] / full['SPY'].iloc[0]

@@ -62,6 +62,15 @@ jobs:
             echo "test_data_contract.py not yet present, skipping"
           fi
 
+      # 2026-09-10 新增: 真值数字回归。只跑 us/crypto/blend(面板已入库),
+      # 跳过 ashare(面板 gitignore 需本地重建) 与 reconcile(约 45s)。
+      # 改池/修数据后若忘记同步 reports/truth_baseline.json 与文档, 此处红灯。
+      - name: Run truth regression (us/crypto/blend)
+        run: |
+          python run_all.py --only us,crypto,blend 2>&1 | tail -40
+        env:
+          PYTHONPATH: .
+
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -13,7 +13,7 @@ backtest_p0.py - P0 硬化: 成本/税务 + 样本外(walk-forward) + 回撤韧�
   - 内置换手成本 + 可选资本利得税(逐标的成本基准 lot 跟踪)
   - 返回 nav 序列 + 指标, 供绘图/对比
 """
-import pandas as pd, numpy as np, os, re
+import pandas as pd, numpy as np, os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     # 可复现基准: 报告引用配置 band4% / wc=0 / year (原引擎实测 50.44x, 非报告旧值58.39x)
     BAND0, WC0 = 0.04, 0.0
     print(f"=== P0 硬化: US50 ({px.index[0].date()}~{px.index[-1].date()}, {y_all:.1f}年) ===")
-    print(f"可复现基准 = 报告引用配置 band4%/wc=0/year (当前引擎=50.4x, 旧报告58.39x已不可复现)\n")
+    print("可复现基准 = 报告引用配置 band4%/wc=0/year (当前引擎=50.4x, 旧报告58.39x已不可复现)\n")
 
     grid = [(0.04, 0.0), (0.05, 0.0), (0.06, 0.0),
             (0.04, 0.5), (0.05, 0.5), (0.06, 0.5),

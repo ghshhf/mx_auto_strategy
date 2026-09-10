@@ -10,9 +10,7 @@ us_stock_attribution.py - 美股逐股 Leave-One-Out 归因分析
 
 同时统计每只股票的被选频率、年度表现、波动率等。
 """
-import os, sys, time, json, math, statistics
-import pandas as pd
-import numpy as np
+import os, sys, time, statistics
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -20,10 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 
 from us_backtest_ai import (
     load_panel, load_us_cfg, run_optimized,
-    select_optimized, eligible_universe, regime_of, death_cross_count,
-    pick_defense_lowvol, _ma, WARMUP, EXCLUDE, PANEL, series_proxy
+    PANEL, series_proxy
 )
-import us_backtest_ai as usb
 
 # 加载面板
 dates, series = load_panel(PANEL)
@@ -201,14 +197,14 @@ for r in sorted(drag, key=lambda x: -x['delta_mult']):
 # ---- 6. 生成报告 ----
 lines = []
 lines.append("# 美股逐股 Leave-One-Out 归因报告\n\n")
-lines.append(f"> 生成时间: 2026-08-13  |  方法: 逐个删除进攻股, 跑10年回测\n")
-lines.append(f"> Δ收益% = (删后倍数 / 基线倍数 - 1) × 100\n")
-lines.append(f"> 正值 = 删了反而涨 → 该股拖累收益\n")
-lines.append(f"> 负值 = 删了跌 → 该股有正贡献\n\n")
+lines.append("> 生成时间: 2026-08-13  |  方法: 逐个删除进攻股, 跑10年回测\n")
+lines.append("> Δ收益% = (删后倍数 / 基线倍数 - 1) × 100\n")
+lines.append("> 正值 = 删了反而涨 → 该股拖累收益\n")
+lines.append("> 负值 = 删了跌 → 该股有正贡献\n\n")
 
 lines.append("## 基线\n\n")
-lines.append(f"| 倍数 | MDD | Sharpe |\n")
-lines.append(f"|------|-----|--------|\n")
+lines.append("| 倍数 | MDD | Sharpe |\n")
+lines.append("|------|-----|--------|\n")
 lines.append(f"| {base_m:.1f}x | {base_d*100:.1f}% | {base_s:.2f} |\n\n")
 
 # 合并stats和loo

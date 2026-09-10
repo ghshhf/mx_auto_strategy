@@ -6,10 +6,10 @@
   "n_weeks": 523,
   "assets": {
     "BTC": {
-      "multiple": 135.5673,
-      "cagr": 0.6308,
+      "multiple": 138.5709,
+      "cagr": 0.6344,
       "mdd": -0.8288,
-      "sharpe": 1.0602
+      "sharpe": 1.0635
     },
     "SOX": {
       "multiple": 14.0679,
@@ -20,46 +20,46 @@
   },
   "blends": {
     "等权50/50 (持有不调)": {
-      "multiple": 87.0186,
-      "cagr": 0.5603,
+      "multiple": 87.9875,
+      "cagr": 0.5621,
       "mdd": -0.575,
-      "sharpe": 1.3844
+      "sharpe": 1.3874
     },
     "等权50/50 (季度再平衡)": {
-      "multiple": 90.8525,
-      "cagr": 0.5671,
+      "multiple": 91.8781,
+      "cagr": 0.5688,
       "mdd": -0.5943,
-      "sharpe": 1.3609
+      "sharpe": 1.3639
     },
     "等权50/50 (月度再平衡)": {
-      "multiple": 76.8159,
-      "cagr": 0.5411,
+      "multiple": 77.683,
+      "cagr": 0.5428,
       "mdd": -0.5874,
-      "sharpe": 1.3451
+      "sharpe": 1.3481
     },
     "逆波动 (季度再平衡·封顶60%)": {
-      "multiple": 74.5059,
-      "cagr": 0.5364,
+      "multiple": 75.2565,
+      "cagr": 0.5379,
       "mdd": -0.4999,
-      "sharpe": 1.5572
+      "sharpe": 1.5607
     },
     "逆波动 (月度再平衡·封顶60%)": {
-      "multiple": 73.603,
-      "cagr": 0.5345,
+      "multiple": 74.3445,
+      "cagr": 0.5361,
       "mdd": -0.5015,
-      "sharpe": 1.558
+      "sharpe": 1.5614
     },
     "倾斜60/40 BTC-SOX (持有)": {
-      "multiple": 106.1341,
-      "cagr": 0.5915,
+      "multiple": 107.5508,
+      "cagr": 0.5936,
       "mdd": -0.616,
-      "sharpe": 1.3084
+      "sharpe": 1.3116
     },
     "倾斜60/40 BTC-SOX (季再平衡)": {
-      "multiple": 108.831,
-      "cagr": 0.5955,
+      "multiple": 110.2997,
+      "cagr": 0.5976,
       "mdd": -0.6383,
-      "sharpe": 1.2904
+      "sharpe": 1.2936
     }
   },
   "rebal_log": {

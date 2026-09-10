@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """【学习脚本】17000x 是怎么来的 —— 在 10y 面板(619周)上做逐层拆解,
 把"为什么能到一万多倍"讲清楚。所有数字均为实跑, 非估计。"""
-import copy
 import crypto_options_bt as m
-import crypto_adoption_v2 as ca2
 
 px10 = m.pd.read_csv('data/weekly_adjclose_crypto50_10y.csv', index_col=0, parse_dates=True).sort_index()
 print(f"[面板] 10y = {len(px10)} 周, {px10.index[0].date()} ~ {px10.index[-1].date()}, {px10.shape[1]} 币\n")

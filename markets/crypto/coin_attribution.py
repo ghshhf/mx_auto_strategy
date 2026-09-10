@@ -13,7 +13,6 @@ coin_attribution.py - 逐币边际贡献归因分析 (Leave-One-Out)
 """
 import os, sys, time, json
 import pandas as pd
-import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -143,7 +142,7 @@ def main():
               f"MDD={r['delta_mdd']:+.1f}pp  ({r['themes']})")
 
     # ---- 5. 批量删除测试 ----
-    print(f"\n[5] 批量删除测试 (同时删所有Δ10y>+5%的币):")
+    print("\n[5] 批量删除测试 (同时删所有Δ10y>+5%的币):")
     del_coins = [r['coin'] for r in drag_coins]
     if del_coins:
         for name, pnl, st in WINDOWS:
@@ -184,10 +183,10 @@ def main():
     # ---- 7. 生成报告 ----
     lines = []
     lines.append("# 逐币 Leave-One-Out 归因报告\n\n")
-    lines.append(f"> 生成时间: 2026-08-13  |  方法: 逐个删除进攻币, 跑三窗口回测\n")
-    lines.append(f"> Δ收益% = (删后倍数 / 基线倍数 - 1) × 100\n")
-    lines.append(f"> 正值 = 删了反而涨 → 该币拖累收益 (删除候选)\n")
-    lines.append(f"> 负值 = 删了跌 → 该币有正贡献 (保留)\n\n")
+    lines.append("> 生成时间: 2026-08-13  |  方法: 逐个删除进攻币, 跑三窗口回测\n")
+    lines.append("> Δ收益% = (删后倍数 / 基线倍数 - 1) × 100\n")
+    lines.append("> 正值 = 删了反而涨 → 该币拖累收益 (删除候选)\n")
+    lines.append("> 负值 = 删了跌 → 该币有正贡献 (保留)\n\n")
 
     lines.append("## 基线表现\n\n")
     lines.append("| 窗口 | 倍数 | MDD | Sharpe |\n")

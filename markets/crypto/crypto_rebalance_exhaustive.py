@@ -6,7 +6,6 @@
 全组合明细存 markets/crypto/data/rebalance_exhaustive.csv, 终端只出统计。
 """
 import os
-import sys
 import importlib.util
 from itertools import combinations
 

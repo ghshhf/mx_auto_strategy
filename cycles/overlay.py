@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 
 from . import specs
-from .phases import load_cycles, composite_regime, tilt_multiplier
+from .phases import load_cycles, composite_regime
 
 DEFAULT_TILT = specs.DEFAULT_TILT  # = 0.5; 乘数 ∈ [TILT_MIN, TILT_MAX] = [0.5, 1.5]
 TILT_MIN, TILT_MAX = specs.TILT_MIN, specs.TILT_MAX

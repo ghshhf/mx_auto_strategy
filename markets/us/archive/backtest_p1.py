@@ -11,7 +11,7 @@ backtest_p1.py - P1-a 崩盘保护: 趋势闸(双模式)
   2) 实盘崩盘窗口(COVID/2022)有闸 vs 无闸
   3) -70% 系统性崩盘外推(用 CWB 实测 beta)
 """
-import pandas as pd, numpy as np, os
+import numpy as np, os
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
 HERE = os.path.dirname(__file__); DATA = os.path.join(HERE, 'data')
 import backtest_p0 as P
@@ -20,7 +20,7 @@ def main():
     px = P.load_us50()
     bm = P.const_map(px, 0.04); wcm = P.const_map(px, 0.0)
     spy_m, spy_c, spy_d = P.spy_stats(px)
-    print(f"=== P1-a 崩盘保护 (US50, band4%/wc=0/year) ===\n")
+    print("=== P1-a 崩盘保护 (US50, band4%/wc=0/year) ===\n")
 
     # 1) 减仓档位扫描 (两种模式)
     print("【减仓档位】 floor=风险关时股票仓保留比例")

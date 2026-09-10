@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """对当前 v3 面板(40币)重算三轮减半周期参与度，按档分组输出可扫读筛选视图。"""
-import os, sys, json
+import os, json
 import datetime as dt
 import numpy as np
 import pandas as pd

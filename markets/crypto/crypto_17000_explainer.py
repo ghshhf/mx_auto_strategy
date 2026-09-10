@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """生成 17000x 学习 HTML: 复现 + 逐层瀑布 + 净值曲线 + 减半相位时间轴。"""
-import copy, json
+import json
 import crypto_options_bt as m
-import crypto_adoption_v2 as ca2
 
 px10 = m.pd.read_csv('data/weekly_adjclose_crypto50_10y.csv', index_col=0, parse_dates=True).sort_index()
 dates = [d.strftime('%Y-%m-%d') for d in px10.index]
@@ -62,7 +61,7 @@ data = {
     'mdd170': r_pub['mdd']*100,
     'sharpe170': r_pub.get('sharpe',0),
 }
-print(f"  逐层(10y): " + " -> ".join(f"{n.split(' ')[0]}={x:.0f}x" for n,x in layers))
+print("  逐层(10y): " + " -> ".join(f"{n.split(' ')[0]}={x:.0f}x" for n,x in layers))
 
 TEMPLATE = r'''<!DOCTYPE html>
 <html lang="zh">

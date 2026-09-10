@@ -840,7 +840,6 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
             d_pct = min(100, d_pct + o_pct); o_pct = 0.0
         # 波动率目标: 用进攻篮子近 13 周已实现波动缩放进攻仓(降回撤)
         if vol_target and off_codes and o_pct > 0:
-            import math
             vols = []
             for c in off_codes:
                 v = series.get(c)
@@ -1064,8 +1063,10 @@ def run(offense_mode="fixed", grid=False, grid_step=0.06, grid_band=0.12,
 
 if __name__ == "__main__":
     print("=== A 股回测引擎: 基线 vs 优化杠杆对比 (含交易成本) ===\n")
-    panel = os.path.join(DATA, "ashare_panel_close_em.csv")
-    use_panel = panel_path if panel_path else (panel if os.path.exists(panel) else None)
+    # 面板路径: 命令行可选显式传入; 缺省回落到 DATA/ashare_panel_close_em.csv。
+    # 文件不存在时传 None, 走引擎内置重建路径 (不要在 __main__ 里引用未定义的 panel_path)。
+    panel = sys.argv[1] if len(sys.argv) > 1 else os.path.join(DATA, "ashare_panel_close_em.csv")
+    use_panel = panel if os.path.exists(panel) else None
     configs = [
         ("基线(固定OFF4, 无网格)", dict(offense_mode="fixed", grid=False, death_cross=True, panel_path=use_panel, use_core_sub=True)),
         ("动态26(纯动量)", dict(offense_mode="momentum", momentum_lookback=26, use_tech=True, grid=False, death_cross=True, panel_path=use_panel, use_core_sub=True)),

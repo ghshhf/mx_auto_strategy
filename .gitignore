@@ -3,6 +3,13 @@ __pycache__/
 *.pyc
 *.pyo
 
+# 工具缓存 (pytest/ruff 会在仓库根生成, 未忽略时 git status 长期脏)
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
 # 本地状态/缓存
 .grid_state.json
 .rebalance_state.json
@@ -49,3 +56,6 @@ markets/ashare/cache/
 
 # 临时对比测试脚本
 markets/ashare/_cmp_*.py
+
+# run_all.py 每日留档快照 (基线 truth_baseline.json 需入库, 快照不需要)
+reports/truth_snapshot_*.json

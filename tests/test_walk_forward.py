@@ -14,8 +14,8 @@ import unittest
 import csv
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "markets", "ashare"))
-from walk_forward import walk_forward, print_report
-from backtest_engine import DEF16, OFF4, CORE_SUB, HS300, DC_INDICES
+from walk_forward import walk_forward
+from backtest_engine import DEF16, CORE_SUB, HS300, DC_INDICES
 
 
 def _make_panel(tmpdir, n_weeks=300):

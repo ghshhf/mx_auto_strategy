@@ -23,6 +23,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 from portfolio_blend import metrics, blend_equal, blend_rebalanced
 from blend_btc_sox import blend_rebalance_drift
+import report_html as rh
 
 WIN0 = "2016-09-01"
 
@@ -100,55 +101,38 @@ def main():
 
 
 def _html(df, single, schemes, blends, corr, vol):
-    dates = [str(d.date()) for d in df.index]
-    series = {c: [round(float(x), 4) for x in df[c].values] for c in df.columns}
+    dates = rh.dates_of(df.index)
+    series = rh.series_of(df)
     bnav = {n: [round(float(x), 4) for x in nav.values] for n, nav in schemes.items()}
-    rows_single = "".join(
-        f"<tr><td>{c}</td><td class='r'>{m['multiple']:.2f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for c, m in single.items())
-    rows_blend = "".join(
-        f"<tr><td>{n}</td><td class='r'>{m['multiple']:.2f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for n, m in blends.items())
-    s_traces = "".join(f"{{x:D.dates, y:series['{c}'], name:'{c}', mode:'lines'}}," for c in df.columns)
-    b_traces = "".join(f"{{x:D.dates, y:bnav['{n}'], name:'{n}', mode:'lines'}}," for n in schemes)
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
-<title>道指 + 能源(XLE) 10年混合再平衡</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-<style>body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1117;color:#e6e9ef;margin:0;padding:32px;}}
-h1{{font-size:24px;margin:0 0 4px;}} .sub{{color:#9aa3b2;margin-bottom:20px;}}
-.card{{background:#171a23;border:1px solid #262b38;border-radius:14px;padding:20px;margin-bottom:20px;}}
-table{{border-collapse:collapse;width:100%;font-size:14px;}} th,td{{border-bottom:1px solid #2a3040;padding:8px 10px;text-align:left;}}
-td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
-.note{{color:#9aa3b2;font-size:13px;line-height:1.7;}} .hl{{color:#7ee787;}}</style></head>
-<body>
-<h1>道指(^DJI) + 能源(XLE) · 10年混合再平衡回测</h1>
-<div class="sub">道琼斯工业 + 能源板块ETF(XLE) · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非业绩承诺</div>
+    traces = rh.line_traces(series) + "," + rh.line_traces(schemes, y_root="D.bnav")
 
-<div class="card"><h3 style="margin-top:0">净值曲线 (对数轴, 起点=1)</h3>
-<div id="c1" style="width:100%;height:460px"></div></div>
-
-<div class="card"><h3 style="margin-top:0">单资产指标 (10年窗口)</h3>
-<table><tr><th>资产</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_single}</table></div>
-
-<div class="card"><h3 style="margin-top:0">组合方案对比</h3>
-<table><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_blend}</table>
-<p class="note">核心发现: 道指与能源周收益相关系数仅 <span class="hl">{corr:.3f}</span>, 远低于三个美股指数之间的 0.81~0.94 ——
-能源是道指<b>真正的分散资产</b>(能源年化波动 {vol['能源XLE']}% 远高于道指 {vol['道指']}%, 波动差异大且相关性中等, 正是再平衡"卖涨买跌"的理想土壤)。<br><br>
-但实测再平衡增益≈0 (季调 {blends['等权50/50 (季度再平衡)']['multiple']:.2f}x vs 持有 {blends['等权50/50 (持有不调)']['multiple']:.2f}x), 因为两者10年总收益高度接近(道指 2.90x / 能源 2.81x), 无持续相对强弱差可收割。<br><br>
-<b>真正的价值在降回撤</b>: 能源单资产 MDD 高达 -63.9%(极 brutal); 与道指 50/50 后 MDD 降至 -48% 左右, 倾斜 60/40 道指-能源进一步压到 -44.4% 且 Sharpe 最优(0.66)。<br>
-结论: 道指配能源<b>值得做</b>(比配纳指/标普有意义得多), 但其意义是<span class="hl">用道指给高波动能源当减震器</span>, 而非靠再平衡增厚收益。</p></div>
-
-<script>
-const D = {{dates:dates, series:{series}, bnav:{bnav}}};
-Plotly.newPlot('c1', [
-  {s_traces}
-  {b_traces}
-], {{paper_bgcolor:'#171a23',plot_bgcolor:'#171a23',font:{{color:'#e6e9ef'}},
-  yaxis:{{type:'log',title:'净值(对数,起点=1)'}}, xaxis:{{title:''}},
-  legend:{{orientation:'h',y:1.08}}, margin:{{t:20,b:40,l:60,r:20}}}}, {{responsive:true}});
-</script></body></html>"""
+    body = (
+        rh.data_block(dates=dates, series=series, bnav=bnav)
+        + rh.card("净值曲线 (对数轴, 起点=1)", rh.nav_chart("c1", traces, height=460))
+        + rh.card("单资产指标 (10年窗口)",
+                  rh.metric_table(["资产", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(single)))
+        + rh.card("组合方案对比",
+                  rh.metric_table(["方案", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(blends))
+                  + f"<p class='note'>核心发现: 道指与能源周收益相关系数仅 <span class='hl'>{corr:.3f}</span>, "
+                    "远低于三个美股指数之间的 0.81~0.94 ——"
+                    f"能源是道指<b>真正的分散资产</b>(能源年化波动 {vol['能源XLE']}% 远高于道指 {vol['道指']}%, "
+                    "波动差异大且相关性中等, 正是再平衡\"卖涨买跌\"的理想土壤)。<br><br>"
+                    f"但实测再平衡增益≈0 (季调 {blends['等权50/50 (季度再平衡)']['multiple']:.2f}x "
+                    f"vs 持有 {blends['等权50/50 (持有不调)']['multiple']:.2f}x), "
+                    "因为两者10年总收益高度接近(道指 2.90x / 能源 2.81x), 无持续相对强弱差可收割。<br><br>"
+                    "<b>真正的价值在降回撤</b>: 能源单资产 MDD 高达 -63.9%(极 brutal); 与道指 50/50 后 MDD 降至 -48% 左右, "
+                    "倾斜 60/40 道指-能源进一步压到 -44.4% 且 Sharpe 最优(0.66)。<br>"
+                    "结论: 道指配能源<b>值得做</b>(比配纳指/标普有意义得多), 但其意义是"
+                    "<span class='hl'>用道指给高波动能源当减震器</span>, 而非靠再平衡增厚收益。</p>")
+    )
+    return rh.page(
+        title="道指 + 能源(XLE) 10年混合再平衡",
+        h1="道指(^DJI) + 能源(XLE) · 10年混合再平衡回测",
+        sub=f"道琼斯工业 + 能源板块ETF(XLE) · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非业绩承诺",
+        body=body,
+    )
 
 
 if __name__ == '__main__':

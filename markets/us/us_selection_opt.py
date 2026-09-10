@@ -16,22 +16,15 @@ us_selection_opt.py - 美股选币逻辑参数优化扫描
 6. trend_gate: ma5/ma200/None
 7. alloc_offense_mult: 1.0/1.2/1.5 (进攻仓位倍数)
 """
-import os, sys, time, json, math, statistics
-import pandas as pd
-import numpy as np
+import os, sys, time, statistics
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 
 from us_backtest_ai import (
-    load_panel, load_us_cfg, run_optimized, run_baseline,
-    select_optimized, select_baseline, eligible_universe,
-    regime_of, death_cross_count, pick_defense_lowvol,
-    _ma, WARMUP, EXCLUDE, DEF_NEW, DEF_CANDIDATES,
-    ai_mult_deterministic, PANEL, series_proxy, finalize
+    load_panel, load_us_cfg, run_optimized, PANEL, series_proxy
 )
-import us_backtest_ai as usb
 
 # 加载面板
 dates, series = load_panel(PANEL)

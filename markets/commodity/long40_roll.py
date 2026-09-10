@@ -102,7 +102,7 @@ for yi in years:
     win_mult *= m['mult']
 total_yrs = (PX.index[-1]-PX.index[0]).days/365.25
 full_cagr = (win_mult**(1/total_yrs)-1)*100
-print(f"\n=== 40年滚动换池(每10年重筛高波动龙头, 随时切换) ===")
+print("\n=== 40年滚动换池(每10年重筛高波动龙头, 随时切换) ===")
 print(f"全期净CAGR: {full_cagr:.2f}% | 终值倍数: {win_mult:.1f}x | 跨度 {total_yrs:.0f}年")
 print("\n时段    池N  段CAGR  段倍数  新进龙头")
 for y,n,cg,mu,new in seg_rows:

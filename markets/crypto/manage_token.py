@@ -406,7 +406,6 @@ def recent_set(sym, add=True):
 
 # ---------------------------------------------------------------- 命令 --
 def cmd_list(args):
-    import importlib
     sys.path.insert(0, HERE)
     import crypto_adoption_v2 as ca2
     print('=== 运营池 (crypto_adoption_v2.THEME_COINS) ===')
@@ -455,7 +454,7 @@ def cmd_add(args):
         raise SystemExit(f"✗ {sym} 各源K线均不足 ({len(weekly)}), 终止")
     ks = sorted(weekly)
     print(f"  源={src}, {len(weekly)} 周, {ks[0]} → {ks[-1]}")
-    print(f"[2/5] 写入面板...")
+    print("[2/5] 写入面板...")
     for fname in PANELS:
         st = panel_set_column(fname, sym, weekly)
         print(f"  {fname}: {st['weeks']} 有效周, {st['first']} → {st['last']}")
@@ -464,7 +463,7 @@ def cmd_add(args):
         print('  (池内已存在, 跳过)')
     if not meta_add(sym, args.name or sym, args.track, args.launch):
         print('  (COIN_META 已存在, 跳过)')
-    print(f"[4/5] 市值/CMC 映射...")
+    print("[4/5] 市值/CMC 映射...")
     cg = args.cg_id or cg_resolve_id(sym, args.name)
     if cg:
         cgmap_add(sym, cg)
@@ -480,7 +479,7 @@ def cmd_add(args):
     if args.cmc_id:
         ds_cmcmap_add(sym, args.cmc_id)
     recent_set(sym, add=True)
-    print(f"[5/5] 校验...")
+    print("[5/5] 校验...")
     r = subprocess.run([sys.executable, os.path.join(HERE, 'manage_token.py'),
                         'verify', sym], capture_output=True, text=True,
                        encoding='utf-8')
@@ -496,16 +495,16 @@ def cmd_remove(args):
             print(f"  {fname}: 已删列")
         else:
             print(f"  {fname}: 无该列")
-    print(f"[2/4] 运营池 + COIN_META...")
+    print("[2/4] 运营池 + COIN_META...")
     print('  池:', '已移除' if pool_remove(sym) else '(不在池内)')
     print('  META:', '已移除' if meta_remove(sym) else '(无条目)')
-    print(f"[3/4] 映射清理...")
+    print("[3/4] 映射清理...")
     print('  CG(fetch_mcaps):', '已移除' if cgmap_remove(sym) else '(无)')
     print('  CMC(sync):', '已移除' if cmcmap_remove(sym) else '(无)')
     print('  DS-CG(data_sources):', '已移除' if ds_cgmap_remove(sym) else '(无)')
     print('  DS-CMC(data_sources):', '已移除' if ds_cmcmap_remove(sym) else '(无)')
     recent_set(sym, add=False)
-    print(f"[4/4] 校验...")
+    print("[4/4] 校验...")
     r = subprocess.run([sys.executable, os.path.join(HERE, 'manage_token.py'),
                         'verify', sym], capture_output=True, text=True,
                        encoding='utf-8')
@@ -521,7 +520,7 @@ def cmd_refresh(args):
         raise SystemExit(f"✗ {sym} K线不足 ({len(weekly)}), 终止")
     ks = sorted(weekly)
     print(f"  源={src}, {len(weekly)} 周, {ks[0]} → {ks[-1]}")
-    print(f"[2/3] 重写面板列 (-3 口径)...")
+    print("[2/3] 重写面板列 (-3 口径)...")
     for fname in PANELS:
         rows, _, _ = read_panel(fname)
         if sym not in rows[0]:
@@ -529,7 +528,7 @@ def cmd_refresh(args):
             continue
         st = panel_set_column(fname, sym, weekly)
         print(f"  {fname}: {st['weeks']} 有效周, {st['first']} → {st['last']}")
-    print(f"[3/3] 校验...")
+    print("[3/3] 校验...")
     r = subprocess.run([sys.executable, os.path.join(HERE, 'manage_token.py'),
                         'verify', sym], capture_output=True, text=True,
                        encoding='utf-8')

@@ -25,7 +25,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(BASE))
 sys.path.insert(0, BASE)
 from analog_core import fetch_long              # noqa: E402
-from sector_universe import UNIVERSE, iter_etfs  # noqa: E402
+from sector_universe import iter_etfs  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "records")
 os.makedirs(OUT_DIR, exist_ok=True)

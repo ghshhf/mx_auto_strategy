@@ -13,7 +13,6 @@
   4. 打印年度收益交叉验证: 合成SEMI_INDEX vs 真实SOX, 合成TECH_INDEX vs 真实XLK(用年度锚点)
 """
 import os, csv, json, sys
-from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)

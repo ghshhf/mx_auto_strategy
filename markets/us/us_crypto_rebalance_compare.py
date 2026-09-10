@@ -4,8 +4,6 @@
 加密数据: 直接调 crypto 侧已算结果或重算公平窗满配。
 """
 import os
-import sys
-import importlib.util
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 

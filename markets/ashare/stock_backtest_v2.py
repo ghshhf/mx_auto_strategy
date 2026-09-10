@@ -13,7 +13,7 @@ stock_backtest_v2.py —— 个股α引擎 v2 (诚实优化扫描)
 诚实约束: 不为了逼近 18x(34%年化) 而过拟合; 只展示"拨盘松紧"的取舍前沿,
 真实价值在控回撤而非造倍数。
 """
-import os, sys, json, math, argparse
+import os, sys, argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import data_store as ds
 import analog_core as ac

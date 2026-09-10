@@ -10,6 +10,7 @@ import os, sys, json
 import numpy as np, pandas as pd
 ROOT = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, ROOT)
 from portfolio_blend import metrics
+import report_html as rh
 
 def lw(fn):
     d = pd.read_csv(fn, parse_dates=['date']).set_index('date').sort_index()['close']
@@ -38,21 +39,29 @@ def main():
     print('已写出 docs/defense_engine_check.html')
 
 def _html(rows):
-    tr = "".join(f"<tr><td>{r['name']}</td><td class='c'>{r['btc_corr']:+.3f}</td><td>{r['nasdaq_corr']:+.3f}</td>"
-                 f"<td class='r'>{r['multiple']:.2f}x</td><td>{r['mdd']:.1f}%</td><td>{r['vol']:.1f}%</td>"
-                 f"<td class='{'hl' if '防御' in r['role'] or '分散' in r['role'] else 'warm'}'>{r['role']}</td></tr>" for r in rows)
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>防御 vs 引擎 角色判定</title>
-<style>body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1117;color:#e6e9ef;margin:0;padding:32px;}}
-h1{{font-size:22px;margin:0 0 6px;}} .sub{{color:#9aa3b2;margin-bottom:18px;}}
-.card{{background:#171a23;border:1px solid #262b38;border-radius:14px;padding:20px;}}
-table{{border-collapse:collapse;width:100%;font-size:14px;}} th,td{{border-bottom:1px solid #2a3040;padding:8px 10px;text-align:left;}}
-td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}} td.c{{text-align:right;color:#7ee787;}}
-.hl{{color:#7ee787;font-weight:600;}} .warm{{color:#ffb86c;}} .note{{color:#9aa3b2;font-size:13px;line-height:1.75;}}</style></head>
-<body><h1>防御 vs 引擎 · 角色判定（相关性证据）</h1>
-<div class="sub">窗口 2018-06-22~2026-08-28 · vs BTC / vs 纳指 周收益相关系数</div>
-<div class="card"><table><tr><th>标的</th><th>vs BTC</th><th>vs 纳指</th><th>10年倍数</th><th>MDD</th><th>年化波动</th><th>真实角色</th></tr>{tr}</table>
-<p class="note">判定: <span class="hl">真防御/地域分散</span> = 与 BTC 近零相关且波动&lt;25%；<span class="warm">引擎克隆</span> = 与纳指相关&gt;0.8（即纳指放大组件, 非防御）。<br>
-结论: 宝洁/百事/可口可乐是经典防御(低相关+低波动+浅回撤); 韩国KOSPI是地域分散(对BTC微负); 苹果/微软与纳指0.73~0.76, 属引擎, 全买一遍=加倍下注纳指因子, 不构成分散。</p></div></body></html>"""
+    tr = "".join(
+        f"<tr><td>{rh.esc(r['name'])}</td><td class='c'>{r['btc_corr']:+.3f}</td>"
+        f"<td>{r['nasdaq_corr']:+.3f}</td>"
+        f"<td class='r'>{r['multiple']:.2f}x</td><td>{r['mdd']:.1f}%</td><td>{r['vol']:.1f}%</td>"
+        f"<td class='{'hlb' if '防御' in r['role'] or '分散' in r['role'] else 'warm'}'>{rh.esc(r['role'])}</td></tr>"
+        for r in rows)
+
+    body = rh.card(
+        "",  # 该页只有一张表, 卡片内不另起小标题
+        "<table><tr><th>标的</th><th>vs BTC</th><th>vs 纳指</th><th>10年倍数</th>"
+        f"<th>MDD</th><th>年化波动</th><th>真实角色</th></tr>{tr}</table>"
+        "<p class='note'>判定: <span class='hlb'>真防御/地域分散</span> = 与 BTC 近零相关且波动&lt;25%；"
+        "<span class='warm'>引擎克隆</span> = 与纳指相关&gt;0.8（即纳指放大组件, 非防御）。<br>"
+        "结论: 宝洁/百事/可口可乐是经典防御(低相关+低波动+浅回撤); 韩国KOSPI是地域分散(对BTC微负); "
+        "苹果/微软与纳指0.73~0.76, 属引擎, 全买一遍=加倍下注纳指因子, 不构成分散。</p>",
+    )
+    return rh.page(
+        title="防御 vs 引擎 角色判定",
+        h1="防御 vs 引擎 · 角色判定（相关性证据）",
+        sub="窗口 2018-06-22~2026-08-28 · vs BTC / vs 纳指 周收益相关系数",
+        body=body,
+        plotly=False,  # 本页无图表, 不加载 Plotly CDN
+    )
 
 if __name__ == '__main__':
     main()

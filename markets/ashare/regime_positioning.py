@@ -225,7 +225,7 @@ def main():
 
     # 基准: 18倍/10年
     bench_cagr = (18 ** (1/10) - 1) * 100
-    print(f"\n--- 基准参照 ---")
+    print("\n--- 基准参照 ---")
     print(f"  历史记录 '10年18倍' ≈ 年化 {bench_cagr:.1f}%")
     print(f"  上证始终满仓 CAGR: {mb['cagr'] if 'mb' in dir() else '-'}% (长期被牛熊拉平)")
     print(f"  上证相位开闸 CAGR: {mt['cagr'] if 'mt' in dir() else '-'}%")

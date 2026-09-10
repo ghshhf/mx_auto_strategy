@@ -8,7 +8,7 @@
    (检验是"贪心策略本身"稳健, 还是单次贪心碰巧)
 4) 对照: 该池 vs 随机池 vs 全池 的逐年表现
 """
-import pandas as pd, numpy as np, sys
+import pandas as pd, numpy as np
 import core20 as E
 
 rng = np.random.default_rng(31337)

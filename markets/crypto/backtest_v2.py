@@ -247,7 +247,7 @@ def main():
     r = run_backtest(px, cost_bps=args.cost_bps, label='V5',
                      vol_target=args.vol_target, crash_guard=cg,
                      offense_n=args.offense_n)
-    print(f"\n=== Crypto50 回测 (重建引擎) ===")
+    print("\n=== Crypto50 回测 (重建引擎) ===")
     print(f"  数据: {px.shape[0]}周 × {px.shape[1]}币  ({px.index[0].date()}~{px.index[-1].date()})")
     print(f"  配置: cost={args.cost_bps*10000:.0f}bps offense_n={args.offense_n} "
           f"volT={args.vol_target} crash={args.crash_thr}")
@@ -255,9 +255,9 @@ def main():
     print(f"  {'-'*55}")
     print(f"  {r['multiple']:>9.1f}x{r['cagr']*100:>8.1f}%{r['mdd']*100:>8.1f}%"
           f"{r['sharpe']:>8.2f}{r['crash_weeks']:>8}")
-    print(f"\n  数据来源: Binance/OKX 真实周K线 (weekly_adjclose_crypto50.csv, 2017-2026)。")
-    print(f"  ⚠ 诚实口径: 标的池为'现存主流币'清单, 已死/下架小币未纳入 → 含幸存者偏差(偏高);")
-    print(f"    且真实数据仅 2017 起(Binance 上币), 非合成数据的'10年'。倍数仅供方法论证, 非未来承诺。")
+    print("\n  数据来源: Binance/OKX 真实周K线 (weekly_adjclose_crypto50.csv, 2017-2026)。")
+    print("  ⚠ 诚实口径: 标的池为'现存主流币'清单, 已死/下架小币未纳入 → 含幸存者偏差(偏高);")
+    print("    且真实数据仅 2017 起(Binance 上币), 非合成数据的'10年'。倍数仅供方法论证, 非未来承诺。")
 
 
 if __name__ == '__main__':

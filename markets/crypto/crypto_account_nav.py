@@ -9,7 +9,6 @@
 对比: ①单组4币(之前"抽一组")的美元净值  ②全池一个组(钱在组间也流动) ③等权死拿指数。
 """
 import os
-import sys
 import importlib.util
 import random
 from itertools import combinations
@@ -108,8 +107,8 @@ def main():
     print("\n" + "=" * 70)
     print(f"单组4币 (等权$买入一组并月度再平衡, 715组): 中位 {q[len(q)//2]:.1f}x  均值 {sum(q)/len(q):.1f}x  "
           f"区间 {q[-1]:.1f}x ~ {q[0]:.1f}x")
-    print(f"  (口径提醒: 产币率37.9%/y→币量6.06y=7.0x 是'囤币量'倍数; 美元净值另有币价上涨, "
-          f"中位12.8x——两者不同轴, 不可混用/互换)")
+    print("  (口径提醒: 产币率37.9%/y→币量6.06y=7.0x 是'囤币量'倍数; 美元净值另有币价上涨, "
+          "中位12.8x——两者不同轴, 不可混用/互换)")
     print("  美元口径 TOP5:")
     for v, g in scored[:5]:
         r, _, _ = sam.annual_chip_rate(sub, list(g), start=START)

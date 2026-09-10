@@ -142,18 +142,38 @@ def fetch_coin_from(start_date, binance_sym, okx_sym, cmc_id=None):
         if len(w) >= 1:
             print(f"    CMC 成功: {len(w)} 周", file=sys.stderr)
             return w
-        print(f"    CMC 数据为空", file=sys.stderr)
+        print("    CMC 数据为空", file=sys.stderr)
 
     return {}
 
 
-def sync_file(fname, prefetched=None):
-    """增量同步单个面板 CSV.
+#: 尾部回溯重写窗口(周). 见 TAIL_REFRESH_NOTE.
+TAIL_REFRESH_WEEKS = 8
+
+TAIL_REFRESH_NOTE = """
+2026-09-10 修复: 历史版本只追加 `d > 面板末日` 的行, 而"当前未完结周"一旦
+写入就再也不会被更新. 后果: 若某次同步恰好跑在周初, 该周行会永久冻结在周初
+价格上 —— 实测 2026-08-30 那周 RAY 周内 +66%(0.772→1.286), 面板却记成
+0.778(-39%); ZEC -33% / UNI -30% 同类. 越靠近当下的行污染越重, 而回测恰恰
+最依赖最近的数据.
+现改为: 同步时**回溯重写尾部 N 周**(已收盘周用交易所终值覆盖周初快照),
+再追加更新的周. 取值优先级 Binance > OKX > CMC, 只在取到非空值时覆盖,
+不会把已有数据改成空.
+"""
+
+_BIG_CORRECTION = 0.10  # 单格修正幅度超过 10% 时高亮提示 (属正常修复, 但需可见)
+
+
+def sync_file(fname, prefetched=None, tail_refresh=TAIL_REFRESH_WEEKS, dry_run=False):
+    """同步单个面板 CSV: 尾部回溯重写 + 增量追加.
 
     prefetched: 可选 dict {coin: {date: close}}. 传入时跳过逐币拉取, 直接用
-    预取结果并过滤 "晚于本面板末日" 的行——供 sync_all_panels 单次取数后
-    复用到 c50/v3/10y 三张同币池面板, 消除三份网络取数造成的末行漂移.
-    列顺序不同的面板(10y)按 header 列名写回, 与取数顺序无关.
+    预取结果——供 sync_all_panels 单次取数后复用到 c50/v3/10y 三张同币池面板,
+    消除三份网络取数造成的末行漂移. 列顺序不同的面板(10y)按 header 列名写回,
+    与取数顺序无关.
+
+    tail_refresh: 回溯重写的周数 (0 = 退化为旧的纯追加行为).
+    dry_run: 只报告将要发生的修改, 不落盘.
     """
     path = os.path.join(DATA, fname)
     if not os.path.exists(path):
@@ -166,16 +186,22 @@ def sync_file(fname, prefetched=None):
     data = rows[1:]
     coins = header[1:]
     last_date = data[-1][0]
+
+    _ld = datetime.datetime.strptime(last_date, '%Y-%m-%d').date()
+    refresh_from = (_ld - datetime.timedelta(weeks=tail_refresh)).isoformat() if tail_refresh \
+        else last_date
+
     cmc_status = "ON" if _CMC_KEY else "OFF"
     src_tag = f"  预取源={len(prefetched) if prefetched else 0}币"
     print(f"\n=== {fname} ===  现有末日={last_date}  币种={len(coins)}  CMC={cmc_status}{src_tag}")
+    print(f"  回溯窗口: >= {refresh_from} (尾部 {tail_refresh} 周将被重写)")
 
     syms = chd.all_coin_symbols()
     new_series = {}
     empty_coins = []
     for coin in coins:
         if prefetched is not None:
-            w = {d: p for d, p in prefetched.get(coin, {}).items() if d > last_date}
+            w = {d: p for d, p in prefetched.get(coin, {}).items() if d >= refresh_from}
             new_series[coin] = w
             continue
         cfg = syms.get(coin)
@@ -184,31 +210,77 @@ def sync_file(fname, prefetched=None):
             print(f"  [警告] {coin} 无符号映射, 留空")
             empty_coins.append(coin)
             continue
-        w = fetch_coin_from(last_date, cfg['binance'], cfg['okx'], cmc_id=cmc_id)
-        w = {d: p for d, p in w.items() if d > last_date}
+        w = fetch_coin_from(refresh_from, cfg['binance'], cfg['okx'], cmc_id=cmc_id)
+        w = {d: p for d, p in w.items() if d >= refresh_from}
         new_series[coin] = w
         time.sleep(0.05)
 
-    all_new_dates = set()
-    for coin in coins:
-        all_new_dates.update(new_series.get(coin, {}).keys())
-    new_dates = sorted(all_new_dates)
-    if not new_dates:
-        print("  无需追加 (已是最新)")
-        return
+    # ---- 回溯重写 + 追加 ----
+    idx = {r[0]: i for i, r in enumerate(data)}
+    ci = {c: header.index(c) for c in coins}
+    corrections = []          # (date, coin, old, new, 幅度)
+    updated_cells = 0
+    new_dates = set()
 
-    print(f"  新增周: {new_dates}")
-    for d in new_dates:
-        row = [d] + [('' if coin in empty_coins else new_series.get(coin, {}).get(d, ''))
-                     for coin in coins]
-        data.append(row)
+    for coin in coins:
+        if coin in empty_coins:
+            continue
+        for d, p in new_series.get(coin, {}).items():
+            if p is None or p == '':
+                continue
+            i = idx.get(d)
+            if i is None:                      # 新周 -> 追加
+                new_dates.add(d)
+                continue
+            old = data[i][ci[coin]]            # 已存在 -> 用交易所终值覆盖
+            if old == '' or str(old) == str(p):
+                if old == '':
+                    data[i][ci[coin]] = p
+                    updated_cells += 1
+                continue
+            try:
+                dev = abs(float(old) / float(p) - 1)
+            except (TypeError, ValueError, ZeroDivisionError):
+                dev = 0.0
+            data[i][ci[coin]] = p
+            updated_cells += 1
+            if dev > 0.001:
+                corrections.append((d, coin, old, p, dev))
+
+    for d in sorted(new_dates):
+        data.append([d] + [''] * (len(header) - 1))
     data.sort(key=lambda r: r[0])
+    idx = {r[0]: i for i, r in enumerate(data)}   # 追加后重建索引
+    for coin in coins:
+        if coin in empty_coins:
+            continue
+        for d in new_dates:
+            p = new_series.get(coin, {}).get(d)
+            if p is not None and p != '':
+                data[idx[d]][ci[coin]] = p
+
+    corrections.sort(key=lambda x: -x[4])
+    if corrections:
+        print(f"  回溯修正 {len(corrections)} 格 (幅度>0.1%):")
+        for d, coin, old, p, dev in corrections[:12]:
+            mark = '  <== 大幅修正' if dev > _BIG_CORRECTION else ''
+            print(f"    {d} {coin:<7} {old:>14} -> {p:>14}  ({dev*100:>5.1f}%){mark}")
+        if len(corrections) > 12:
+            print(f"    ... 另 {len(corrections)-12} 格")
+    if not new_dates and updated_cells == 0:
+        print("  无需修改 (已是最新)")
+        return
+    print(f"  新增周: {sorted(new_dates) if new_dates else '无'}   重写格数: {updated_cells}")
+
+    if dry_run:
+        print(f"  [dry-run] 未落盘。若执行将写入 -> {path}")
+        return
 
     with open(path, 'w', encoding='utf-8-sig', newline='') as f:
         w = csv.writer(f)
         w.writerow(header)
         w.writerows(data)
-    print(f"  已写入 -> {path}  现共 {len(data)} 周, 末日={data[-1][0]}")
+    print(f"  已写入 -> {path}  共 {len(data)} 周, 末日={data[-1][0]}")
 
     cov = {c: sum(1 for r in data if r[header.index(c)] != '')
            for c in coins}
@@ -218,8 +290,17 @@ def sync_file(fname, prefetched=None):
 
 
 if __name__ == '__main__':
+    _tail = TAIL_REFRESH_WEEKS
+    _dry = False
+    _args = [a for a in sys.argv[1:]]
+    if '--dry-run' in _args:
+        _dry = True
+        _args.remove('--dry-run')
+    for a in _args:
+        if a.startswith('--tail='):
+            _tail = int(a.split('=', 1)[1])
     for _f in ('weekly_adjclose_crypto50.csv',
                'weekly_adjclose_crypto50_v3.csv',
                'weekly_adjclose_crypto50_10y.csv'):
-        sync_file(_f)
+        sync_file(_f, tail_refresh=_tail, dry_run=_dry)
     print("\n完成。")

@@ -19,7 +19,6 @@ Twelve Data 美股「龙头宇宙」大批量抓取 (第二批, 2026-09-09)
 import argparse
 import json
 import os
-import sys
 import time
 import urllib.error
 import urllib.parse

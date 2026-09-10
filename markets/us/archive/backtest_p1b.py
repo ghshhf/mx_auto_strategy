@@ -10,7 +10,7 @@ backtest_p1b.py - 网格层叠加: 在主策略 NAV 上叠加波动率 Harvest �
   - 全部清仓且价在中心上方时重置中心(让网格能骑趋势)
 验证: 网格 standalone 10年倍数 + 叠加到主策略(self闸47x / 无闸50x)后的总倍数。
 """
-import pandas as pd, numpy as np, os
+import pandas as pd, os
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
 HERE = os.path.dirname(__file__); DATA = os.path.join(HERE, 'data')
 import backtest_p0 as P

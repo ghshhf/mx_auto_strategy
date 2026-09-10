@@ -43,7 +43,7 @@ df[["cagr","vol"]] = df[["cagr","vol"]].astype(float)
 # ---- 用户口径: 持续高波动 + 长期收益好 + 非超级赢家 ----
 # 排除EIA噪声(偶发跳变, 长期收益≈0) + 排除TSLA/NFLX级碾压赢家
 clean_hi = df[(df.kind != "EIA") & (df.vol >= 45) & (df.cagr >= 8) & (df.cagr <= 28)]
-print(f"【用户口径池】高波动(vol≥45) + 长期收益好(8%≤CAGR≤28%) + 非超级赢家 + 排除EIA噪声")
+print("【用户口径池】高波动(vol≥45) + 长期收益好(8%≤CAGR≤28%) + 非超级赢家 + 排除EIA噪声")
 print(f"  → {len(clean_hi)} 个标的")
 print(clean_hi.sort_values("cagr", ascending=False).round(2).to_string())
 

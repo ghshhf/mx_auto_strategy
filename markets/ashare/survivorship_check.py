@@ -36,7 +36,7 @@ except Exception:
 BASE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(BASE))
 sys.path.insert(0, BASE)
-from backtest_engine import run, load_panel, DEF16, OFF4, CORE_SUB, HS300, DC_INDICES
+from backtest_engine import run, load_panel
 
 
 def compute_stock_returns(panel_path):
@@ -113,7 +113,7 @@ def main():
     # 计算所有股票涨幅排名
     returns = compute_stock_returns(panel)
     print(f"面板共 {len(returns)} 只股票")
-    print(f"涨幅 Top10:")
+    print("涨幅 Top10:")
     for code, ret in returns[:10]:
         print(f"  {code}: {ret + 1.0:.1f}x ({ret*100:+.0f}%)")
 
@@ -125,7 +125,7 @@ def main():
 
     if args.compare:
         print(f"\n{'='*70}")
-        print(f"  幸存者偏差敏感性对比")
+        print("  幸存者偏差敏感性对比")
         print(f"{'='*70}")
         print(f"{'排除数':<10}{'倍数':>8}{'MDD%':>8}{'CAGR%':>8}{'变化':>10}")
         print("-" * 50)

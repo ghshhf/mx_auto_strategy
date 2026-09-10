@@ -168,7 +168,7 @@ def main():
     rep = pd.DataFrame(report)
     rep.to_csv(os.path.join(HERE, "data", "commodity_fred_coverage.csv"), index=False, encoding="utf-8-sig")
 
-    print(f"\n=== 覆盖报告 ===")
+    print("\n=== 覆盖报告 ===")
     print(rep.groupby("group")["n_obs"].agg(["count", "min", "median", "max"]).to_string())
     print(f"\n原始频率宽表: {pw.shape}   月频宽表: {pm.shape}")
     print(f"落盘目录: {RAW}  ({len(os.listdir(RAW))} 个原始序列)")

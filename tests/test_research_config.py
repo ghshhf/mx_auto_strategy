@@ -2,7 +2,7 @@
 import pytest
 from markets.crypto.research.config import (
     normalize_institution, normalize_coin, tier_of,
-    normalize_rating, TRACKED_INSTITUTIONS, SUPPORTED_COINS_UPPER,
+    normalize_rating, SUPPORTED_COINS_UPPER,
 )
 
 # ── normalize_institution ──────────────────────────────────────

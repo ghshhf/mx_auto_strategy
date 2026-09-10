@@ -13,7 +13,6 @@
     * ROOT = 3级 HERE -> 4级
     * crypto_stocks 目录行(2级 HERE) 保留
 """
-import os
 import pathlib
 
 ROOT = pathlib.Path("E:/xmanbian/mx_auto_strategy_repo")

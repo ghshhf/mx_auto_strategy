@@ -10,7 +10,7 @@ archive/ashare_rotation_*.py 首次生成; 本脚本负责增量补齐到最新�
       (同日期取新值, 旧历史不动) -> 落盘。
 用法: python refresh_weekly_yahoo.py          # 面板名 -> csv 路径映射内置
 """
-import os, sys, json, datetime, urllib.request
+import os, json, datetime, urllib.request
 
 PROXY = "http://127.0.0.1:3067"
 HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")

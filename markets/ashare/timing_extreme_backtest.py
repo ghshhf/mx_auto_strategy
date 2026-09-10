@@ -11,9 +11,8 @@ timing_extreme_backtest.py —— 诚实测试用户提出的"极端时减仓、
   - "差不多低位再买回来": 篮子站回 MA250(修复) → 恢复满仓
 参数取常识值(-20%~-25% 深回撤阈值, MA250), 非挖矿优化。ex-ante, 无前视。
 """
-import os, sys, math, argparse
+import os, sys, argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import data_store as ds
 import stock_backtest as sb
 
 UNIVERSE = sb.UNIVERSE

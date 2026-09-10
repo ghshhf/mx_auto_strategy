@@ -48,7 +48,6 @@ import math
 import argparse
 import statistics
 import sys
-from datetime import datetime
 
 # 允许从仓库任意位置运行本脚本时仍能 import 根目录的 ai_score
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -1105,7 +1104,6 @@ def _mini_window_bt(dates, series, cfg, sim, start_w, end_w, *,
 
     track_nav=True 时额外返回每周 NAV 序列(用于OOS盲测算MDD)，向后兼容。
     """
-    import copy as _copy
     weights = {"__cash__": 1.0}
     nav_hist = [1.0]
     holdings_state = {}
@@ -1376,7 +1374,7 @@ def rolling_param_sweep(dates, series, us_cfg, window_weeks=52):
         print(f"  {rank:<5}{nav:>8.2f}{sc:>6}   {su:<18}{sbs_:>4}  {dte:>4}w {sz:>5.2f}  {ovl_:>4}   {lead:>7}{marker}")
 
     best_nav, best_sc, best_su, best_sbs, best_dte, best_sz, best_ovl = results[0]
-    print(f"\n=== 滚动选参结论:")
+    print("\n=== 滚动选参结论:")
     if (best_nav / curr_nav) >= switch_thr:
         print(f"  ✅ 建议切换 -> short_underlying={best_su}, short_by_sector={best_sbs}, short_dte_weeks={best_dte}, short_size_ratio={best_sz}, ovl_enabled={best_ovl}")
         print(f"     窗口内从 {curr_nav:.2f}x → {best_nav:.2f}x ({(best_nav/curr_nav-1)*100:+.1f}% 提升)")
@@ -1384,7 +1382,7 @@ def rolling_param_sweep(dates, series, us_cfg, window_weeks=52):
         print(f"  ✅ 保持当前配置不动 (最优仅领先 {(best_nav/curr_nav-1)*100:+.1f}%, 未到 {switch_thr*100-100:.0f}% 切换阈值, 避免抖动)")
 
     # 模式自动识别（tech_bubble / broad_bull / sector_rotation）
-    print(f"\n=== AI模式识别建议:")
+    print("\n=== AI模式识别建议:")
     # 1) tech_bubble: short TECH 1年能赢short QQQ 50%+, 且 TECH MA200偏离>1.8x
     #    近似: results里TECH dte短 vs QQQ高很多
     tech_ = [r for r in results if r[2] == "TECH_INDEX"]
@@ -1396,7 +1394,7 @@ def rolling_param_sweep(dates, series, us_cfg, window_weeks=52):
             # 2) broad_bull: QQQ赢TECH → 典型长牛宽基涨
             print(f"  🟢 检测到 BROAD_BULL_SMOOTH 模式: QQQ_TOP {qqq_[0][0]:.2f}x vs TECH_TOP {tech_[0][0]:.2f}x → 建议切 fallback_sets.broad_bull_smooth_mode")
         else:
-            print(f"  ⚪ 无明显Bull/Bubble偏向")
+            print("  ⚪ 无明显Bull/Bubble偏向")
     # 3) sector_rotation: 非科技行业(H/E/I) TOP 组合里 sbs=True 比 sbs=False 显著胜出
     sec_top_true = None
     sec_top_false = None
@@ -1407,7 +1405,7 @@ def rolling_param_sweep(dates, series, us_cfg, window_weeks=52):
     if sec_top_true and sec_top_false and (sec_top_true / sec_top_false) > 1.3:
         print(f"  🔵 检测到 SECTOR_ROTATION 模式: 非科技行业 short_by_sector=True 领先 sbs=False {sec_top_true/sec_top_false-1:+.0%} → 建议开 fallback_sets.sector_rotation_mode")
     else:
-        print(f"  ⚪ 非科技行业占比较低，继续保持 short_by_sector=False (当前生产最优)")
+        print("  ⚪ 非科技行业占比较低，继续保持 short_by_sector=False (当前生产最优)")
 
 
 # ----------------------------------------------------------------- 主程序
@@ -1525,7 +1523,7 @@ def main():
         print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {def_st['mdd']*100:.1f}%  "
               f"({(def_st['mdd']-opt_st['mdd'])*100:+.1f}pp)")
     if use_ai and opt_ai_st:
-        print(f"\n=== AI 选股层净效应(optimized -> opt+ai, 无杠杆) ===")
+        print("\n=== AI 选股层净效应(optimized -> opt+ai, 无杠杆) ===")
         print(f"  收益倍数: {opt_st['multiple']:.2f}x -> {opt_ai_st['multiple']:.2f}x  "
               f"({(opt_ai_st['multiple']/opt_st['multiple']-1)*100:+.1f}%)")
         print(f"  MDD:      {opt_st['mdd']*100:.1f}% -> {opt_ai_st['mdd']*100:.1f}%  "
@@ -1614,7 +1612,7 @@ def main():
     _, st_full = run_optimized(series, dates, use_ai=False, cfg=None,
                                 theme_div=True, max_per_theme=2, us_cfg=us_cfg_opt,
                                 options_sim=options_sim)
-    print(f"\n全量期权明细:")
+    print("\n全量期权明细:")
     print(f"  covered call 权利金收入: +{st_full.get('call_premium',0)*100:.2f}%")
     print(f"  call 被行权封顶损失:     {st_full.get('call_settle',0)*100:.2f}%")
     print(f"  protective put 成本:     -{st_full.get('put_cost',0)*100:.2f}%")

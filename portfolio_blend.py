@@ -8,7 +8,7 @@ portfolio_blend.py — 跨市场组合层 (mx_auto_strategy)  ·  v6.18 真值�
   - A股 : docs/data/nav.json  windows['full']['optimized']['mult']
           (v6.18 权威口径: 腾讯后复权 + momentum26 + 核心卫星0.5 + 死叉 + use_tech=False + trend_filter=False
            = 18.185x / CAGR22.31% / MDD-33.31%; export_nav.py 已对齐此配置, nav.json 与头条自洽。)
-  - 美股 : markets/us/data/us_nav_ai.csv  optimized_nav  (99.85x, 真实面板 + 公允 BS 期权模拟层; 模拟层非稳健真值, 仅供对照)
+  - 美股 : markets/us/data/us_nav_ai.csv  optimized_nav  (倍数标签从 docs/data/nav_us.json 动态读取; 真实面板 + 公允 BS 期权模拟层; 模拟层非稳健真值, 仅供对照)
   - 加密 : docs/data/nav_crypto.json  windows['cycle']['full']  (7,637.77x, 现货轮动 + 减半相位叠加; 期权三件套已于 2026-08-31 关闭, 头条)
 
 ★ 诚实口径:
@@ -23,7 +23,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, 'markets', 'crypto'))
+import report_html as rh
 
 # 共同窗口锁定为 v6.18 官方真值窗口: 三市场对齐到 [2017-08-11, 2026-08-14] (471 周周五网格).
 # 原因: 各子面板数据会随刷新向前/向后延伸, 若任由 inner-join 动态决定起点, 共同窗口会漂移,
@@ -37,9 +39,14 @@ def load_series():
     w = d['windows']['full']['optimized']
     ash = pd.Series(w['mult'], index=pd.to_datetime(w['dates']), name='A股(nav.json)')
 
-    # ---- 美股 (真实面板 + 公允 BS 期权模拟层, 头条 99.85x; 模拟层非稳健真值) ----
+    # ---- 美股 (真实面板 + 公允 BS 期权模拟层; 模拟层非稳健真值, 仅供对照) ----
+    # 2026-09-10: 标签里的倍数原写死 99.85x, 而 nav_us.json 自 09-07 起已是 106.19x,
+    # 与加密侧曾把币数写死成 "34币" 属同一类漂移。现改为从发布产物动态读取。
+    nav_u = json.load(open(os.path.join(ROOT, 'docs/data/nav_us.json')))
+    us_head = float(nav_u['truth']['options_sim']['final_mult'])
     us = pd.read_csv(os.path.join(ROOT, 'markets', 'us', 'data', 'us_nav_ai.csv'),
-                     parse_dates=['date']).set_index('date')['optimized_nav'].rename('美股(期权模拟99.85x)')
+                     parse_dates=['date']).set_index('date')['optimized_nav'] \
+        .rename(f'美股(期权模拟{us_head:.1f}x)')
 
     # ---- 加密 (现货轮动 + 减半相位叠加; 期权三件套已于 2026-08-31 关闭) ----
     # 直接取已发布的 nav_crypto.json (export_nav_crypto.py 产出), 保证与站点头条自洽, 不再重跑引擎打旧标签.
@@ -170,61 +177,33 @@ def main():
 
 
 def _html(df, single, schemes, blends):
-    dates = [str(d.date()) for d in df.index]
+    dates = rh.dates_of(df.index)
     crypto_label = [c for c in df.columns if c.startswith('加密')][0]
-    series = {c: [round(float(x), 4) for x in df[c].values] for c in df.columns}
+    us_label = [c for c in df.columns if c.startswith('美股')][0]
+    series = rh.series_of(df)
     bnav = {n: [round(float(x), 4) for x in nav.values] for n, nav in schemes.items()}
+    traces = rh.line_traces(series) + "," + rh.line_traces(schemes, y_root="D.bnav")
 
-    rows_single = "".join(
-        f"<tr><td>{c}</td><td>{m['multiple']:.2f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for c, m in single.items())
-    rows_blend = "".join(
-        f"<tr><td>{n}</td><td>{m['multiple']:.2f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for n, m in blends.items())
-
-    s_traces = "".join(
-        f"{{x:D.dates, y:series['{c}'], name:'{c}', mode:'lines'}},"
-        for c in df.columns)
-    b_traces = "".join(
-        f"{{x:D.dates, y:bnav['{n}'], name:'{n}', mode:'lines'}},"
-        for n in schemes)
-
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
-<title>跨市场组合 · v6.18 真值刷新</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-<style>body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1117;color:#e6e9ef;margin:0;padding:32px;}}
-h1{{font-size:24px;margin:0 0 4px;}} .sub{{color:#9aa3b2;margin-bottom:20px;}}
-.card{{background:#171a23;border:1px solid #262b38;border-radius:14px;padding:20px;margin-bottom:20px;}}
-table{{border-collapse:collapse;width:100%;font-size:14px;}} th,td{{border-bottom:1px solid #2a3040;padding:8px 10px;text-align:left;}}
-td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
-.note{{color:#9aa3b2;font-size:13px;line-height:1.7;}}</style></head>
-<body>
-<h1>跨市场组合层 · v6.18 真值刷新</h1>
-<div class="sub">A股(nav.json) + 美股(期权模拟99.85x) + {crypto_label} · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非承诺 · 期权层已关闭</div>
-
-<div class="card"><h3 style="margin-top:0">单市场 vs 组合 (对数轴净值)</h3>
-<div id="c1" style="width:100%;height:420px"></div></div>
-
-<div class="card"><h3 style="margin-top:0">单市场指标 (共同窗口)</h3>
-<table><tr><th>市场</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_single}</table></div>
-
-<div class="card"><h3 style="margin-top:0">跨市场组合方案</h3>
-<table><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_blend}</table>
-<p class="note">组合层的核心论点: 三市场低相关, 等权/波动平价能在不牺牲太多倍数的前提下显著压低 MDD。
-「波动平价(季再平衡·封顶60%)」为真正可执行分配器: 每13周按回看波动重算逆波动目标权重(单市场≤60%), 区间内含息持有。
-A股序列来自 nav.json (v6.18 权威配置, 已与头条 18.185x 对齐)。本图仅作方法论演示, 非业绩承诺。</p></div>
-
-<script>
-const D = {{dates:dates, series:{series}, bnav:{bnav}}};
-Plotly.newPlot('c1', [
-  {s_traces}
-  {b_traces}
-], {{paper_bgcolor:'#171a23',plot_bgcolor:'#171a23',font:{{color:'#e6e9ef'}},
-  yaxis:{{type:'log',title:'净值(对数,起点=1)'}}, xaxis:{{title:''}},
-  legend:{{orientation:'h',y:1.08}}, margin:{{t:20,b:40,l:60,r:20}}}}, {{responsive:true}});
-</script></body></html>"""
+    body = (
+        rh.data_block(dates=dates, series=series, bnav=bnav)
+        + rh.card("单市场 vs 组合 (对数轴净值)", rh.nav_chart("c1", traces, height=420))
+        + rh.card("单市场指标 (共同窗口)",
+                  rh.metric_table(["市场", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(single, num_cls="")))
+        + rh.card("跨市场组合方案",
+                  rh.metric_table(["方案", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(blends, num_cls=""))
+                  + "<p class='note'>组合层的核心论点: 三市场低相关, 等权/波动平价能在不牺牲太多倍数的前提下显著压低 MDD。"
+                    "「波动平价(季再平衡·封顶60%)」为真正可执行分配器: 每13周按回看波动重算逆波动目标权重(单市场≤60%), 区间内含息持有。"
+                    "A股序列来自 nav.json (v6.18 权威配置, 已与头条 18.185x 对齐)。本图仅作方法论演示, 非业绩承诺。</p>")
+    )
+    return rh.page(
+        title="跨市场组合 · v6.18 真值刷新",
+        h1="跨市场组合层 · v6.18 真值刷新",
+        sub=(f"A股(nav.json) + {rh.esc(us_label)} + {rh.esc(crypto_label)} · "
+             f"共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非承诺 · 期权层已关闭"),
+        body=body,
+    )
 
 
 if __name__ == '__main__':

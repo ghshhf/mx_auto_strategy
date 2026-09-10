@@ -6,8 +6,12 @@ config注释 59,361Kx）。固定面板 + 固定窗口，用 run_bt 跑多档配
 打印每档 multiple/MDD/Sharpe，并逐腿拆解各层贡献。
 
 2026-09-04 更新（P1 真值统一）:
-  - 面板已由 43 币精简为 **34 币**，且三张面板(crypto50/10y/v3)已修复为真值、
+  - 面板已由 43 币精简为 **27 币**（34→32→27 两次变更，终版池见
+    `_screen_current_pool.json` 的 panel=v3(27)），且三张面板(crypto50/10y/v3)已修复为真值、
     完全对齐（此前 v3 为合成数据、c50 有上线前假历史）
+  - 2026-09-10 重跑: 10y FULL **6,043x** / −70.5% / Sharpe 1.60 / CAGR 136.9%；
+    12y FULL **18,661x**。注意「关周期」口径受删币影响极大（10y 2,407x → 1,055x），
+    引用时须标注币池版本。
   - **期权三件套已于 2026-08-31 临时关闭**（审计发现 put 保险层被误建模为收益
     引擎，见 crypto_options_bt.py 第 141 行注释）。故所有"期权"相关标签已移除，
     逐腿拆解保留用于验证期权层确无贡献（应恒为 Δ=+0.0%）
@@ -18,7 +22,7 @@ config注释 59,361Kx）。固定面板 + 固定窗口，用 run_bt 跑多档配
 用法：python reconcile_truth.py
 """
 import os, sys, json, time
-import pandas as pd, numpy as np
+import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -47,7 +51,7 @@ def main():
     px_all = load_panel()
     print(f"面板: {px_all.shape[1]} 币, {px_all.shape[0]} 周 "
           f"({px_all.index[0].date()} ~ {px_all.index[-1].date()})")
-    print(f"期权三件套状态: 已关闭(2026-08-31) — 逐腿拆解应恒为 Δ=+0.0%")
+    print("期权三件套状态: 已关闭(2026-08-31) — 逐腿拆解应恒为 Δ=+0.0%")
     print("=" * 92)
 
     # 配置档位: (key, label, overrides)

@@ -3,7 +3,7 @@
 用户指出: 1)股票未复权→CAGR低估(分红); 2)ETF也除息+扣管理费→同样低估。
 本脚本: 对候选池抓 dividendhistory.org 分红, 算股息率, 估算真实CAGR修正量。
 """
-import requests, pandas as pd, io, time, re, numpy as np
+import requests, pandas as pd, io, time, re
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 PROX = {"http": "http://127.0.0.1:3067", "https": "http://127.0.0.1:3067"}

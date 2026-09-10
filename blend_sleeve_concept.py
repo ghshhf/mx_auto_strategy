@@ -4,7 +4,7 @@
 """
 import sys, json, os
 sys.path.insert(0, '.')
-import pandas as pd, numpy as np
+import pandas as pd
 from portfolio_blend import metrics
 from blend_btc_sox import blend_rebalance_drift
 

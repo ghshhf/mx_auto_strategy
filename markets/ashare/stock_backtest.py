@@ -26,7 +26,7 @@ stock_backtest.py —— 个股 α 引擎(指数当相位拨盘)
   python stock_backtest.py                # 跑全部, 打印对比表
   python stock_backtest.py --start 2015-01-01 --topn 5
 """
-import os, sys, json, math, argparse
+import os, sys, math, argparse
 sys.path.insert(0, os.path.dirname(__file__))
 import data_store as ds
 import analog_core as ac

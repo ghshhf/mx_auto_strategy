@@ -4,7 +4,7 @@ blend_btc_sox.py — BTC + 费城半导体指数(SOX) 10 年混合再平衡回�
 用户需求: 比特币 配 美国半导体指数(SOX), 做再平衡, 跑 10 年看效果.
 
 数据源 (均为项目内已验证数据):
-  - BTC  : markets/crypto/data/weekly_adjclose_crypto50_10y.csv  (32币权威10y面板, BTC列)
+  - BTC  : markets/crypto/data/weekly_adjclose_crypto50_10y.csv  (27币权威10y面板, BTC列)
   - SOX  : markets/us/data/raw_sox_historyofmarket.json  (费城半导体指数 ^SOX 日线, 转周线 W-FRI)
 
 复用 portfolio_blend.py 的 metrics / blend_equal / blend_rebalanced (逆波动+封顶+再平衡真分配器).
@@ -16,12 +16,12 @@ blend_btc_sox.py — BTC + 费城半导体指数(SOX) 10 年混合再平衡回�
   - 共同窗口动态取交集(由数据决定), 锁定起点 2016-09 起以贴合"10年".
 """
 import os, sys, json
-import numpy as np
 import pandas as pd
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 from portfolio_blend import metrics, blend_equal, blend_rebalanced
+import report_html as rh
 
 # 10 年窗口起点 (数据实际末日 BTC=2026-08-28 / SOX=2026-08-07, 交集约 2026-08-07)
 WIN0 = "2016-09-01"
@@ -145,62 +145,32 @@ def main():
 
 
 def _html(df, single, schemes, blends):
-    dates = [str(d.date()) for d in df.index]
-    series = {c: [round(float(x), 4) for x in df[c].values] for c in df.columns}
+    dates = rh.dates_of(df.index)
+    series = rh.series_of(df)
     bnav = {n: [round(float(x), 4) for x in nav.values] for n, nav in schemes.items()}
+    traces = rh.line_traces(series) + "," + rh.line_traces(schemes, y_root="D.bnav")
 
-    rows_single = "".join(
-        f"<tr><td>{c}</td><td class='r'>{m['multiple']:.1f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for c, m in single.items())
-    rows_blend = "".join(
-        f"<tr><td>{n}</td><td class='r'>{m['multiple']:.1f}x</td><td>{m['cagr']*100:.1f}%</td>"
-        f"<td class='r'>{m['mdd']*100:.1f}%</td><td>{m['sharpe']:.2f}</td></tr>"
-        for n, m in blends.items())
-
-    s_traces = "".join(
-        f"{{x:D.dates, y:series['{c}'], name:'{c}', mode:'lines'}},"
-        for c in df.columns)
-    b_traces = "".join(
-        f"{{x:D.dates, y:bnav['{n}'], name:'{n}', mode:'lines'}},"
-        for n in schemes)
-
-    return f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
-<title>BTC + 半导体指数(SOX) 10年混合再平衡</title>
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-<style>body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0f1117;color:#e6e9ef;margin:0;padding:32px;}}
-h1{{font-size:24px;margin:0 0 4px;}} .sub{{color:#9aa3b2;margin-bottom:20px;}}
-.card{{background:#171a23;border:1px solid #262b38;border-radius:14px;padding:20px;margin-bottom:20px;}}
-table{{border-collapse:collapse;width:100%;font-size:14px;}} th,td{{border-bottom:1px solid #2a3040;padding:8px 10px;text-align:left;}}
-td.r{{text-align:right;font-variant-numeric:tabular-nums;color:#ffd479;}}
-.note{{color:#9aa3b2;font-size:13px;line-height:1.7;}}</style></head>
-<body>
-<h1>BTC + 费城半导体指数(SOX) · 10年混合再平衡回测</h1>
-<div class="sub">比特币(BTC) + 美国半导体指数(^SOX) · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非业绩承诺</div>
-
-<div class="card"><h3 style="margin-top:0">净值曲线 (对数轴, 起点=1)</h3>
-<div id="c1" style="width:100%;height:460px"></div></div>
-
-<div class="card"><h3 style="margin-top:0">单资产指标 (10年窗口)</h3>
-<table><tr><th>资产</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_single}</table></div>
-
-<div class="card"><h3 style="margin-top:0">组合方案对比</h3>
-<table><tr><th>方案</th><th>倍数</th><th>CAGR</th><th>MDD</th><th>Sharpe</th></tr>{rows_blend}</table>
-<p class="note">核心论点: BTC 与 SOX 低相关, 混合 + 再平衡能在保留大部分收益的同时显著压低最大回撤(MDD)。
-BTC 单独 10 年倍数极高但 MDD 也极深(加密特性); SOX 单独更平稳但弹性弱。
-再平衡方案(等权/逆波动季调或月调)通过定期把涨多的资产获利了结、补回跌多的资产, 平滑波动。
-"逆波动(季再平衡·封顶60%)" 为真正可执行分配器: 每13周按回看波动重算逆波动目标权重(单资产≤60%), 区间内持有。
-注: SOX 为指数本身(非 ETF), 回测假设可完美跟踪; BTC 周线取自 32 币权威 10y 面板。本图仅作方法论演示。</p></div>
-
-<script>
-const D = {{dates:dates, series:{series}, bnav:{bnav}}};
-Plotly.newPlot('c1', [
-  {s_traces}
-  {b_traces}
-], {{paper_bgcolor:'#171a23',plot_bgcolor:'#171a23',font:{{color:'#e6e9ef'}},
-  yaxis:{{type:'log',title:'净值(对数,起点=1)'}}, xaxis:{{title:''}},
-  legend:{{orientation:'h',y:1.08}}, margin:{{t:20,b:40,l:60,r:20}}}}, {{responsive:true}});
-</script></body></html>"""
+    body = (
+        rh.data_block(dates=dates, series=series, bnav=bnav)
+        + rh.card("净值曲线 (对数轴, 起点=1)", rh.nav_chart("c1", traces, height=460))
+        + rh.card("单资产指标 (10年窗口)",
+                  rh.metric_table(["资产", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(single, mult_fmt="{:.1f}x")))
+        + rh.card("组合方案对比",
+                  rh.metric_table(["方案", "倍数", "CAGR", "MDD", "Sharpe"],
+                                  rh.metrics_rows(blends, mult_fmt="{:.1f}x"))
+                  + "<p class='note'>核心论点: BTC 与 SOX 低相关, 混合 + 再平衡能在保留大部分收益的同时显著压低最大回撤(MDD)。"
+                    "BTC 单独 10 年倍数极高但 MDD 也极深(加密特性); SOX 单独更平稳但弹性弱。"
+                    "再平衡方案(等权/逆波动季调或月调)通过定期把涨多的资产获利了结、补回跌多的资产, 平滑波动。"
+                    "\"逆波动(季再平衡·封顶60%)\" 为真正可执行分配器: 每13周按回看波动重算逆波动目标权重(单资产≤60%), 区间内持有。"
+                    "注: SOX 为指数本身(非 ETF), 回测假设可完美跟踪; BTC 周线取自 27 币权威 10y 面板。本图仅作方法论演示。</p>")
+    )
+    return rh.page(
+        title="BTC + 半导体指数(SOX) 10年混合再平衡",
+        h1="BTC + 费城半导体指数(SOX) · 10年混合再平衡回测",
+        sub=f"比特币(BTC) + 美国半导体指数(^SOX) · 共同窗口 {dates[0]} ~ {dates[-1]} · 方法论证非业绩承诺",
+        body=body,
+    )
 
 
 if __name__ == '__main__':

@@ -449,14 +449,14 @@ COIN_META = {
 
 
 if __name__ == '__main__':
-    print(f"=== Crypto50 篮子 (V2) ===")
+    print("=== Crypto50 篮子 (V2) ===")
     print(f"  防御 ({len(DEFENSE_COINS)}): {DEFENSE_COINS}")
     print(f"  进攻 ({len(OFFENSE_COINS)}): {OFFENSE_COINS[:10]}... 共{len(OFFENSE_COINS)}个")
     print(f"  总计: {len(DEFENSE_COINS) + len(OFFENSE_COINS)}")
-    print(f"\n  四档市况:")
+    print("\n  四档市况:")
     for r, a in REGIME_ALLOC.items():
         print(f"    {r:<16} 防{a['defense']:.0%} + 进{a['offense']:.0%} + 现{a['stable']:.0%} | {a['desc']}")
-    print(f"\n  赛道相位 (2026视角):")
+    print("\n  赛道相位 (2026视角):")
     for th, info in CRYPTO_THEMES.items():
         print(f"    {th:<10} 渗透{info['penetration']:>3}%  {info['phase']:<14} ×{phase_multiplier(info['phase']):.2f}  {info['note']}")
     print(f"\n  2024年甜区赛道: {hot_themes_for_year(2024)}")

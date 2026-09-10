@@ -1,14 +1,14 @@
 {
   "window": [
     "2018-06-22",
-    "2026-08-28"
+    "2026-09-04"
   ],
   "rows": [
     {
       "name": "韩国KOSPI",
       "btc_corr": -0.053,
-      "nasdaq_corr": 0.521,
-      "multiple": 2.88,
+      "nasdaq_corr": 0.52,
+      "multiple": 2.79,
       "mdd": -34.7,
       "vol": 22.1,
       "role": "真防御"
@@ -17,7 +17,7 @@
       "name": "可口可乐",
       "btc_corr": 0.042,
       "nasdaq_corr": 0.385,
-      "multiple": 2.65,
+      "multiple": 2.62,
       "mdd": -35.7,
       "vol": 20.1,
       "role": "真防御"
@@ -25,17 +25,17 @@
     {
       "name": "百事",
       "btc_corr": 0.034,
-      "nasdaq_corr": 0.365,
-      "multiple": 1.67,
+      "nasdaq_corr": 0.364,
+      "multiple": 1.66,
       "mdd": -29.8,
       "vol": 19.9,
       "role": "真防御"
     },
     {
       "name": "宝洁",
-      "btc_corr": -0.039,
+      "btc_corr": -0.038,
       "nasdaq_corr": 0.378,
-      "multiple": 2.31,
+      "multiple": 2.36,
       "mdd": -22.7,
       "vol": 18.3,
       "role": "真防御"
@@ -44,7 +44,7 @@
       "name": "苹果",
       "btc_corr": 0.034,
       "nasdaq_corr": 0.727,
-      "multiple": 7.34,
+      "multiple": 7.54,
       "mdd": -34.6,
       "vol": 28.5,
       "role": "引擎"
@@ -52,28 +52,28 @@
     {
       "name": "微软",
       "btc_corr": 0.063,
-      "nasdaq_corr": 0.761,
-      "multiple": 5.55,
+      "nasdaq_corr": 0.76,
+      "multiple": 5.51,
       "mdd": -35.1,
-      "vol": 26.4,
+      "vol": 26.3,
       "role": "引擎"
     },
     {
       "name": "纳指",
       "btc_corr": 0.072,
       "nasdaq_corr": 1.0,
-      "multiple": 3.43,
+      "multiple": 3.46,
       "mdd": -35.7,
-      "vol": 21.6,
+      "vol": 21.5,
       "role": "引擎克隆"
     },
     {
       "name": "BTC",
       "btc_corr": 1.0,
       "nasdaq_corr": 0.072,
-      "multiple": 12.27,
+      "multiple": 12.55,
       "mdd": -75.2,
-      "vol": 59.9,
+      "vol": 59.8,
       "role": "引擎"
     }
   ]

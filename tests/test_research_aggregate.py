@@ -2,7 +2,6 @@
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from markets.crypto.research.aggregate import (
     analyze_coins, latest, build_report, _bucket_of, _horizon_months,

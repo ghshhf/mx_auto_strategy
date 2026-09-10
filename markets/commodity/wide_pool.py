@@ -8,7 +8,7 @@
 理论预期: gamma* = 0.5*sigma^2*(N-1)/N*(1-rho)
   N=4 ->0.750 | N=12->0.917 | N=50->0.980 (相对N=4, N=50 增加 30.7%)
 """
-import pandas as pd, numpy as np, itertools, sys
+import pandas as pd, numpy as np, sys
 import core20 as E
 
 rng = np.random.default_rng(2027)

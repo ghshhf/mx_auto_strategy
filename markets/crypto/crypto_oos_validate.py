@@ -89,7 +89,7 @@ P('='*80)
 P('\n[预扫描全数据找后视镜基准...]')
 full_rows = scan(px_full, sort_by='sharpe')
 global_best = full_rows[0]
-P(f'  全数据扫描Top3 (后视镜基准):')
+P('  全数据扫描Top3 (后视镜基准):')
 P(f"    {'eu':>5}{'cr':>5}{'bb':>5}{'倍数':>9}{'CAGR':>8}{'MDD':>8}{'Sharpe':>8}")
 for r in full_rows[:3]:
     P(f"    {r['eu']:>5.1f}{r['cr']:>5.1f}{r['bb']:>5.1f}{r['mult']:>8.1f}x{r['cagr']*100:>7.1f}%{r['mdd']*100:>7.1f}%{r['sharpe']:>8.2f}")
@@ -105,10 +105,10 @@ for cut_name, is_end, oos_start, oos_end in [
       f'OOS: {oos_px.index[0].date()}~{oos_px.index[-1].date()} ({len(oos_px)}周)')
 
     # IS扫描
-    P(f'  [扫描IS找最优参...]')
+    P('  [扫描IS找最优参...]')
     is_rows = scan(is_px, sort_by='sharpe')
     is_best = is_rows[0]
-    P(f'  IS扫描Top5 (按Sharpe):')
+    P('  IS扫描Top5 (按Sharpe):')
     P(f"    {'eu':>5}{'cr':>5}{'bb':>5}{'倍数':>9}{'CAGR':>8}{'MDD':>8}{'Sharpe':>8}")
     for r in is_rows[:5]:
         P(f"    {r['eu']:>5.1f}{r['cr']:>5.1f}{r['bb']:>5.1f}{r['mult']:>8.1f}x{r['cagr']*100:>7.1f}%{r['mdd']*100:>7.1f}%{r['sharpe']:>8.2f}")
@@ -127,7 +127,7 @@ for cut_name, is_end, oos_start, oos_end in [
     r_global = oos_metrics(px_full, cfg_global, oos_start, oos_end)
     r_doc = oos_metrics(px_full, cfg_doc, oos_start, oos_end)
 
-    P(f'\n  OOS段验证结果:')
+    P('\n  OOS段验证结果:')
     P(f'    IS选参(eu{is_best["eu"]}/cr{is_best["cr"]}/bb{is_best["bb"]}):  {fmt(r_is)}')
     P(f'    后视镜(eu{global_best["eu"]}/cr{global_best["cr"]}/bb{global_best["bb"]}): {fmt(r_global)}')
     P(f'    文档档(eu1.0/cr0.5/bb0.5):           {fmt(r_doc)}')
@@ -185,4 +185,4 @@ r_full_oos = oos_metrics(px_full, dict(BASE, halving_euphoria_risk_scale=global_
                          '2020-01-01', '2025-12-31')
 P(f"  后视镜基准同期(2020-2025): {fmt(r_full_oos)}")
 P(f"\n  → Walk-forward vs 后视镜 收益比: {cum_mult/r_full_oos['mult']:.2%}")
-P(f"  → (越接近100% = 过拟合越轻; 大幅低于100% = 过拟合严重)")
+P("  → (越接近100% = 过拟合越轻; 大幅低于100% = 过拟合严重)")

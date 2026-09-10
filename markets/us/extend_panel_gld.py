@@ -8,7 +8,6 @@ extend_panel_gld.py - 把 westock-data 抓取的 GLD/JPM 真实周线并入美�
 运行: python extend_panel_gld.py
 """
 import os, csv, re, sys
-from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)

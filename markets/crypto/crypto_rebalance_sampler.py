@@ -148,7 +148,7 @@ def main():
     medA, meanA = summarize("口径A · 公平窗口 · 随机4币/组 · 月度再平衡", resA)
 
     # 口径 B：自然窗口（25币全用，每组各自起点）
-    print(f"\n口径B 全25币宇宙，自然窗口")
+    print("\n口径B 全25币宇宙，自然窗口")
     resB = sample_universe(px, fd, avail, 600)
     medB, meanB = summarize("口径B · 自然窗口 · 随机4币/组 · 月度再平衡", resB)
 

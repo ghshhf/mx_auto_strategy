@@ -28,12 +28,10 @@ crypto_options_bt.py - 加密货币 Crypto50 回测引擎 V6（三件套迁移�
 """
 import os
 import sys
-import json
-import copy
 import argparse
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'data')
@@ -495,6 +493,144 @@ class WeekRecord:
 
 
 # ========== 主回测引擎 ==========
+def _resolve_cycle_params(cfg, px, t, w):
+    """Phase 0: 减半周期参数调整. 纯函数(只读 px/w/cfg, 不改任何状态).
+
+    返回 (phase, tp_eff, short_size_eff, short_ma_eff, risk_scale_eff).
+    phase 仅当 halving_cycle_enabled 或 short_cycle_gate 开启时计算, 供门控使用(无后视).
+    """
+    tp_eff = cfg.take_profit_pct
+    short_size_eff = cfg.short_proactive_size
+    short_ma_eff = cfg.short_proactive_ma
+    risk_scale_eff = 1.0   # 风险仓位缩放(预判性减仓): 1.0=不调
+    phase = None
+    if cfg.halving_cycle_enabled or cfg.short_cycle_gate:
+        phase, _, _ = halving_cycle_phase(
+            px.index[t], pre_halving_start_month=cfg.pre_halving_start_month)
+        tp_mult, ss_mult, ma_delta = HALVING_PHASE_ADJUST.get(phase, (1.0, 1.0, 0))
+        if cfg.halving_cycle_enabled:
+            tp_eff = cfg.take_profit_pct * tp_mult
+            short_size_eff = cfg.short_proactive_size * ss_mult
+            if short_ma_eff > 0:
+                short_ma_eff = max(5, short_ma_eff + ma_delta)
+            # 预判性减仓: 见顶期/暴跌期主动缩现货敞口(时间刻避险)
+            if phase == 'euphoria':
+                risk_scale_eff = cfg.halving_euphoria_risk_scale
+            elif phase == 'crash':
+                risk_scale_eff = cfg.halving_crash_risk_scale
+            elif phase == 'bear_bottom':
+                risk_scale_eff = cfg.halving_bear_bottom_risk_scale
+                # 山寨回升抄底: bear_bottom期, ALT/BTC比值从下方突破MA → 部分恢复仓位
+                if getattr(cfg, 'alt_rs_recovery', False) and t >= cfg.alt_rs_recovery_ma:
+                    _tk = _timing_cols(px, cfg, w)
+                    _rs = _alt_rs_ratio(px, _tk)
+                    _cur = _rs.iloc[t]
+                    _mav = _rs.iloc[t - cfg.alt_rs_recovery_ma + 1: t + 1].mean()
+                    if pd.notna(_cur) and pd.notna(_mav) and _cur > _mav:
+                        risk_scale_eff = cfg.alt_rs_recovery_scale
+    return phase, tp_eff, short_size_eff, short_ma_eff, risk_scale_eff
+
+
+def _apply_halving_derisk(target, risk_scale_eff, cfg):
+    """Phase 3.5: 减半周期预判性减仓(时间刻避险). 纯函数, 返回(可能改写的) target."""
+    if risk_scale_eff >= 1.0:
+        return target
+    risky = sum(v for k, v in target.items() if k != STABLE)
+    if risky <= 0:
+        return target
+    if getattr(cfg, 'halving_derisk_offense_first', False):
+        # 差别减仓: 进攻山寨砍到 off_s, 防御核(BTC/ETH)砍到 def_s, 差额转现金
+        off_s = float(getattr(cfg, 'halving_offense_scale', 0.0))
+        def_s = float(getattr(cfg, 'halving_defense_scale', 1.0))
+        new_target, freed = {}, 0.0
+        for k, v in target.items():
+            if k == STABLE:
+                continue
+            sc = def_s if k in DEFENSE_CORE else off_s
+            new_target[k] = v * sc
+            freed += v * (1.0 - sc)
+        new_target[STABLE] = target.get(STABLE, 0.0) + freed
+        return new_target
+    new_target = {STABLE: target.get(STABLE, 0.0) + risky * (1.0 - risk_scale_eff)}
+    for k, v in target.items():
+        if k != STABLE:
+            new_target[k] = v * risk_scale_eff
+    return new_target
+
+
+def _apply_crash_guard(target, nav, t, cfg):
+    """Phase 4: Crash Guard. 纯函数, 返回 (新target, 是否触发). 触发时调用方自增 crash_weeks."""
+    if not cfg.crash_guard:
+        return target, False
+    run_max = nav[: t + 1].max()
+    dd = nav[t] / run_max - 1.0
+    thr = cfg.crash_guard.get('thr', -0.15)
+    floor = cfg.crash_guard.get('floor', 0.0)
+    if dd >= thr:
+        return target, False
+    risky = sum(v for k, v in target.items() if k != STABLE)
+    scale = min(1.0, floor / risky) if risky > 0 else 0.0
+    new_target = {STABLE: 1.0 - risky * scale}
+    for k, v in target.items():
+        if k != STABLE:
+            new_target[k] = v * scale
+    return new_target, True
+
+
+def _apply_vol_target(target, nav, t, cfg):
+    """Phase 5: Vol Target. 纯函数, 返回(可能改写的) target."""
+    if not cfg.vol_target or t < WARMUP:
+        return target
+    rets = np.diff(nav[max(0, t - WARMUP): t + 1]) / nav[max(0, t - WARMUP): t]
+    if len(rets) < 20:
+        return target
+    ann_vol = np.std(rets) * np.sqrt(52)
+    if ann_vol <= cfg.vol_target or ann_vol <= 0:
+        return target
+    risky = sum(v for k, v in target.items() if k != STABLE)
+    scale = min(1.0, cfg.vol_target / ann_vol)
+    new_target = {STABLE: 1.0 - risky * scale}
+    for k, v in target.items():
+        if k != STABLE:
+            new_target[k] = v * scale
+    return new_target
+
+
+def _compute_bt_metrics(nav, index, recs, label, weeks, crash_weeks, return_recs):
+    """run_bt 末尾: 指标 + 事件汇总. 纯函数, 返回结果 dict."""
+    nav_series = pd.Series(nav, index=index, name=label)
+    multiple = float(nav[-1] / nav[0])
+    cagr = float((nav[-1] / nav[0]) ** (52.0 / weeks) - 1.0) if weeks > 0 else 0.0
+    peak = np.maximum.accumulate(nav)
+    dd = nav / peak - 1.0
+    mdd = float(dd.min())
+    rets = pd.Series(nav[1:] / nav[:-1] - 1.0)
+    sharpe = float(rets.mean() / rets.std() * np.sqrt(52)) if rets.std() > 0 else 0.0
+
+    # ---- 事件汇总 ----
+    total_tp = sum(r.tp_count for r in recs)
+    total_assigned = sum(r.assigned_count for r in recs)
+    total_ovl = sum(r.ovl_count for r in recs)
+    put_income_navpct = sum(r.put_payout_income for r in recs) / weeks if weeks > 0 else 0
+    call_income_navpct = sum(r.call_premium_income for r in recs) / weeks if weeks > 0 else 0
+    short_income_navpct = sum(r.short_pnl for r in recs) / weeks if weeks > 0 else 0
+
+    return {
+        'label': label, 'multiple': multiple, 'cagr': cagr, 'mdd': mdd, 'sharpe': sharpe,
+        'nav': nav_series, 'weeks': weeks, 'crash_weeks': crash_weeks,
+        'regimes': [r.regime for r in recs], 'recs': recs if return_recs else None,
+        'events': {
+            'tp_calls': total_tp,
+            'assigned_calls': total_assigned,
+            'ovl_calls': total_ovl,
+            'avg_call_income_pw': call_income_navpct * 100,
+            'avg_put_income_pw': put_income_navpct * 100,
+            'avg_short_pnl_pw': short_income_navpct * 100,
+            'cooldown_locked_total': sum(r.cooldown_locked for r in recs),
+        },
+    }
+
+
 def run_bt(px, cfg_dict=None, label='V6_options', start=None,
            cycle_overlay=False, cycle_tilt=None, cycle_weights=None, cycle_asym=None,
            return_recs=False, record_holdings=False):
@@ -549,38 +685,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         cur = px.iloc[t]
 
         # ---- 0. 减半周期参数调整 ----
-        tp_eff = cfg.take_profit_pct
-        short_size_eff = cfg.short_proactive_size
-        short_ma_eff = cfg.short_proactive_ma
-        risk_scale_eff = 1.0   # 风险仓位缩放(预判性减仓): 1.0=不调
-        phase = None
-        # 周期相位: halving_cycle_enabled 或 short_cycle_gate 任一开启即计算(供门控使用, 无后视)
-        if cfg.halving_cycle_enabled or cfg.short_cycle_gate:
-            phase, months_since, months_to_next = halving_cycle_phase(
-                px.index[t], pre_halving_start_month=cfg.pre_halving_start_month)
-            tp_mult, ss_mult, ma_delta = HALVING_PHASE_ADJUST.get(phase, (1.0, 1.0, 0))
-            if cfg.halving_cycle_enabled:
-                tp_eff = cfg.take_profit_pct * tp_mult
-                short_size_eff = cfg.short_proactive_size * ss_mult
-                if short_ma_eff > 0:
-                    short_ma_eff = max(5, short_ma_eff + ma_delta)
-                # 预判性减仓: 见顶期/暴跌期主动缩现货敞口(时间刻避险)
-                if phase == 'euphoria':
-                    risk_scale_eff = cfg.halving_euphoria_risk_scale
-                elif phase == 'crash':
-                    risk_scale_eff = cfg.halving_crash_risk_scale
-                elif phase == 'bear_bottom':
-                    risk_scale_eff = cfg.halving_bear_bottom_risk_scale
-                    # 山寨回升抄底: bear_bottom期, ALT/BTC比值从下方突破MA → 部分恢复仓位
-                    # 逻辑: 筑底末期山寨可能提前走强(ALT/BTC>MA), 此时恢复半仓抄底
-                    # 而非死等 pre_halving 时间刻(该层在 ph_start=31月才恢复满仓)
-                    if getattr(cfg, 'alt_rs_recovery', False) and t >= cfg.alt_rs_recovery_ma:
-                        _tk = _timing_cols(px, cfg, w)
-                        _rs = _alt_rs_ratio(px, _tk)
-                        _cur = _rs.iloc[t]
-                        _mav = _rs.iloc[t - cfg.alt_rs_recovery_ma + 1: t + 1].mean()
-                        if pd.notna(_cur) and pd.notna(_mav) and _cur > _mav:
-                            risk_scale_eff = cfg.alt_rs_recovery_scale
+        phase, tp_eff, short_size_eff, short_ma_eff, risk_scale_eff = _resolve_cycle_params(
+            cfg, px, t, w)
 
         # ---- 1. 用上周权重 + 做空仓位 算本周组合收益 ----
         if w is None:
@@ -875,56 +981,15 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
 
         # ---- 3.5 减半周期预判性减仓（时间刻避险）----
         # 见顶期/暴跌期主动把风险仓位缩到 risk_scale_eff, 释放的权重转STABLE现金
-        if risk_scale_eff < 1.0:
-            risky = sum(v for k, v in target.items() if k != STABLE)
-            if risky > 0:
-                if getattr(cfg, 'halving_derisk_offense_first', False):
-                    # 差别减仓: 进攻山寨砍到 off_s, 防御核(BTC/ETH)砍到 def_s, 差额转现金
-                    off_s = float(getattr(cfg, 'halving_offense_scale', 0.0))
-                    def_s = float(getattr(cfg, 'halving_defense_scale', 1.0))
-                    new_target, freed = {}, 0.0
-                    for k, v in target.items():
-                        if k == STABLE:
-                            continue
-                        sc = def_s if k in DEFENSE_CORE else off_s
-                        new_target[k] = v * sc
-                        freed += v * (1.0 - sc)
-                    new_target[STABLE] = target.get(STABLE, 0.0) + freed
-                    target = new_target
-                else:
-                    new_target = {STABLE: target.get(STABLE, 0.0) + risky * (1.0 - risk_scale_eff)}
-                    for k, v in target.items():
-                        if k != STABLE:
-                            new_target[k] = v * risk_scale_eff
-                    target = new_target
+        target = _apply_halving_derisk(target, risk_scale_eff, cfg)
 
         # ---- 4. Crash Guard（可选） ----
-        if cfg.crash_guard:
-            run_max = nav[: t + 1].max()
-            dd = nav[t] / run_max - 1.0
-            thr = cfg.crash_guard.get('thr', -0.15)
-            floor = cfg.crash_guard.get('floor', 0.0)
-            if dd < thr:
-                crash_weeks += 1
-                risky = sum(v for k, v in target.items() if k != STABLE)
-                scale = min(1.0, floor / risky) if risky > 0 else 0.0
-                new_target = {STABLE: 1.0 - risky * scale}
-                for k, v in target.items():
-                    if k != STABLE: new_target[k] = v * scale
-                target = new_target
+        target, _crash_trig = _apply_crash_guard(target, nav, t, cfg)
+        if _crash_trig:
+            crash_weeks += 1
 
         # ---- 5. Vol Target（可选） ----
-        if cfg.vol_target and t >= WARMUP:
-            rets = np.diff(nav[max(0, t - WARMUP): t + 1]) / nav[max(0, t - WARMUP): t]
-            if len(rets) >= 20:
-                ann_vol = np.std(rets) * np.sqrt(52)
-                if ann_vol > cfg.vol_target and ann_vol > 0:
-                    risky = sum(v for k, v in target.items() if k != STABLE)
-                    scale = min(1.0, cfg.vol_target / ann_vol)
-                    new_target = {STABLE: 1.0 - risky * scale}
-                    for k, v in target.items():
-                        if k != STABLE: new_target[k] = v * scale
-                    target = new_target
+        target = _apply_vol_target(target, nav, t, cfg)
 
         # ---- 6. 再平衡 & 更新 entry_price / coin_state ----
         # 清理已清零或权重为0的币的active_call（被行权的已经处理）
@@ -958,39 +1023,8 @@ def run_bt(px, cfg_dict=None, label='V6_options', start=None,
         rec.nav = nav[t]
         recs.append(rec)
 
-    # ---- 指标 ----
-    nav_series = pd.Series(nav, index=px.index, name=label)
-    multiple = float(nav[-1] / nav[0])
-    weeks = n - 1
-    cagr = float((nav[-1] / nav[0]) ** (52.0 / weeks) - 1.0) if weeks > 0 else 0.0
-    peak = np.maximum.accumulate(nav)
-    dd = nav / peak - 1.0
-    mdd = float(dd.min())
-    rets = pd.Series(nav[1:] / nav[:-1] - 1.0)
-    sharpe = float(rets.mean() / rets.std() * np.sqrt(52)) if rets.std() > 0 else 0.0
-
-    # ---- 事件汇总 ----
-    total_tp = sum(r.tp_count for r in recs)
-    total_assigned = sum(r.assigned_count for r in recs)
-    total_ovl = sum(r.ovl_count for r in recs)
-    put_income_navpct = sum(r.put_payout_income for r in recs) / weeks if weeks > 0 else 0
-    call_income_navpct = sum(r.call_premium_income for r in recs) / weeks if weeks > 0 else 0
-    short_income_navpct = sum(r.short_pnl for r in recs) / weeks if weeks > 0 else 0
-
-    return {
-        'label': label, 'multiple': multiple, 'cagr': cagr, 'mdd': mdd, 'sharpe': sharpe,
-        'nav': nav_series, 'weeks': weeks, 'crash_weeks': crash_weeks,
-        'regimes': [r.regime for r in recs], 'recs': recs if return_recs else None,
-        'events': {
-            'tp_calls': total_tp,
-            'assigned_calls': total_assigned,
-            'ovl_calls': total_ovl,
-            'avg_call_income_pw': call_income_navpct * 100,
-            'avg_put_income_pw': put_income_navpct * 100,
-            'avg_short_pnl_pw': short_income_navpct * 100,
-            'cooldown_locked_total': sum(r.cooldown_locked for r in recs),
-        },
-    }
+    # ---- 指标 + 事件汇总 ----
+    return _compute_bt_metrics(nav, px.index, recs, label, n - 1, crash_weeks, return_recs)
 
 
 def _build_target(px, t_idx, cfg, coin_state, sectors,
@@ -1211,7 +1245,7 @@ def main():
             ev_str = ' (V5 baseline 无期权)'
         print(f"  {lbl:<32}{m:>8.1f}x{cg*100:>8.1f}%{md*100:>8.1f}%{sh:>8.2f}   {ev_str}")
 
-    print(f"\n  诚实口径: weekly_adjclose_crypto50.csv = Binance/OKX 真实周K, 现存主流币(含幸存者偏差)")
+    print("\n  诚实口径: weekly_adjclose_crypto50.csv = Binance/OKX 真实周K, 现存主流币(含幸存者偏差)")
     print(f"  V6默认: TP=+{cfg.get('take_profit_pct',1.0):.0%}  callPrem18%/a  put(大盘10%→60%)  做空26w{cfg.get('short_underlying','BIGCAP')}  cooldown{cfg.get('cooldown_weeks',8)}w  slippage{cfg.get('cost_bps',0.002)*10000:.0f}bps")
 
 

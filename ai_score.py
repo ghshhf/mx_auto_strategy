@@ -223,7 +223,7 @@ def augment(candidates, cfg, tag="defensive"):
     mult_map = _parse_multipliers(content, to_eval)
 
     if not mult_map:
-        print(f"  [ai_score] LLM 输出解析失败, 乘数=1.0, 退回纯规则")
+        print("  [ai_score] LLM 输出解析失败, 乘数=1.0, 退回纯规则")
         _save_audit({
             "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "tag": tag,
@@ -289,11 +289,11 @@ def augment(candidates, cfg, tag="defensive"):
             shadow_eval.record(tag, candidates, ai_sorted, top_n=3)
         except Exception as e:
             print(f"  [ai_score] shadow_eval 记录失败(不影响主流程): {e}")
-        print(f"  [ai_score] SHADOW 模式: 保持原排序, AI 乘数仅作参考")
+        print("  [ai_score] SHADOW 模式: 保持原排序, AI 乘数仅作参考")
         return candidates  # 原列表, 不改排序
     else:
         augmented.sort(key=lambda d: d.get("ai_adjusted_score", d.get("final_score", 0)), reverse=True)
-        print(f"  [ai_score] LIVE 模式: 按 AI 调整分重排")
+        print("  [ai_score] LIVE 模式: 按 AI 调整分重排")
         return augmented
 
 
@@ -336,7 +336,7 @@ def main():
     print(f"\n  防御选股 {len(chosen)} 只, 进入 AI 加权打分...\n")
     augmented = augment(chosen, cfg, tag="defensive")
 
-    print(f"\n  最终排序:")
+    print("\n  最终排序:")
     for d in augmented:
         m = d.get("ai_multiplier", 1.0)
         s = d.get("ai_adjusted_score", d.get("final_score", 0))

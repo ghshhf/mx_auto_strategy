@@ -17,8 +17,6 @@ us_backtest_corrected.py - 美股子系统「旧逻辑 vs v6.14b修正逻辑」�
 """
 import os
 import csv
-import math
-from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
@@ -190,7 +188,7 @@ def main():
     dates, series = load_panel(PANEL)
     print(f"面板: {os.path.basename(PANEL)} | {dates[0]} ~ {dates[-1]} ({len(dates)}周)")
     print(f"选股宇宙: {len([c for c in series if c not in EXCLUDE and c not in DEF_OLD and c not in DEF_NEW])} 只(剔除指数/防御)")
-    print(f"已并入真实 GLD/JPM (westock-data): NEW 组弱市停车进真实 GLD\n")
+    print("已并入真实 GLD/JPM (westock-data): NEW 组弱市停车进真实 GLD\n")
 
     res = {}
     for mode in ("OLD", "NEW"):

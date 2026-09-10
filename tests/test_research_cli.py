@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 CLI = ["python3", "-m", "markets.crypto.research.main"]
 
