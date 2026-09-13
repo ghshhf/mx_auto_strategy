@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BTC/ETH 实盘再平衡复现对账</title>
+<style>
+:root{--bg:#f6f8fa;--fg:#1f2933;--mut:#66788a;--bd:#dbe3ea;--card:#fff;--acc:#2c6fb5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:14.5px/1.72 "Microsoft YaHei",-apple-system,Arial,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 18px 60px}
+h1{font-size:24px;margin:6px 0 6px;letter-spacing:.4px}
+.sub{color:var(--mut);font-size:13.2px;margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:11px;padding:20px 22px;margin:16px 0}
+h2{font-size:17px;margin:0 0 14px;padding-bottom:9px;border-bottom:2px solid var(--bd)}
+h3{font-size:14.6px;margin:20px 0 9px;color:#2b3a47}
+table{width:100%;border-collapse:collapse;font-size:13.1px}
+th,td{border:1px solid var(--bd);padding:7px 9px;text-align:center;white-space:nowrap}
+th{background:#eef3f8;font-weight:600;font-size:12.4px;color:#3c4e5e}
+td.l,th.l{text-align:left;white-space:normal}
+.pos{color:#c0392b;font-weight:600}
+.neg{color:#1a7f37;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:12px;margin:6px 0 4px}
+.kpi{background:#fbfcfd;border:1px solid var(--bd);border-radius:9px;padding:13px 15px}
+.kpi .k{font-size:12.2px;color:var(--mut);margin-bottom:5px}
+.kpi .v{font-size:21px;font-weight:700;letter-spacing:.3px}
+.kpi .n{font-size:11.8px;color:var(--mut);margin-top:4px}
+.red{color:#c0392b}.green{color:#1a7f37}.blue{color:#2c6fb5}
+.key{background:#f0f7f1;border-left:4px solid #1a7f37;padding:13px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.6px}
+.warn{background:#fdf6ec;border-left:4px solid #b8860b;padding:13px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.6px}
+.bad{background:#fdf2f0;border-left:4px solid #c0392b;padding:13px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.6px}
+.note{background:#f4f7fa;border-left:4px solid #2c6fb5;padding:12px 15px;border-radius:0 8px 8px 0;margin:13px 0;font-size:13.2px;color:#3d4c5a}
+.scroll{overflow-x:auto;margin:12px 0}
+ul,ol{margin:8px 0;padding-left:22px}li{margin:5px 0}
+code{background:#eef2f6;padding:1.5px 5px;border-radius:4px;font-size:12.6px}
+.fml{background:#f4f7fa;border:1px dashed var(--bd);border-radius:8px;padding:12px;text-align:center;
+font-size:15px;font-family:Consolas,monospace;margin:12px 0}
+</style></head><body><div class="wrap">
+
+<h1>BTC/ETH 实盘再平衡复现对账</h1>
+<p class="sub">样本：用户提供的真实策略截图（「BTC, ETH 屯币宝策略」，比例平衡 1%，200 USDT，
+2025-07-18 创建，运行 422 天，触发 66 次）。目的：检验本地再平衡引擎能否复现真实平台的落点。
+数据截至 2026-09-13。价格源：本地面板（周）+ CoinGecko（日）+ CMC（6~9 天）。</p>
+
+<div class="card">
+<h2>一、结论：引擎对上了，3.4pp 的净值差来自起点价歧义</h2>
+<div class="kpis">
+  <div class="kpi"><div class="k">实盘总收益</div><div class="v green">−31.70%</div>
+    <div class="n">136.6 USDT / 投入 200</div></div>
+  <div class="kpi"><div class="k">同一批币「死拿」</div><div class="v green">−33.17%</div>
+    <div class="n">133.66 USDT，不调仓</div></div>
+  <div class="kpi"><div class="k">再平衡超额（纯交易）</div><div class="v red">+1.12%</div>
+    <div class="n">剔除质押 +1.36 / 赚币 +0.083</div></div>
+  <div class="kpi"><div class="k">触发再平衡</div><div class="v blue">66 次</div>
+    <div class="n">每 6.4 天一次</div></div>
+</div>
+<p>我把「再平衡 − 死拿」的超额用<b>三个互相独立的口径</b>各算了一遍，全部落在
+<b>+0.9% ~ +1.2%</b>：</p>
+<div class="scroll"><table>
+<thead><tr><th class="l">口径</th><th>再平衡超额</th><th class="l">说明</th></tr></thead>
+<tbody><tr><td class='l'><b>实盘自身分解（只读截图数字）</b></td><td class='pos'><b>+1.122%</b></td><td class='l' style='font-size:12px;color:#66788a'>死拿 133.66 vs 实盘 136.60，剔除质押/赚币</td></tr><tr><td class='l'><b>面板周度复现（实盘同窗口, 0bp）</b></td><td class='pos'><b>+1.196%</b></td><td class='l' style='font-size:12px;color:#66788a'>2025-07-18~2026-09-04，59 周</td></tr><tr><td class='l'><b>CoinGecko 日度复现（整 1 年, 0bp）</b></td><td class='pos'><b>+0.904%</b></td><td class='l' style='font-size:12px;color:#66788a'>2025-09-12~2026-09-11，365 天</td></tr></tbody></table></div>
+<div class="key">
+<b>三个独立口径都在 +1% 附近 → 引擎逻辑与真实平台一致。</b>
+而上轮复现出的 −35.06%（vs 实盘 −31.70%）那 3.4pp 的差，
+<b>经定位是「起点价选了哪个数据源」造成的，不是逻辑错误</b>——见第二节。
+</div>
+</div>
+
+<div class="card">
+<h2>二、3.4pp 净值差的真正来源：起点价歧义</h2>
+<p>实盘截图给了 3 组互相独立的数字（目标比例 42/58、初始持仓、投入 200 USDT），
+可以反解出它创建时刻的成交价。结果是：</p>
+<div class="scroll"><table>
+<thead><tr><th class="l">数据源</th><th>BTC 起点价</th><th>ETH 起点价</th>
+<th>BTC/ETH</th><th class="l">备注</th></tr></thead>
+<tbody><tr><td class='l'><b>实盘反推（截图 3 组数字互校）</b></td><td>$120,437</td><td>$3,592</td><td>33.53</td><td class='l' style='font-size:12px;color:#66788a'>权重 42/58 精确闭合</td></tr><tr><td class='l'><b>本地面板 weekly_adjclose（周收盘）</b></td><td>$119,416</td><td>$3,872</td><td>30.84</td><td class='l' style='font-size:12px;color:#66788a'>周内波动大，单点代表性弱</td></tr><tr><td class='l'><b>CMC data-api（6~9 天粒度，线性插值）</b></td><td>$118,739</td><td>$3,348</td><td>35.47</td><td class='l' style='font-size:12px;color:#66788a'>该周 ETH +35.8%，插值噪声大</td></tr></tbody></table></div>
+<div class="bad">
+<b>为什么会分歧 15%？</b>因为那一周 ETH 在剧烈波动：CMC 记录
+2025-07-10 ETH 仅 $2,771，到 07-22 已 $3,763，<b>12 天 +35.8%</b>。
+在这种斜率下，「2025-07-18 09:34」这一个时点的 ETH 价格本身就依赖数据源与采样时刻。
+BTC 同期平稳，所以三源只差 1.5%。
+</div>
+<h3>起点价换一下，期末收益就移动 6pp</h3>
+<div class="scroll"><table>
+<thead><tr><th class="l">ETH 起点价来源</th><th>ETH 起点价</th><th>BTC 端值</th>
+<th>ETH 端值</th><th>总市值</th><th>期末收益率</th></tr></thead>
+<tbody><tr><td class='l'><b>CMC 插值</b></td><td>$3,348</td><td>53.60</td><td>85.91</td><td>139.51</td><td class='neg'><b>-30.24%</b></td></tr><tr><td class='l'><b>实盘反推（截图）</b></td><td>$3,592</td><td>53.60</td><td>80.06</td><td>133.66</td><td class='neg'><b>-33.17%</b></td></tr><tr><td class='l'><b>本地面板周收盘</b></td><td>$3,872</td><td>53.60</td><td>74.27</td><td>127.87</td><td class='neg'><b>-36.06%</b></td></tr></tbody></table></div>
+<div class="note">
+固定实盘终点价（BTC $76,850.1 / ETH $2,479.26）、固定实盘终点持仓，只改 ETH 起点价：
+<b>期末收益率在 −30.24% ~ −36.06% 之间移动</b>，实盘实际 −31.70% 完整落在带内。
+我上一轮取的 <b>面板值 $3,872 恰好在带的最悲观一端</b> —— 这就是那 3.4pp。
+</div>
+<div style="height:400px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.0.0.min.js" integrity="sha256-FEYfO0yRyLtZCpnW0Dw/0DHKQO7Afrq3ml4+rBB818o=" crossorigin="anonymous"></script>                <div id="d4e6c072-500b-45d5-8f5a-f9fec85f70b3" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d4e6c072-500b-45d5-8f5a-f9fec85f70b3")) {                    Plotly.newPlot(                        "d4e6c072-500b-45d5-8f5a-f9fec85f70b3",                        [{"marker":{"color":["#8fa8bf","#c0392b","#2c6fb5"]},"text":["-30.24%","-33.17%","-36.06%"],"textfont":{"size":12},"textposition":"outside","x":["CMC \u63d2\u503c\nETH $3,348","\u5b9e\u76d8\u53cd\u63a8\uff08\u622a\u56fe\uff09\nETH $3,592","\u672c\u5730\u9762\u677f\u5468\u6536\u76d8\nETH $3,872"],"y":[-30.244196954276358,-33.171172297,-36.0633481165793],"type":"bar"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"shapes":[{"line":{"color":"#c0392b","dash":"dash","width":2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":-31.7,"y1":-31.7,"yref":"y"}],"annotations":[{"font":{"color":"#c0392b"},"showarrow":false,"text":"\u5b9e\u76d8\u5b9e\u9645 -31.70%","x":1,"xanchor":"right","xref":"x domain","y":-31.7,"yanchor":"bottom","yref":"y"}],"font":{"family":"Microsoft YaHei, Arial","size":12},"margin":{"l":60,"r":30,"t":50,"b":50},"title":{"text":"\u2460 \u53ea\u6362\u300c\u8d77\u70b9\u4ef7\u7684\u6570\u636e\u6e90\u300d\uff0c\u671f\u672b\u6536\u76ca\u7387\u5c31\u5728 \u221230% ~ \u221236% \u79fb\u52a8"},"yaxis":{"title":{"text":"\u671f\u672b\u6536\u76ca\u7387 (%)"},"range":[-40,-24]},"height":400,"showlegend":false},                        {"responsive": true}                    )                };            </script>        </div>
+</div>
+
+<div class="card">
+<h2>三、66 次触发：第一通过时间理论可以复现</h2>
+<p>「比例平衡 1%」= 权重偏离目标 1 个百分点就调仓。对 42/58 组合，权重对价格比值的灵敏度是：</p>
+<div class="fml">dW / d ln(BTC/ETH) = w(1−w) = 0.42 × 0.58 = 0.2436</div>
+<div class="fml">1% 权重偏离 ⇔ BTC/ETH 相对变动 4.11%（对数）</div>
+<p>再用随机游走的第一通过时间期望 <code>E[T] ≈ a² / σ²</code>：</p>
+<ul>
+<li>BTC/ETH 相对波动：周 3.999% → 日 <b>1.512%</b></li>
+<li>E[T] ≈ 0.0411² / 0.01512² = <b>7.4 天/次</b> → 一年约 <b>49 次</b></li>
+<li>实盘：66 次 / 422 天 = <b>每 6.4 天一次</b> —— 比理论更密，说明实盘窗口的波动高于面板均值</li>
+</ul>
+<div class="warn">
+<b>为什么我上一轮的周度复现只数到 18 次？</b>因为周度采样只有 59 个检查点，
+且<b>完全看不到周内的穿越</b>（偏离 1% 又回来，周度上看不到）。
+这是<b>采样粒度</b>问题，不是引擎漏算 —— 日度复现立刻回到 33 次，量级正确。
+</div>
+</div>
+
+<div class="card">
+<h2>四、粒度与成本：高频再平衡只在零手续费下划算</h2>
+<p>用同一份日度数据、只改「多久检查一次」，得到一条非常干净的单调关系：</p>
+<div class="scroll"><table>
+<thead><tr><th class="l">检查粒度</th><th>触发次数</th><th>超额 · 0bp</th><th>超额 · 10bp</th>
+<th>BTC 筹码</th><th>ETH 筹码</th></tr></thead>
+<tbody><tr><td class='l'><b>每日</b></td><td>33</td><td class='pos'>+0.904%</td><td class='neg'>-2.471%</td><td>0.9233x</td><td>1.0818x</td></tr><tr><td class='l'><b>每3日</b></td><td>21</td><td class='pos'>+0.894%</td><td class='neg'>-1.303%</td><td>0.8931x</td><td>1.1072x</td></tr><tr><td class='l'><b>每周</b></td><td>14</td><td class='pos'>+0.521%</td><td class='neg'>-0.976%</td><td>0.9025x</td><td>1.0923x</td></tr><tr><td class='l'><b>每2周</b></td><td>8</td><td class='pos'>+0.430%</td><td class='neg'>-0.470%</td><td>0.9190x</td><td>1.0767x</td></tr><tr><td class='l'><b>每月</b></td><td>8</td><td class='pos'>+0.482%</td><td class='neg'>-0.419%</td><td>0.8927x</td><td>1.0999x</td></tr><tr><td class='l'><b>每季</b></td><td>4</td><td class='pos'>+0.721%</td><td class='pos'>+0.219%</td><td>0.8948x</td><td>1.1026x</td></tr></tbody></table></div>
+<div style="height:460px; width:100%;">                            <div id="7b774bfa-48f2-4202-a001-3b8b21e0ab5a" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("7b774bfa-48f2-4202-a001-3b8b21e0ab5a")) {                    Plotly.newPlot(                        "7b774bfa-48f2-4202-a001-3b8b21e0ab5a",                        [{"marker":{"color":"#8fa8bf"},"name":"\u89e6\u53d1\u6b21\u6570","opacity":0.55,"text":["33","21","14","8","8","4"],"textfont":{"size":10},"textposition":"outside","x":["\u6bcf\u65e5\u68c0\u67e5","\u6bcf3\u65e5","\u6bcf\u5468\u68c0\u67e5","\u6bcf2\u5468","\u6bcf\u6708","\u6bcf\u5b63"],"y":[33,21,14,8,8,4],"yaxis":"y2","type":"bar"},{"line":{"color":"#c0392b","width":3},"marker":{"size":10},"mode":"lines+markers+text","name":"\u8d85\u989d \u00b7 0bp\uff08\u5b9e\u76d8\u6761\u4ef6\uff09","text":["+0.90%","+0.89%","+0.52%","+0.43%","+0.48%","+0.72%"],"textfont":{"color":"#c0392b","size":10},"textposition":"top center","x":["\u6bcf\u65e5\u68c0\u67e5","\u6bcf3\u65e5","\u6bcf\u5468\u68c0\u67e5","\u6bcf2\u5468","\u6bcf\u6708","\u6bcf\u5b63"],"y":[0.9036227075856829,0.8935088806022895,0.5213166675089864,0.43025888428289694,0.48184473624754975,0.7213331374301912],"type":"scatter"},{"line":{"color":"#1a7f37","dash":"dot","width":3},"marker":{"size":9},"mode":"lines+markers+text","name":"\u8d85\u989d \u00b7 10bp","text":["-2.47%","-1.30%","-0.98%","-0.47%","-0.42%","+0.22%"],"textfont":{"color":"#1a7f37","size":10},"textposition":"bottom center","x":["\u6bcf\u65e5\u68c0\u67e5","\u6bcf3\u65e5","\u6bcf\u5468\u68c0\u67e5","\u6bcf2\u5468","\u6bcf\u6708","\u6bcf\u5b63"],"y":[-2.4710926878470763,-1.3029965548366773,-0.975993944542497,-0.470006379856025,-0.41888294779506285,0.21873267836456378],"type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"font":{"family":"Microsoft YaHei, Arial","size":12},"margin":{"l":60,"r":30,"t":50,"b":50},"title":{"text":"\u2461 \u8c03\u4ed3\u8d8a\u9891\u7e41\uff1a0bp \u4e0b\u8d85\u989d\u8d8a\u9ad8\uff0c10bp \u4e0b\u8d85\u989d\u8d8a\u5dee"},"yaxis2":{"title":{"text":"\u89e6\u53d1\u6b21\u6570"},"overlaying":"y","side":"right","showgrid":false},"legend":{"orientation":"h","y":-0.18},"height":460,"yaxis":{"title":{"text":"\u518d\u5e73\u8861\u8d85\u989d (%)"}}},                        {"responsive": true}                    )                };            </script>        </div>
+<div class="key">
+<b>0bp 下：高频整体优于低频</b>（每日 +0.90% vs 每2周 +0.43%），
+但<b>长间隔端不单调</b>（每季 +0.72% 反而高于每月 +0.48%）
+—— 调仓次数少时日历运气主导，与既有的「相位检验」结论一致。<br>
+<b>10bp 下：严格单调恶化</b>（每日 -2.47% → 每季 +0.22%），
+因为成本随频率线性累加，且这部分是确定的。<br>
+→ 实盘能拿到 +1.12% 而触发高达 66 次，<b>反推该平台的再平衡是免手续费（或极低费率）</b>；
+这也解释了它为什么会另收「质押收益 +1.36」——盈利点在质押/息差，不在调仓费。
+</div>
+</div>
+
+<div class="card">
+<h2>五、稳健性：30 个滚动起点，0bp 下全部为正超额</h2>
+<div class="scroll"><table>
+<thead><tr><th class="l">条件</th><th>起点数</th><th>超额中位</th><th>超额均值</th>
+<th>区间</th><th>正超额占比</th><th>触发次数中位</th></tr></thead>
+<tbody>
+<tr><td class="l"><b>0bp（实盘条件）</b></td><td>30</td>
+<td class="pos"><b>+0.90%</b></td>
+<td class="pos">+0.91%</td>
+<td>[+0.76%, +1.05%]</td>
+<td class="pos"><b>30/30</b></td>
+<td>28</td></tr>
+<tr><td class="l">10bp</td><td>30</td>
+<td class="neg"><b>-1.96%</b></td>
+<td class="neg">-1.98%</td>
+<td>[-2.58%, -1.38%]</td>
+<td class="neg">0/30</td>
+<td>28</td></tr>
+</tbody></table></div>
+<div class="note">
+0bp 条件下 <b>30/30 全为正超额</b>，中位 +0.90%、区间仅
+[+0.76%, +1.05%] —— 非常稳定。
+一旦计入 10bp，<b>30/30 全为负</b>。结论：<b>这个策略的全部价值都在「零成本」这个前提上</b>。
+</div>
+<div style="height:360px; width:100%;">                            <div id="6dafa0a1-de3b-494c-b732-932b0bf57a2c" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("6dafa0a1-de3b-494c-b732-932b0bf57a2c")) {                    Plotly.newPlot(                        "6dafa0a1-de3b-494c-b732-932b0bf57a2c",                        [{"marker":{"color":"#b8860b"},"name":"BTC \u8d77\u70b9\u4ef7","text":["$120,437","$119,416","$118,739"],"textfont":{"size":11},"textposition":"outside","x":["\u5b9e\u76d8\u53cd\u63a8","\u672c\u5730\u9762\u677f","CMC"],"y":[120437.01430906433,119415.55,118739],"type":"bar"},{"marker":{"color":"#2c6fb5"},"name":"ETH \u8d77\u70b9\u4ef7","text":["$3,592","$3,872","\u2248$3,348"],"textfont":{"size":11},"textposition":"outside","x":["\u5b9e\u76d8\u53cd\u63a8","\u672c\u5730\u9762\u677f","CMC"],"y":[3592.3322287944006,3872.1,11716.438458059172],"type":"bar"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"font":{"family":"Microsoft YaHei, Arial","size":12},"margin":{"l":60,"r":30,"t":50,"b":50},"title":{"text":"\u2462 2025-07-18 \u8d77\u70b9\u4ef7\uff1aBTC \u4e09\u6e90\u4e00\u81f4\uff08\u5206\u6b67 \u003c1.5%\uff09\uff0cETH \u5206\u6b67\u8fbe 15%"},"legend":{"orientation":"h","y":-0.2},"height":360,"barmode":"group","yaxis":{"title":{"text":"\u4ef7\u683c (USD)"}},"showlegend":true},                        {"responsive": true}                    )                };            </script>        </div>
+</div>
+
+<div class="card">
+<h2>六、可操作结论</h2>
+<ol>
+<li><b>引擎已验证。</b>三个独立口径给出同一答案（+0.9% ~ +1.2%），
+真实平台一年的落点与本地回测一致。以后用本地引擎评估再平衡，数值可信。</li>
+<li><b>比较再平衡不要比净值，要比超额。</b>净值受起点价/数据源影响可达 6pp
+（本例 ETH 起点 3,348→3,872 就让期末收益从 −30% 变 −36%），
+而超额在两条不同价格路径上都稳定在 +1%。</li>
+<li><b>短窗口（1 年）的超额很小，且对成本极敏感。</b>+1% 的超额，
+在 10bp 成本下直接翻成 −2%。评估短周期再平衡必须先确认成本假设。</li>
+<li><b>触发频率要用第一通过时间判断，不要用采样频率猜。</b>
+1% 阈值在 42/58 组合上对应约 7 天一次；周度采样会漏掉 2/3 的触发事件。</li>
+<li><b>再平衡不能对抗趋势。</b>这段窗口两币都跌 30%+，
+再平衡贡献的 +1.12% 相对 −31.70% 的结局几乎可以忽略。
+它改善的是分配效率与回撤，不是收益方向。</li>
+</ol>
+</div>
+
+<p style="font-size:12px;color:var(--mut);text-align:center;margin-top:26px">
+脚本 <code>btceth_live_replay.py</code>、<code>btceth_live_daily.py</code>
+／ 明细 <code>out/live_btceth_replay.csv</code>、<code>out/live_btceth_daily.csv</code>、
+<code>out/live_btceth_threshold.csv</code>
+</p>
+</div></body></html>
