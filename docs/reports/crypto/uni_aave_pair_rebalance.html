@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UNI + AAVE 配对再平衡 · 筹码口径</title>
+<style>
+  :root { --line:#e3e8ee; --ink:#1c2733; --muted:#66788a; --hl:#c0392b; --bg:#f7f9fb; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:32px 24px 64px; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+         line-height:1.72; font-size:15px; }
+  .wrap { max-width:1120px; margin:0 auto; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px;
+           padding:26px 30px; margin-bottom:20px; box-shadow:0 1px 2px rgba(16,24,40,.04); }
+  h1 { font-size:25px; margin:0 0 6px; letter-spacing:-.2px; }
+  h2 { font-size:18px; margin:0 0 14px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  h3 { font-size:15px; margin:20px 0 8px; color:#2c3e50; }
+  .sub { color:var(--muted); font-size:13.5px; margin-bottom:0; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; }
+  .kpi { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .kpi .k { font-size:12.5px; color:var(--muted); }
+  .kpi .v { font-size:23px; font-weight:650; letter-spacing:-.5px; margin:2px 0; }
+  .kpi .n { font-size:12.5px; color:var(--muted); }
+  .red { color:var(--hl); } .pos { color:#c0392b; } .neg { color:#1e8449; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th,td { padding:9px 11px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  th { background:#f2f5f8; font-weight:600; color:#3d4d5c; font-size:12.5px; }
+  td.l,th.l { text-align:left; }
+  td.hl { font-weight:650; }
+  tbody tr:hover { background:#fafcfe; }
+  .note { background:#fffbf0; border:1px solid #f0e0b8; border-left:4px solid #e0a800;
+           border-radius:8px; padding:14px 18px; font-size:13.5px; color:#5c4a15; }
+  .key { background:#fdf2f0; border:1px solid #f2cfc9; border-left:4px solid var(--hl);
+          border-radius:8px; padding:14px 18px; font-size:13.8px; }
+  ul { padding-left:20px; margin:8px 0; } li { margin:5px 0; }
+  code { background:#eef2f6; padding:1px 6px; border-radius:4px; font-size:12.8px; }
+  .scroll { overflow-x:auto; }
+</style>
+</head>
+<body><div class="wrap">
+
+<div class="card">
+  <h1>UNI + AAVE 配对再平衡 · 筹码口径</h1>
+  <p class="sub">加密内部配对（不跨资产）· 等权月度再平衡 · 数据 <code>weekly_adjclose_crypto50_10y.csv</code>（周频后复权，27 币面板）<br>
+  公共窗口 2020-10-09 ~ 2026-09-11（5.92 年，AAVE 上市自然起点）· 成本口径：主表扣 10bp 单边</p>
+</div>
+
+<div class="card">
+  <h2>一、直接回答：增加了多少筹码</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="k">UNI 币量 / 死拿</div><div class="v red">1.886x</div>
+      <div class="n">+88.6%（扣 10bp）</div></div>
+    <div class="kpi"><div class="k">AAVE 币量 / 死拿</div><div class="v red">1.154x</div>
+      <div class="n">+15.4%（扣 10bp）</div></div>
+    <div class="kpi"><div class="k">再平衡超额<br>（机器效率）</div><div class="v red">+44.33%</div>
+      <div class="n">净值比 1.4433</div></div>
+    <div class="kpi"><div class="k">组合净值 / 死拿</div><div class="v">3.519x / 2.438x</div>
+      <div class="n">CAGR +23.67% vs +16.24%</div></div>
+  </div>
+
+  <div class="key" style="margin-top:18px">
+    <b>一句话答案：</b>UNI+AAVE 月度再平衡在 5.9 年里把
+    <b>UNI 币量做到 1.886 倍（+88.6%）、AAVE 币量做到 1.154 倍（+15.4%）</b>；
+    同期两者价格分别为 3.281 → 6.321（UNI）与 40.75 → 120.19（AAVE）。<br>
+    <b>筹码明显偏向 UNI 一侧</b>——因为窗口内 UNI 的独立死拿 CAGR（+11.71%）低于 AAVE（+20.04%），
+    漂移差 <b>-8.3pp</b>，再平衡按纪律持续<b>卖出相对强的 AAVE、买入相对弱的 UNI</b>。
+  </div>
+</div>
+
+<div class="card">
+  <h2>二、主对照（全窗口）</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">口径</th><th>净值</th><th>CAGR</th><th>MDD</th><th>Calmar</th><th class="l">说明</th></tr></thead>
+    <tbody>
+      <tr><td class="l"><b>UNI+AAVE 月再平衡 (0bp)</b></td><td class="hl">3.539x</td>
+        <td class="pos">+23.79%</td><td class="neg">-88.85%</td>
+        <td>0.27</td><td class="l">理想成本（0 手续费）</td></tr>
+      <tr><td class="l"><b>UNI+AAVE 月再平衡 (10bp)</b></td><td class="hl">3.519x</td>
+        <td class="pos">+23.67%</td><td class="neg">-88.87%</td>
+        <td>0.27</td><td class="l"><b>主口径</b>（现货单边 10bp）</td></tr>
+      <tr><td class="l">UNI+AAVE 月再平衡 (30bp)</td><td>3.477x</td>
+        <td class="pos">+23.42%</td><td class="neg">-88.91%</td>
+        <td>0.26</td><td class="l">高费率压力测试</td></tr>
+      <tr><td class="l">UNI+AAVE 等权死拿</td><td>2.438x</td>
+        <td class="pos">+16.24%</td><td class="neg">-90.54%</td>
+        <td>0.18</td><td class="l">不再平衡基准</td></tr>
+      <tr><td class="l">&nbsp;&nbsp;└ UNI 独家死拿</td><td>1.926x</td>
+        <td class="pos">+11.71%</td><td class="neg">-93.96%</td>
+        <td>0.12</td><td class="l">标的质量参照</td></tr>
+      <tr><td class="l">&nbsp;&nbsp;└ AAVE 独家死拿</td><td>2.949x</td>
+        <td class="pos">+20.04%</td><td class="neg">-90.35%</td>
+        <td>0.22</td><td class="l">标的质量参照</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:12px">
+  年化换手 99.2% / 年，全窗口调仓 77 次。
+  <b>成本影响可忽略</b>：0bp→30bp 净值仅从 3.539x 降到 3.477x（-1.75%），
+  因为月度再平衡换手仅 99%/年。</p>
+</div>
+
+<div class="card">
+  <h2>三、筹码轨迹（每币币量 / 死拿，1.000 = 不增不减）</h2>
+  <svg viewBox='0 0 980 260' style='width:100%;height:auto'><line x1='46' y1='214.0' x2='934' y2='214.0' stroke='#e3e8ee' stroke-width='1'/><text x='38' y='218.0' font-size='11' fill='#66788a' text-anchor='end'>0.70</text><line x1='46' y1='172.0' x2='934' y2='172.0' stroke='#e3e8ee' stroke-width='1'/><text x='38' y='176.0' font-size='11' fill='#66788a' text-anchor='end'>1.22</text><line x1='46' y1='130.0' x2='934' y2='130.0' stroke='#e3e8ee' stroke-width='1'/><text x='38' y='134.0' font-size='11' fill='#66788a' text-anchor='end'>1.73</text><line x1='46' y1='88.0' x2='934' y2='88.0' stroke='#e3e8ee' stroke-width='1'/><text x='38' y='92.0' font-size='11' fill='#66788a' text-anchor='end'>2.24</text><line x1='46' y1='46.0' x2='934' y2='46.0' stroke='#e3e8ee' stroke-width='1'/><text x='38' y='50.0' font-size='11' fill='#66788a' text-anchor='end'>2.76</text><line x1='46' y1='189.8' x2='934' y2='189.8' stroke='#c0392b' stroke-width='1.2' stroke-dasharray='5,4'/><text x='930' y='183.8' font-size='11' fill='#c0392b' text-anchor='end'>死拿 = 1.000</text><text x='46.0' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2020-10-09</text><text x='172.4' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2021-08-13</text><text x='298.9' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2022-06-17</text><text x='425.3' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2023-04-21</text><text x='551.8' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2024-02-23</text><text x='678.2' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2024-12-27</text><text x='804.7' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2025-10-31</text><text x='931.1' y='232' font-size='11' fill='#66788a' text-anchor='middle'>2026-09-04</text><path d='M46.0,189.8 L48.9,189.8 L51.7,189.8 L54.6,189.8 L57.5,175.6 L60.4,175.6 L63.2,175.6 L66.1,175.6 L69.0,151.5 L71.9,151.5 L74.7,151.5 L77.6,151.5 L80.5,160.8 L83.4,160.8 L86.2,160.8 L89.1,160.8 L92.0,150.0 L94.9,150.0 L97.7,150.0 L100.6,150.0 L103.5,181.8 L106.3,181.8 L109.2,181.8 L112.1,181.8 L115.0,178.3 L117.8,178.3 L120.7,178.3 L123.6,178.3 L126.5,184.5 L129.3,184.5 L132.2,184.5 L135.1,184.5 L138.0,179.5 L140.8,179.5 L143.7,179.5 L146.6,179.5 L149.5,182.2 L152.3,182.2 L155.2,182.2 L158.1,182.2 L161.0,167.6 L163.8,167.6 L166.7,167.6 L169.6,167.6 L172.4,173.0 L175.3,173.0 L178.2,173.0 L181.1,173.0 L183.9,172.6 L186.8,172.6 L189.7,172.6 L192.6,172.6 L195.4,181.2 L198.3,181.2 L201.2,181.2 L204.1,181.2 L206.9,177.1 L209.8,177.1 L212.7,177.1 L215.6,177.1 L218.4,182.9 L221.3,182.9 L224.2,182.9 L227.0,182.9 L229.9,175.0 L232.8,175.0 L235.7,175.0 L238.5,175.0 L241.4,169.1 L244.3,169.1 L247.2,169.1 L250.0,169.1 L252.9,172.9 L255.8,172.9 L258.7,172.9 L261.5,172.9 L264.4,148.9 L267.3,148.9 L270.2,148.9 L273.0,148.9 L275.9,148.5 L278.8,148.5 L281.7,148.5 L284.5,148.5 L287.4,152.4 L290.3,152.4 L293.1,152.4 L296.0,152.4 L298.9,175.9 L301.8,175.9 L304.6,175.9 L307.5,175.9 L310.4,172.5 L313.3,172.5 L316.1,172.5 L319.0,172.5 L321.9,174.8 L324.8,174.8 L327.6,174.8 L330.5,174.8 L333.4,169.1 L336.3,169.1 L339.1,169.1 L342.0,169.1 L344.9,172.6 L347.7,172.6 L350.6,172.6 L353.5,172.6 L356.4,183.2 L359.2,183.2 L362.1,183.2 L365.0,183.2 L367.9,181.8 L370.7,181.8 L373.6,181.8 L376.5,181.8 L379.4,179.4 L382.2,179.4 L385.1,179.4 L388.0,179.4 L390.9,171.5 L393.7,171.5 L396.6,171.5 L399.5,171.5 L402.3,174.0 L405.2,174.0 L408.1,174.0 L411.0,174.0 L413.8,172.1 L416.7,172.1 L419.6,172.1 L422.5,172.1 L425.3,169.6 L428.2,169.6 L431.1,169.6 L434.0,169.6 L436.8,167.5 L439.7,167.5 L442.6,167.5 L445.5,167.5 L448.3,170.4 L451.2,170.4 L454.1,170.4 L457.0,170.4 L459.8,174.0 L462.7,174.0 L465.6,174.0 L468.4,174.0 L471.3,174.5 L474.2,174.5 L477.1,174.5 L479.9,174.5 L482.8,165.3 L485.7,165.3 L488.6,165.3 L491.4,165.3 L494.3,158.6 L497.2,158.6 L500.1,158.6 L502.9,158.6 L505.8,148.3 L508.7,148.3 L511.6,148.3 L514.4,148.3 L517.3,160.4 L520.2,160.4 L523.0,160.4 L525.9,160.4 L528.8,156.7 L531.7,156.7 L534.5,156.7 L537.4,156.7 L540.3,163.6 L543.2,163.6 L546.0,163.6 L548.9,163.6 L551.8,183.0 L554.7,183.0 L557.5,183.0 L560.4,183.0 L563.3,178.1 L566.2,178.1 L569.0,178.1 L571.9,178.1 L574.8,170.4 L577.7,170.4 L580.5,170.4 L583.4,170.4 L586.3,178.0 L589.1,178.0 L592.0,178.0 L594.9,178.0 L597.8,185.4 L600.6,185.4 L603.5,185.4 L606.4,185.4 L609.3,165.3 L612.1,165.3 L615.0,165.3 L617.9,165.3 L620.8,139.2 L623.6,139.2 L626.5,139.2 L629.4,139.2 L632.3,124.9 L635.1,124.9 L638.0,124.9 L640.9,124.9 L643.7,130.9 L646.6,130.9 L649.5,130.9 L652.4,130.9 L655.2,129.2 L658.1,129.2 L661.0,129.2 L663.9,129.2 L666.7,148.0 L669.6,148.0 L672.5,148.0 L675.4,148.0 L678.2,118.1 L681.1,118.1 L684.0,118.1 L686.9,118.1 L689.7,99.0 L692.6,99.0 L695.5,99.0 L698.3,99.0 L701.2,102.4 L704.1,102.4 L707.0,102.4 L709.8,102.4 L712.7,99.7 L715.6,99.7 L718.5,99.7 L721.3,99.7 L724.2,92.3 L727.1,92.3 L730.0,92.3 L732.8,92.3 L735.7,52.6 L738.6,52.6 L741.5,52.6 L744.3,52.6 L747.2,70.9 L750.1,70.9 L753.0,70.9 L755.8,70.9 L758.7,87.3 L761.6,87.3 L764.4,87.3 L767.3,87.3 L770.2,96.2 L773.1,96.2 L775.9,96.2 L778.8,96.2 L781.7,80.2 L784.6,80.2 L787.4,80.2 L790.3,80.2 L793.2,64.3 L796.1,64.3 L798.9,64.3 L801.8,64.3 L804.7,79.7 L807.6,79.7 L810.4,79.7 L813.3,79.7 L816.2,73.6 L819.0,73.6 L821.9,73.6 L824.8,73.6 L827.7,91.7 L830.5,91.7 L833.4,91.7 L836.3,91.7 L839.2,77.9 L842.0,77.9 L844.9,77.9 L847.8,77.9 L850.7,84.0 L853.5,84.0 L856.4,84.0 L859.3,84.0 L862.2,89.9 L865.0,89.9 L867.9,89.9 L870.8,89.9 L873.7,86.8 L876.5,86.8 L879.4,86.8 L882.3,86.8 L885.1,99.8 L888.0,99.8 L890.9,99.8 L893.8,99.8 L896.6,101.4 L899.5,101.4 L902.4,101.4 L905.3,101.4 L908.1,99.1 L911.0,99.1 L913.9,99.1 L916.8,99.1 L919.6,96.4 L922.5,96.4 L925.4,96.4 L928.3,96.4 L931.1,116.3 L934.0,116.3' fill='none' stroke='#c0392b' stroke-width='2.2'/><path d='M46.0,189.8 L48.9,189.8 L51.7,189.8 L54.6,189.8 L57.5,200.3 L60.4,200.3 L63.2,200.3 L66.1,200.3 L69.0,212.2 L71.9,212.2 L74.7,212.2 L77.6,212.2 L80.5,206.8 L83.4,206.8 L86.2,206.8 L89.1,206.8 L92.0,212.1 L94.9,212.1 L97.7,212.1 L100.6,212.1 L103.5,179.5 L106.3,179.5 L109.2,179.5 L112.1,179.5 L115.0,182.8 L117.8,182.8 L120.7,182.8 L123.6,182.8 L126.5,176.0 L129.3,176.0 L132.2,176.0 L135.1,176.0 L138.0,180.9 L140.8,180.9 L143.7,180.9 L146.6,180.9 L149.5,178.1 L152.3,178.1 L155.2,178.1 L158.1,178.1 L161.0,189.6 L163.8,189.6 L166.7,189.6 L169.6,189.6 L172.4,184.9 L175.3,184.9 L178.2,184.9 L181.1,184.9 L183.9,185.3 L186.8,185.3 L189.7,185.3 L192.6,185.3 L195.4,176.1 L198.3,176.1 L201.2,176.1 L204.1,176.1 L206.9,180.1 L209.8,180.1 L212.7,180.1 L215.6,180.1 L218.4,173.6 L221.3,173.6 L224.2,173.6 L227.0,173.6 L229.9,181.1 L232.8,181.1 L235.7,181.1 L238.5,181.1 L241.4,186.0 L244.3,186.0 L247.2,186.0 L250.0,186.0 L252.9,182.6 L255.8,182.6 L258.7,182.6 L261.5,182.6 L264.4,197.2 L267.3,197.2 L270.2,197.2 L273.0,197.2 L275.9,197.3 L278.8,197.3 L281.7,197.3 L284.5,197.3 L287.4,194.9 L290.3,194.9 L293.1,194.9 L296.0,194.9 L298.9,169.9 L301.8,169.9 L304.6,169.9 L307.5,169.9 L310.4,173.3 L313.3,173.3 L316.1,173.3 L319.0,173.3 L321.9,170.8 L324.8,170.8 L327.6,170.8 L330.5,170.8 L333.4,176.2 L336.3,176.2 L339.1,176.2 L342.0,176.2 L344.9,172.7 L347.7,172.7 L350.6,172.7 L353.5,172.7 L356.4,159.1 L359.2,159.1 L362.1,159.1 L365.0,159.1 L367.9,160.9 L370.7,160.9 L373.6,160.9 L376.5,160.9 L379.4,163.8 L382.2,163.8 L385.1,163.8 L388.0,163.8 L390.9,171.7 L393.7,171.7 L396.6,171.7 L399.5,171.7 L402.3,169.0 L405.2,169.0 L408.1,169.0 L411.0,169.0 L413.8,170.9 L416.7,170.9 L419.6,170.9 L422.5,170.9 L425.3,173.3 L428.2,173.3 L431.1,173.3 L434.0,173.3 L436.8,175.2 L439.7,175.2 L442.6,175.2 L445.5,175.2 L448.3,172.4 L451.2,172.4 L454.1,172.4 L457.0,172.4 L459.8,168.6 L462.7,168.6 L465.6,168.6 L468.4,168.6 L471.3,168.1 L474.2,168.1 L477.1,168.1 L479.9,168.1 L482.8,176.3 L485.7,176.3 L488.6,176.3 L491.4,176.3 L494.3,181.6 L497.2,181.6 L500.1,181.6 L502.9,181.6 L505.8,188.6 L508.7,188.6 L511.6,188.6 L514.4,188.6 L517.3,178.5 L520.2,178.5 L523.0,178.5 L525.9,178.5 L528.8,181.4 L531.7,181.4 L534.5,181.4 L537.4,181.4 L540.3,175.2 L543.2,175.2 L546.0,175.2 L548.9,175.2 L551.8,148.2 L554.7,148.2 L557.5,148.2 L560.4,148.2 L563.3,154.4 L566.2,154.4 L569.0,154.4 L571.9,154.4 L574.8,162.7 L577.7,162.7 L580.5,162.7 L583.4,162.7 L586.3,153.1 L589.1,153.1 L592.0,153.1 L594.9,153.1 L597.8,141.9 L600.6,141.9 L603.5,141.9 L606.4,141.9 L609.3,162.5 L612.1,162.5 L615.0,162.5 L617.9,162.5 L620.8,180.5 L623.6,180.5 L626.5,180.5 L629.4,180.5 L632.3,188.6 L635.1,188.6 L638.0,188.6 L640.9,188.6 L643.7,184.8 L646.6,184.8 L649.5,184.8 L652.4,184.8 L655.2,185.9 L658.1,185.9 L661.0,185.9 L663.9,185.9 L666.7,170.6 L669.6,170.6 L672.5,170.6 L675.4,170.6 L678.2,187.0 L681.1,187.0 L684.0,187.0 L686.9,187.0 L689.7,195.5 L692.6,195.5 L695.5,195.5 L698.3,195.5 L701.2,193.9 L704.1,193.9 L707.0,193.9 L709.8,193.9 L712.7,195.1 L715.6,195.1 L718.5,195.1 L721.3,195.1 L724.2,198.1 L727.1,198.1 L730.0,198.1 L732.8,198.1 L735.7,209.4 L738.6,209.4 L741.5,209.4 L744.3,209.4 L747.2,203.2 L750.1,203.2 L753.0,203.2 L755.8,203.2 L758.7,196.4 L761.6,196.4 L764.4,196.4 L767.3,196.4 L770.2,192.5 L773.1,192.5 L775.9,192.5 L778.8,192.5 L781.7,198.6 L784.6,198.6 L787.4,198.6 L790.3,198.6 L793.2,203.8 L796.1,203.8 L798.9,203.8 L801.8,203.8 L804.7,197.8 L807.6,197.8 L810.4,197.8 L813.3,197.8 L816.2,200.0 L819.0,200.0 L821.9,200.0 L824.8,200.0 L827.7,192.0 L830.5,192.0 L833.4,192.0 L836.3,192.0 L839.2,197.3 L842.0,197.3 L844.9,197.3 L847.8,197.3 L850.7,194.8 L853.5,194.8 L856.4,194.8 L859.3,194.8 L862.2,192.3 L865.0,192.3 L867.9,192.3 L870.8,192.3 L873.7,193.6 L876.5,193.6 L879.4,193.6 L882.3,193.6 L885.1,187.2 L888.0,187.2 L890.9,187.2 L893.8,187.2 L896.6,186.4 L899.5,186.4 L902.4,186.4 L905.3,186.4 L908.1,187.5 L911.0,187.5 L913.9,187.5 L916.8,187.5 L919.6,188.8 L922.5,188.8 L925.4,188.8 L928.3,188.8 L931.1,176.6 L934.0,176.6' fill='none' stroke='#2471a3' stroke-width='2.2'/><text x='934' y='16' font-size='12' fill='#c0392b' text-anchor='end'>UNI</text><text x='890' y='16' font-size='12' fill='#2471a3' text-anchor='end'>AAVE</text></svg>
+  <div class="scroll" style="margin-top:16px">
+  <table>
+    <thead><tr><th class="l">日期</th><th>UNI 币量倍数</th><th>AAVE 币量倍数</th></tr></thead>
+    <tbody><tr><td class='l'>2020-10-09</td><td class='pos'>1.0000x</td><td class='pos'>1.0000x</td></tr><tr><td class='l'>2021-01-08</td><td class='pos'>1.3543x</td><td class='neg'>0.7919x</td></tr><tr><td class='l'>2021-04-09</td><td class='pos'>1.1400x</td><td class='pos'>1.0850x</td></tr><tr><td class='l'>2021-07-09</td><td class='pos'>1.0919x</td><td class='pos'>1.1429x</td></tr><tr><td class='l'>2021-10-08</td><td class='pos'>1.1042x</td><td class='pos'>1.1673x</td></tr><tr><td class='l'>2022-01-07</td><td class='pos'>1.1808x</td><td class='pos'>1.1060x</td></tr><tr><td class='l'>2022-04-08</td><td class='pos'>1.4997x</td><td class='neg'>0.9098x</td></tr><tr><td class='l'>2022-07-08</td><td class='pos'>1.1699x</td><td class='pos'>1.2422x</td></tr><tr><td class='l'>2022-10-07</td><td class='pos'>1.2095x</td><td class='pos'>1.2089x</td></tr><tr><td class='l'>2023-01-06</td><td class='pos'>1.1273x</td><td class='pos'>1.3174x</td></tr><tr><td class='l'>2023-04-07</td><td class='pos'>1.2159x</td><td class='pos'>1.2304x</td></tr><tr><td class='l'>2023-07-07</td><td class='pos'>1.2362x</td><td class='pos'>1.2124x</td></tr><tr><td class='l'>2023-10-06</td><td class='pos'>1.3802x</td><td class='pos'>1.0994x</td></tr><tr><td class='l'>2024-01-05</td><td class='pos'>1.4038x</td><td class='pos'>1.1025x</td></tr><tr><td class='l'>2024-04-05</td><td class='pos'>1.1429x</td><td class='pos'>1.4323x</td></tr><tr><td class='l'>2024-07-05</td><td class='pos'>1.0540x</td><td class='pos'>1.5841x</td></tr><tr><td class='l'>2024-10-04</td><td class='pos'>1.7184x</td><td class='pos'>1.0602x</td></tr><tr><td class='l'>2025-01-03</td><td class='pos'>1.8757x</td><td class='pos'>1.0335x</td></tr><tr><td class='l'>2025-04-04</td><td class='pos'>2.0995x</td><td class='neg'>0.9353x</td></tr><tr><td class='l'>2025-07-04</td><td class='pos'>2.4521x</td><td class='neg'>0.8364x</td></tr><tr><td class='l'>2025-10-03</td><td class='pos'>2.5319x</td><td class='neg'>0.8293x</td></tr><tr><td class='l'>2026-01-02</td><td class='pos'>2.1977x</td><td class='neg'>0.9722x</td></tr><tr><td class='l'>2026-04-03</td><td class='pos'>2.2201x</td><td class='neg'>0.9694x</td></tr><tr><td class='l'>2026-07-03</td><td class='pos'>2.0788x</td><td class='pos'>1.0415x</td></tr><tr style='background:#fdf6f5'><td class='l'><b>2026-09-11 期末</b></td><td class='hl'><b>1.8975x</b></td><td class='hl'><b>1.1606x</b></td></tr></tbody>
+  </table>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <b>读法：</b>曲线在 1.0 以上 = 该币筹码增加（再平衡净买入），以下 = 掉队。
+    UNI 筹码曾于 2025-05-16 冲到 2.675x 高点后回落至 1.898x，
+    说明<b>筹码倍数随行情阶段波动</b>，不是单调累积——它反映的是"这段路谁更弱"。
+  </div>
+</div>
+
+<div class="card">
+  <h2>四、分段拆解（扣 10bp）</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">区间</th><th>年数</th><th>再平衡</th><th>CAGR</th><th>MDD</th>
+      <th>死拿</th><th>超额</th><th>UNI 筹码</th><th>AAVE 筹码</th></tr></thead>
+    <tbody><tr><td class='l'>段1 · 上轮牛熊 (2020-10~2022-11)</td><td>2.09</td><td class='hl'>1.837x</td><td class='pos'>+33.78%</td><td class='neg'>-88.78%</td><td>1.517x</td><td class='pos'><b>+21.04%</b></td><td class='pos'>1.0771x</td><td class='pos'>1.3709x</td></tr><tr><td class='l'>段2 · 复苏 (2022-11~2024-04)</td><td>1.44</td><td class='hl'>1.594x</td><td class='pos'>+38.30%</td><td class='neg'>-42.86%</td><td>1.524x</td><td class='pos'><b>+4.58%</b></td><td class='pos'>1.0700x</td><td class='pos'>1.0242x</td></tr><tr><td class='l'>段3 · 本轮 (2024-04~今)</td><td>2.40</td><td class='hl'>1.197x</td><td class='pos'>+7.80%</td><td class='neg'>-82.89%</td><td>1.069x</td><td class='pos'><b>+11.93%</b></td><td class='pos'>1.5305x</td><td class='neg'>0.8697x</td></tr><tr><td class='l'>近 3 年</td><td>2.99</td><td class='hl'>2.081x</td><td class='pos'>+27.78%</td><td class='neg'>-82.52%</td><td>1.720x</td><td class='pos'><b>+21.03%</b></td><td class='pos'>1.3945x</td><td class='pos'>1.0691x</td></tr><tr><td class='l'>近 2 年</td><td>1.99</td><td class='hl'>0.955x</td><td class='neg'>-2.30%</td><td class='neg'>-82.52%</td><td>0.847x</td><td class='pos'><b>+12.71%</b></td><td class='pos'>1.0022x</td><td class='pos'>1.2875x</td></tr><tr><td class='l'>近 1 年</td><td>1.00</td><td class='hl'>0.582x</td><td class='neg'>-41.95%</td><td class='neg'>-74.04%</td><td>0.554x</td><td class='pos'><b>+5.01%</b></td><td class='neg'>0.8321x</td><td class='pos'>1.4228x</td></tr></tbody>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:12px">
+  <b>近 1 年是唯一失效窗口</b>——超额转负，因为该窗口内两币同步下跌、再平衡无"强弱差"可收割，只剩成本。
+  这正是"再平衡超额 = 波动率² 收割"的边界：<b>它需要路径分歧，不需要单纯的高波动</b>。</p>
+</div>
+
+<div class="card">
+  <h2>五、调仓频率对比（0bp）</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">频率</th><th>起点平移档数</th><th>净值</th><th>超额</th><th>UNI 筹码</th>
+      <th>AAVE 筹码</th><th>换手</th><th>起点平移净值极差</th></tr></thead>
+    <tbody><tr><td class='l'>每周</td><td>1</td><td class='hl'>3.765x</td><td class='pos'>+54.41%</td><td>1.9541x</td><td>1.2764x</td><td>205%</td><td>—</td></tr><tr><td class='l'>双周</td><td>2</td><td class='hl'>3.429x</td><td class='pos'>+40.65%</td><td>1.8384x</td><td>1.1244x</td><td>136%</td><td>26.7%</td></tr><tr><td class='l'>月度</td><td>4</td><td class='hl'>3.539x</td><td class='pos'>+45.18%</td><td>1.8975x</td><td>1.1606x</td><td>99%</td><td>31.7%</td></tr><tr><td class='l'>双月</td><td>8</td><td class='hl'>3.821x</td><td class='pos'>+56.74%</td><td>2.3017x</td><td>1.0879x</td><td>71%</td><td>91.9%</td></tr></tbody>
+  </table>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <b>⚠️ 方法论警示：</b>同频率只换调仓日历（或平移起点几周）就会明显改变结果，窗口越长日历运气越大。
+    因此"每周 vs 每月哪个好"在本表中<b>不可直接比较</b>——须看末列极差。
+    唯一稳健的频率效应是：<b>调仓越频繁，最强币的币量掉得越多</b>。
+    成本影响很小（全窗口仅 1% 量级），不足以解释频率间的净值差。
+  </div>
+</div>
+
+<div class="card">
+  <h2>六、配对准入检验</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">指标</th><th>数值</th><th class="l">准入要求</th><th class="l">判定</th></tr></thead>
+    <tbody>
+      <tr><td class="l">周收益相关</td><td>0.684</td><td class="l">&lt; 0.3（低相关）</td>
+        <td class="l">❌ 不通过（相关性偏高）</td></tr>
+      <tr><td class="l">UNI 年化波动</td><td>108.1%</td><td class="l">&gt; 20%（高波动）</td>
+        <td class="l">✅ 通过</td></tr>
+      <tr><td class="l">AAVE 年化波动</td><td>111.9%</td><td class="l">&gt; 20%（高波动）</td>
+        <td class="l">✅ 通过</td></tr>
+      <tr><td class="l">长期漂移方向</td><td>双正（差 -8.3pp）</td>
+        <td class="l">无长期单边赢家/输家</td>
+        <td class="l">✅ 通过</td></tr>
+      <tr><td class="l">组合年化波动</td><td>101.0%</td><td class="l">—</td>
+        <td class="l">回撤代价参考</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:12px">
+  <b>判据提醒：</b>决定再平衡超额的不是"两币波动都大"，而是
+  <b>两币长期漂移方向是否一致</b>（|漂移差| 越小超额越高）。
+  本组漂移差 -8.3pp，属"双正但强弱有别"，因此超额为正但不极端。</p>
+</div>
+
+<div class="card">
+  <h2>七、平均每年增加多少筹码 / 还能拉多少年</h2>
+  <p class="sub" style="margin-top:-4px">
+  <b>⚠️ 本节只用筹码口径，不使用"超额收益"。</b>超额是净值除法，会被两币价格涨跌幅度、起点价选择、
+  死拿口径的起点歧义共同污染（同币同窗口换一个起点，超额可差数个百分点），
+  <b>无法分辨"机器效率"与"标的运气"</b>。筹码（币量倍数）不含价格，是唯一干净的口径。
+  </p>
+
+  <h3>7.1 年化筹码增速（几何口径，扣 10bp）</h3>
+  <div class="kpis">
+    <div class="kpi"><div class="k">UNI 筹码年化</div><div class="v red">+11.31%</div>
+      <div class="n">1.8864x ÷ 5.92 年</div></div>
+    <div class="kpi"><div class="k">AAVE 筹码年化</div><div class="v red">+2.45%</div>
+      <div class="n">1.1538x ÷ 5.92 年</div></div>
+    <div class="kpi"><div class="k">组合筹码年化<br>（= 波动收割）</div><div class="v red">+6.79%</div>
+      <div class="n">两币筹码年化的几何平均</div></div>
+    <div class="kpi"><div class="k">按此速度翻倍</div><div class="v">10.6 年</div>
+      <div class="n">翻十倍 35.1 年</div></div>
+  </div>
+
+  <div class="key" style="margin-top:16px">
+    <b>为什么 UNI 和 AAVE 的增速差这么多？拆成两块（只用各币价格倍数，不引入净值）：</b><br>
+    <code>log 筹码增速_i = 组合筹码年化 + ½ × (log 价格倍数_另一边 − log 价格倍数_i) ÷ T</code>
+    <ul>
+      <li><b>组合筹码年化 = +6.79%/年</b> —— 这是<b>波动收割</b>，可重复的机器产出，两边都有</li>
+      <li><b>搬运项（零和）：</b>窗口内 UNI 涨得少、AAVE 涨得多，再平衡就把 AAVE 的涨幅搬成 UNI 的币量 →
+        UNI <b>+3.66%</b> ／ AAVE <b>-3.53%</b>（两者相加 ≈ 0）</li>
+    </ul>
+    <b>所以 UNI 的 +11.31%/年 里，只有 6.79pp 是真增量，其余是搬运 ——
+    搬运部分意味着"用 AAVE 的涨幅换了 UNI 的币量"，不是凭空多出来的财富。</b><br>
+    <b>评估这套机制请盯组合筹码（+6.79%/年），不要盯单币筹码倍数。</b>
+  </div>
+
+  <h3>7.2 分段年化筹码增速 —— 单币会反转，组合不会</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">区间</th><th>年数</th><th>UNI 筹码年化</th><th>AAVE 筹码年化</th>
+      <th>组合筹码年化</th><th>UNI 倍数</th><th>AAVE 倍数</th></tr></thead>
+    <tbody><tr><td class='l'>段1 · 上轮牛熊 (2020-10~2022-11)</td><td>2.09</td><td class='pos'>+3.62%</td><td class='pos'>+16.30%</td><td class='pos'><b>+9.78%</b></td><td class='pos'>1.0771x</td><td class='pos'>1.3709x</td></tr><tr><td class='l'>段2 · 复苏 (2022-11~2024-04)</td><td>1.44</td><td class='pos'>+4.82%</td><td class='pos'>+1.67%</td><td class='pos'><b>+3.24%</b></td><td class='pos'>1.0700x</td><td class='pos'>1.0242x</td></tr><tr><td class='l'>段3 · 本轮 (2024-04~今)</td><td>2.40</td><td class='pos'>+19.44%</td><td class='neg'>-5.66%</td><td class='pos'><b>+6.15%</b></td><td class='pos'>1.5305x</td><td class='neg'>0.8697x</td></tr><tr><td class='l'>近 3 年</td><td>2.99</td><td class='pos'>+11.76%</td><td class='pos'>+2.26%</td><td class='pos'><b>+6.91%</b></td><td class='pos'>1.3945x</td><td class='pos'>1.0691x</td></tr><tr><td class='l'>近 2 年</td><td>1.99</td><td class='pos'>+0.11%</td><td class='pos'>+13.52%</td><td class='pos'><b>+6.60%</b></td><td class='pos'>1.0022x</td><td class='pos'>1.2875x</td></tr><tr><td class='l'>近 1 年</td><td>1.00</td><td class='neg'>-16.85%</td><td class='pos'>+42.45%</td><td class='pos'><b>+8.84%</b></td><td class='neg'>0.8321x</td><td class='pos'>1.4228x</td></tr></tbody>
+  </table>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <b>本表最重要的观察：</b>单币筹码增速<b>会整体反转</b>——近 1 年 UNI 掉到
+    -16.85%、AAVE 冲到 +42.45%
+    （因为近 1 年涨的是 AAVE，机制自动反向搬运）。
+    但<b>组合筹码年化在 6 个分段里全部为正，区间
+    +3.24% ~ +9.78%</b>。
+    结论：<b>"筹码往哪边堆"会翻转，"能堆出多少筹码"不消失。</b>
+  </div>
+
+  <h3>7.3 任意 2 年窗口的分布 —— "每年几个点"不是合同利率</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">组合筹码年化（滚动 2 年，103 个起点）</th><th>最差</th><th>p25</th>
+      <th>中位</th><th>p75</th><th>最好</th></tr></thead>
+    <tbody><tr><td class="l">几何年化</td>
+      <td class="hl">+2.12%</td><td>+4.18%</td>
+      <td><b>+5.39%</b></td><td>+6.64%</td>
+      <td>+9.88%</td></tr></tbody>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:12px">
+  103 个滚动 2 年窗口里，<b>组合筹码年化为负的比例 = 0.0%</b>，
+  下界 <b>+2.12%/年</b>，中位 +5.39%/年。
+  即：从过去任意一周入场持有满 2 年，筹码都是净增的。
+  </p>
+
+  <h3>7.4 "还能拉多少年"取决于波动率，不是时间</h3>
+  <p class="sub">
+  组合筹码年化的来源只有两个：<b>波动</b>与<b>相关性</b>，与两币涨跌方向无关。
+  等波动近似下 <code>组合筹码年化 = ¼ (1 − ρ) · σ²</code>。
+  <b>它没有到期日，只有衰减路径</b>——只要波动还在，搬运就在发生。
+  </p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="l">年化波动 σ</th><th>ρ=0.40</th><th>ρ=0.60</th><th>ρ=0.74</th><th>ρ=0.90</th><th>按 ρ=0.72 翻倍</th></tr></thead>
+    <tbody><tr><td class='l'>110%</td><td class='pos'>+18.15%</td><td class='pos'>+12.10%</td><td class='pos'>+7.87%</td><td class='pos'>+3.02%</td><td>8.3</td></tr><tr><td class='l'>90%</td><td class='pos'>+12.15%</td><td class='pos'>+8.10%</td><td class='pos'>+5.27%</td><td class='pos'>+2.02%</td><td>12.4</td></tr><tr><td class='l'>80%</td><td class='pos'>+9.60%</td><td class='pos'>+6.40%</td><td class='pos'>+4.16%</td><td class='pos'>+1.60%</td><td>15.7</td></tr><tr><td class='l'>60%</td><td class='pos'>+5.40%</td><td class='pos'>+3.60%</td><td class='pos'>+2.34%</td><td class='pos'>+0.90%</td><td>28.0</td></tr><tr><td class='l'>40%</td><td class='pos'>+2.40%</td><td class='pos'>+1.60%</td><td class='pos'>+1.04%</td><td class='pos'>+0.40%</td><td>62.9</td></tr><tr><td class='l'>30%</td><td class='pos'>+1.35%</td><td class='pos'>+0.90%</td><td class='pos'>+0.58%</td><td class='pos'>+0.22%</td><td>111.9</td></tr><tr><td class='l'>20%</td><td class='pos'>+0.60%</td><td class='pos'>+0.40%</td><td class='pos'>+0.26%</td><td class='pos'>+0.10%</td><td>251.7</td></tr></tbody>
+  </table>
+  </div>
+  <p class="sub" style="margin-top:12px">
+  实测（<b>对数收益口径</b>，与第六节简单收益波动略有差异，结论一致）<b>滚动 1 年波动</b>：中位 95.9%，区间 66.3% ~ 150.1%，
+  <b>最近 87.0%</b>；<b>滚动 1 年相关</b>：中位 0.745，
+  区间 0.414 ~ 0.877，<b>最近 0.537</b>。
+  按最近读数（σ=87%、ρ=0.54）推，组合筹码年化约
+  <b>+8.76%</b>，仍在有效区间。
+  </p>
+
+  <div class="key" style="margin-top:16px">
+    <b>结论：每年几个点、能拉多少年</b>
+    <ul>
+      <li><b>每年：</b>组合层面 <b>+6.79%</b>（样本下界 +2.12%、
+        中位 +5.39%）。单币层面 UNI <b>+11.31%</b>、
+        AAVE <b>+2.45%</b>——但"谁多谁少"由价格相对强弱决定，<b>会反转</b>（近 1 年已反）。
+        真正可重复的只有组合那一项。</li>
+      <li><b>多少年：数学上无期限。</b>组合筹码年化归零需要相关系数达到
+        <code>ρ* = (k²+1)/(2k)</code>（k = 两币波动之比）。实测 k = 0.9850 → ρ* = 1.0001，
+        而 ρ 最大只到 1 —— <b>不可达</b>。只要两币波动不完全相同，收割恒为正。
+        样本内验证：滚动 2 年窗口为负的比例 0.0%。</li>
+      <li><b>实际约束是"变薄"而非"到期"：</b>σ 从 110% 掉到 60%，年化从 +8.3% 降到 +2.5%；
+        掉到 30% 只剩 +0.6%（机器还在跑，但没肉）。<b>要盯的是 σ 与 ρ，不是年份。</b></li>
+      <li><b>真正会终结的是三种情形：</b>① <b>ρ → 0.9</b>（两币完全同涨同跌，没有强弱差可搬运，年化被砍到当前水平的约 36%）；
+        ② <b>σ 坍塌</b>（币成熟到 30% 以下）；③ <b>单币归零 / 被踢出池</b>——
+        这是唯一让筹码口径彻底失效的情形：币量可以堆到很高，但价格归零，筹码不值钱。
+        <b>所以池子准入（熊市幸存币、不掉队）比调仓参数重要得多。</b></li>
+      <li><b>翻倍时间：</b>按组合筹码 +6.79%/年，翻倍约 <b>10.6 年</b>、
+        十倍约 <b>35.1 年</b>。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h2>八、口径与数据说明</h2>
+  <ul>
+    <li><b>筹码口径（根本答案）：</b><code>units_mult = 期末币量 / 死拿币量</code>，死拿 = 1.000，&lt;1 即掉队。
+      这是再平衡真正做的事，<b>不受价格与起点价污染</b>。</li>
+    <li><b>美元口径：</b><code>nav = Σ w_c · R_c · Pnorm_c</code>，回答"赚几倍"。它与筹码倍数<b>不可互换</b>。</li>
+    <li><b>超额：</b>再平衡净值 ÷ 同币同窗口等权死拿净值 − 1，衡量"机器效率"，与标的涨跌无关。</li>
+    <li><b>成本：</b>主口径单边 10bp，按当期成交额扣减；表中另给 0 / 30bp。</li>
+    <li><b>窗口：</b>两币公共窗口取较晚的起始日（2020-10-09，AAVE 上市），死亡期不参与。</li>
+    <li><b>数据：</b><code>weekly_adjclose_crypto50_10y.csv</code>（周频后复权，27 币）。
+      面板末格日期为 2026-09-11，其承载价格为最新交易周（含最新收盘）。</li>
+    <li><b>⚠️ 已知数据特征：</b>该面板的日期标签由交易所周K（周一开盘）经 <code>(weekday-4)%7</code> 映射而来，
+      实际承载的价格对应<b>标签日 +9 天的收盘</b>（即标签比价格早约 7 个交易日）。
+      <b>该偏移对所有币一致，不影响收益序列与筹码倍数</b>，但会使"面板末日"看起来比真实交易日更早。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="sub">
+  生成脚本 <code>markets/crypto/build_uni_aave_report.py</code> ·
+  回测脚本 <code>markets/crypto/uni_aave_pair_rebalance.py</code> ·
+  数据落盘 <code>markets/crypto/out/uni_aave_pair_rebalance.csv</code> ·
+  生成时间 2026-09-16 20:17
+  </p>
+</div>
+
+</div></body></html>

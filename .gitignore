@@ -59,3 +59,8 @@ markets/ashare/_cmp_*.py
 
 # run_all.py 每日留档快照 (基线 truth_baseline.json 需入库, 快照不需要)
 reports/truth_snapshot_*.json
+
+# 脚本草稿与数据备份快照 (2026-09-17 加: 备份/草稿不入库, 避免污染 diff)
+_tmp/
+*.bak_*
+markets/crypto/data/_bak_*/

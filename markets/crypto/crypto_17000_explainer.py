@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """生成 17000x 学习 HTML: 复现 + 逐层瀑布 + 净值曲线 + 减半相位时间轴。"""
 import json
+import os
+import sys
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
 import crypto_options_bt as m
 
-px10 = m.pd.read_csv('data/weekly_adjclose_crypto50_10y.csv', index_col=0, parse_dates=True).sort_index()
+px10 = m.pd.read_csv(os.path.join(_HERE, 'data', 'weekly_adjclose_crypto50_10y.csv'),
+                     index_col=0, parse_dates=True).sort_index()
 dates = [d.strftime('%Y-%m-%d') for d in px10.index]
 
 # ---- 复现 17000x 含税参数 ----
@@ -177,7 +185,7 @@ Plotly.newPlot('phase', [{x:D.dates, y:D.phase_map, type:'bar',
 
 html = TEMPLATE.replace('__DATA__', json.dumps(data, ensure_ascii=False))
 import os as _os
-_OUT_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'docs', 'reports', 'crypto')
+_OUT_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'docs', 'reports', 'crypto')
 _OUT_DIR = _os.path.normpath(_OUT_DIR)
 _os.makedirs(_OUT_DIR, exist_ok=True)
 with open(_os.path.join(_OUT_DIR, 'crypto_17000_explainer.html'), 'w', encoding='utf-8') as f:

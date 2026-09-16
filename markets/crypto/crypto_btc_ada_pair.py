@@ -22,6 +22,13 @@ _spec = importlib.util.spec_from_file_location("sam", os.path.join(HERE, "crypto
 sam = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(sam)
 
+# 🔒 再平衡核心算法收敛到跨市场唯一引擎 markets/core/rebalance.py (2026-09-15)
+#    本文件的 sim() 只保留「加密口径的返回契约」, 数值逻辑一律转发。
+_spec_rb = importlib.util.spec_from_file_location(
+    "rb_kernel", os.path.join(os.path.dirname(HERE), "core", "rebalance.py"))
+_rb = importlib.util.module_from_spec(_spec_rb)
+_spec_rb.loader.exec_module(_rb)
+
 REBAL_WEEKS = 4          # 月度再平衡
 COST_BP = 10.0           # 加密现货单边费率 10bp (taker 量级)
 
@@ -41,30 +48,13 @@ def sim(px, coins, rebal_weeks=REBAL_WEEKS, cost_bp=0.0, start=None, end=None):
     w = np.ones(n) / n
     c = cost_bp / 1e4
 
-    units = w / pr[0]                    # 初始: 1 美元按等权买入
-    U0 = units.copy()
-    NAV = np.empty(T)
-    R_hist = np.empty((T, n))
-    NAV[0] = 1.0
-    R_hist[0] = 1.0
-    # units 只在再平衡点更新 → 逐段盯市; 成本按成交额扣(缩减总仓位)
-    turns = []
-    seg_start = 0
-    for k in list(range(rebal_weeks, T, rebal_weeks)) + [T]:
-        for t in range(seg_start, min(k, T)):
-            NAV[t] = float((units * pr[t]).sum())
-            R_hist[t] = units / U0
-        if k < T:
-            val = units * pr[k]
-            tot = val.sum()
-            tgt = tot * w / pr[k]                    # 目标份额
-            traded = float(np.abs(tgt - units).dot(pr[k]))   # 该次总成交额
-            fee = traded * c
-            scale = (tot - fee) / tot if tot > 0 else 1.0    # 扣费后同比例缩减
-            units = tgt * scale
-            turns.append(traded / tot)               # 换手率(占组合价值)
-            seg_start = k
-
+    # 🔒 核心循环 → 唯一引擎 (markets/core/rebalance.py)
+    kr = _rb.rebalance_kernel(pr, rebal_weeks=rebal_weeks, cost_bp=cost_bp,
+                              capital=1.0, track=True)
+    NAV = kr["NAV"]
+    R_hist = kr["R_hist"]
+    turns = kr["turns"]
+    units, U0 = kr["units"], kr["U0"]
     R = units / U0                        # 期末币量 / 死拿币量
     yrs = (sub.index[-1] - sub.index[0]).days / 365.25
     nav_ser = pd.Series(NAV, index=sub.index)

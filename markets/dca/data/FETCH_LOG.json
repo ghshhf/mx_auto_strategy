@@ -1,0 +1,46 @@
+{
+ "SCHD": {
+  "name": "Schwab 美股红利",
+  "kind": "us_etf",
+  "rows": 3747,
+  "source": "yahoo2",
+  "start": "2011-10-20",
+  "end": "2026-09-16",
+  "file": "markets\\dca\\data\\history\\SCHD.csv",
+  "dropped_spikes": null,
+  "issues": null
+ },
+ "VYM": {
+  "name": "Vanguard 高股息",
+  "kind": "us_etf",
+  "rows": 4987,
+  "source": "yahoo2",
+  "start": "2006-11-16",
+  "end": "2026-09-16",
+  "file": "markets\\dca\\data\\history\\VYM.csv",
+  "dropped_spikes": null,
+  "issues": null
+ },
+ "DVY": {
+  "name": "iShares 道指精选红利",
+  "kind": "us_etf",
+  "rows": 5749,
+  "source": "yahoo2",
+  "start": "2003-11-07",
+  "end": "2026-09-16",
+  "file": "markets\\dca\\data\\history\\DVY.csv",
+  "dropped_spikes": null,
+  "issues": null
+ },
+ "NOBL": {
+  "name": "标普500 股息贵族",
+  "kind": "us_etf",
+  "rows": 3252,
+  "source": "yahoo2",
+  "start": "2013-10-10",
+  "end": "2026-09-16",
+  "file": "markets\\dca\\data\\history\\NOBL.csv",
+  "dropped_spikes": null,
+  "issues": null
+ }
+}

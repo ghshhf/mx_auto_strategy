@@ -1,0 +1,1460 @@
+{
+ "KO": {
+  "found": true,
+  "cik": 21344,
+  "sec_name": "COCA COLA CO",
+  "sic": "2080",
+  "sic_desc": "Beverages",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "PG": {
+  "found": true,
+  "cik": 80424,
+  "sec_name": "PROCTER & GAMBLE Co",
+  "sic": "2840",
+  "sic_desc": "Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "JNJ": {
+  "found": true,
+  "cik": 200406,
+  "sec_name": "JOHNSON & JOHNSON",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "PEP": {
+  "found": true,
+  "cik": 77476,
+  "sec_name": "PEPSICO INC",
+  "sic": "2080",
+  "sic_desc": "Beverages",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ABBV": {
+  "found": true,
+  "cik": 1551152,
+  "sec_name": "AbbVie Inc.",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "COST": {
+  "found": true,
+  "cik": 909832,
+  "sec_name": "COSTCO WHOLESALE CORP /NEW",
+  "sic": "5331",
+  "sic_desc": "Retail-Variety Stores",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "WMT": {
+  "found": true,
+  "cik": 104169,
+  "sec_name": "Walmart Inc.",
+  "sic": "5331",
+  "sic_desc": "Retail-Variety Stores",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MCD": {
+  "found": true,
+  "cik": 63908,
+  "sec_name": "MCDONALDS CORP",
+  "sic": "5812",
+  "sic_desc": "Retail-Eating  Places",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "CL": {
+  "found": true,
+  "cik": 21665,
+  "sec_name": "COLGATE PALMOLIVE CO",
+  "sic": "2844",
+  "sic_desc": "Perfumes, Cosmetics & Other Toilet Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "VZ": {
+  "found": true,
+  "cik": 732712,
+  "sec_name": "VERIZON COMMUNICATIONS INC",
+  "sic": "4813",
+  "sic_desc": "Telephone Communications (No Radiotelephone)",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "SO": {
+  "found": true,
+  "cik": 92122,
+  "sec_name": "SOUTHERN CO",
+  "sic": "4911",
+  "sic_desc": "Electric Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "DUK": {
+  "found": true,
+  "cik": 1326160,
+  "sec_name": "Duke Energy CORP",
+  "sic": "4931",
+  "sic_desc": "Electric & Other Services Combined",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "OTC"
+  ]
+ },
+ "XOM": {
+  "found": true,
+  "cik": 2115436,
+  "sec_name": "ExxonMobil Holdings Corp",
+  "sic": "2911",
+  "sic_desc": "Petroleum Refining",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "CVX": {
+  "found": true,
+  "cik": 93410,
+  "sec_name": "CHEVRON CORP",
+  "sic": "2911",
+  "sic_desc": "Petroleum Refining",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "PFE": {
+  "found": true,
+  "cik": 78003,
+  "sec_name": "PFIZER INC",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "MRK": {
+  "found": true,
+  "cik": 310158,
+  "sec_name": "Merck & Co., Inc.",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "LIN": {
+  "found": true,
+  "cik": 1707925,
+  "sec_name": "LINDE PLC",
+  "sic": "2810",
+  "sic_desc": "Industrial Inorganic Chemicals",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "DHR": {
+  "found": true,
+  "cik": 313616,
+  "sec_name": "DANAHER CORP /DE/",
+  "sic": "3823",
+  "sic_desc": "Industrial Instruments For Measurement, Display, and Control",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "MMM": {
+  "found": true,
+  "cik": 66740,
+  "sec_name": "3M CO",
+  "sic": "3841",
+  "sic_desc": "Surgical & Medical Instruments & Apparatus",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "CAT": {
+  "found": true,
+  "cik": 18230,
+  "sec_name": "CATERPILLAR INC",
+  "sic": "3531",
+  "sic_desc": "Construction Machinery & Equip",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "DE": {
+  "found": true,
+  "cik": 315189,
+  "sec_name": "DEERE & CO",
+  "sic": "3523",
+  "sic_desc": "Farm Machinery & Equipment",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "BMY": {
+  "found": true,
+  "cik": 14272,
+  "sec_name": "BRISTOL MYERS SQUIBB CO",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "KMB": {
+  "found": true,
+  "cik": 55785,
+  "sec_name": "KIMBERLY CLARK CORP",
+  "sic": "2670",
+  "sic_desc": "Converted Paper & Paperboard Prods (No Contaners/Boxes)",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MDT": {
+  "found": true,
+  "cik": 1613103,
+  "sec_name": "Medtronic plc",
+  "sic": "3845",
+  "sic_desc": "Electromedical & Electrotherapeutic Apparatus",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "NVDA": {
+  "found": true,
+  "cik": 1045810,
+  "sec_name": "NVIDIA CORP",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AMD": {
+  "found": true,
+  "cik": 2488,
+  "sec_name": "ADVANCED MICRO DEVICES INC",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AVGO": {
+  "found": true,
+  "cik": 1730168,
+  "sec_name": "Broadcom Inc.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SMCI": {
+  "found": true,
+  "cik": 1375365,
+  "sec_name": "Super Micro Computer, Inc.",
+  "sic": "3571",
+  "sic_desc": "Electronic Computers",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq"
+  ]
+ },
+ "PLTR": {
+  "found": true,
+  "cik": 1321655,
+  "sec_name": "Palantir Technologies Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ORCL": {
+  "found": true,
+  "cik": 1341439,
+  "sec_name": "ORACLE CORP",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "AMAT": {
+  "found": true,
+  "cik": 6951,
+  "sec_name": "APPLIED MATERIALS INC /DE",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MU": {
+  "found": true,
+  "cik": 723125,
+  "sec_name": "MICRON TECHNOLOGY INC",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "LRCX": {
+  "found": true,
+  "cik": 707549,
+  "sec_name": "LAM RESEARCH CORP",
+  "sic": "3559",
+  "sic_desc": "Special Industry Machinery, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "KLAC": {
+  "found": true,
+  "cik": 319201,
+  "sec_name": "KLA CORP",
+  "sic": "3827",
+  "sic_desc": "Optical Instruments & Lenses",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MRVL": {
+  "found": true,
+  "cik": 1835632,
+  "sec_name": "Marvell Technology, Inc.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ASML": {
+  "found": false
+ },
+ "INTC": {
+  "found": true,
+  "cik": 50863,
+  "sec_name": "INTEL CORP",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "QCOM": {
+  "found": true,
+  "cik": 804328,
+  "sec_name": "QUALCOMM INC/DE",
+  "sic": "3663",
+  "sic_desc": "Radio & Tv Broadcasting & Communications Equipment",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "TXN": {
+  "found": true,
+  "cik": 97476,
+  "sec_name": "TEXAS INSTRUMENTS INC",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ON": {
+  "found": true,
+  "cik": 1097864,
+  "sec_name": "ON SEMICONDUCTOR CORP",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ARM": {
+  "found": true,
+  "cik": 1973239,
+  "sec_name": "ARM HOLDINGS PLC /UK",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "other",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MPWR": {
+  "found": true,
+  "cik": 1280452,
+  "sec_name": "MONOLITHIC POWER SYSTEMS, INC.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AMZN": {
+  "found": true,
+  "cik": 1018724,
+  "sec_name": "AMAZON COM INC",
+  "sic": "5961",
+  "sic_desc": "Retail-Catalog & Mail-Order Houses",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MSFT": {
+  "found": true,
+  "cik": 789019,
+  "sec_name": "MICROSOFT CORP",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "CRM": {
+  "found": true,
+  "cik": 1108524,
+  "sec_name": "Salesforce, Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "NOW": {
+  "found": true,
+  "cik": 1373715,
+  "sec_name": "ServiceNow, Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "SNOW": {
+  "found": false
+ },
+ "DDOG": {
+  "found": true,
+  "cik": 1561550,
+  "sec_name": "Datadog, Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "NET": {
+  "found": false
+ },
+ "TEAM": {
+  "found": false
+ },
+ "WDAY": {
+  "found": true,
+  "cik": 1327811,
+  "sec_name": "Workday, Inc.",
+  "sic": "7374",
+  "sic_desc": "Services-Computer Processing & Data Preparation",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ADBE": {
+  "found": true,
+  "cik": 796343,
+  "sec_name": "ADOBE INC.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "INTU": {
+  "found": true,
+  "cik": 896878,
+  "sec_name": "INTUIT INC.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AAPL": {
+  "found": true,
+  "cik": 320193,
+  "sec_name": "Apple Inc.",
+  "sic": "3571",
+  "sic_desc": "Electronic Computers",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ZS": {
+  "found": false
+ },
+ "PANW": {
+  "found": true,
+  "cik": 1327567,
+  "sec_name": "Palo Alto Networks Inc",
+  "sic": "3577",
+  "sic_desc": "Computer Peripheral Equipment, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "TSLA": {
+  "found": true,
+  "cik": 1318605,
+  "sec_name": "Tesla, Inc.",
+  "sic": "3711",
+  "sic_desc": "Motor Vehicles & Passenger Car Bodies",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "RIVN": {
+  "found": true,
+  "cik": 1874178,
+  "sec_name": "Rivian Automotive, Inc. / DE",
+  "sic": "3711",
+  "sic_desc": "Motor Vehicles & Passenger Car Bodies",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "LI": {
+  "found": false
+ },
+ "NIO": {
+  "found": false
+ },
+ "XPEV": {
+  "found": false
+ },
+ "GOOGL": {
+  "found": true,
+  "cik": 1652044,
+  "sec_name": "Alphabet Inc.",
+  "sic": "7370",
+  "sic_desc": "Services-Computer Programming, Data Processing, Etc.",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq",
+   "Nasdaq"
+  ]
+ },
+ "MBLY": {
+  "found": true,
+  "cik": 1910139,
+  "sec_name": "Mobileye Global Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ENPH": {
+  "found": true,
+  "cik": 1463101,
+  "sec_name": "Enphase Energy, Inc.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SEDG": {
+  "found": true,
+  "cik": 1419612,
+  "sec_name": "SOLAREDGE TECHNOLOGIES, INC.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "FSLR": {
+  "found": true,
+  "cik": 1274494,
+  "sec_name": "FIRST SOLAR, INC.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "NEE": {
+  "found": true,
+  "cik": 753308,
+  "sec_name": "NEXTERA ENERGY INC",
+  "sic": "4911",
+  "sic_desc": "Electric Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "RUN": {
+  "found": false
+ },
+ "JKS": {
+  "found": true,
+  "cik": 1481513,
+  "sec_name": "JinkoSolar Holding Co., Ltd.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "other",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "CSIQ": {
+  "found": true,
+  "cik": 1375877,
+  "sec_name": "Canadian Solar Inc.",
+  "sic": "3674",
+  "sic_desc": "Semiconductors & Related Devices",
+  "entity_type": "other",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "LLY": {
+  "found": true,
+  "cik": 59478,
+  "sec_name": "ELI LILLY & Co",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "NVO": {
+  "found": false
+ },
+ "AZN": {
+  "found": true,
+  "cik": 901832,
+  "sec_name": "ASTRAZENECA PLC",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "other",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "VRTX": {
+  "found": true,
+  "cik": 875320,
+  "sec_name": "VERTEX PHARMACEUTICALS INC / MA",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "REGN": {
+  "found": true,
+  "cik": 872589,
+  "sec_name": "REGENERON PHARMACEUTICALS, INC.",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MRNA": {
+  "found": true,
+  "cik": 1682852,
+  "sec_name": "Moderna, Inc.",
+  "sic": "2836",
+  "sic_desc": "Biological Products, (No Diagnostic Substances)",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "GILD": {
+  "found": true,
+  "cik": 882095,
+  "sec_name": "GILEAD SCIENCES, INC.",
+  "sic": "2836",
+  "sic_desc": "Biological Products, (No Diagnostic Substances)",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AMGN": {
+  "found": true,
+  "cik": 318154,
+  "sec_name": "AMGEN INC",
+  "sic": "2836",
+  "sic_desc": "Biological Products, (No Diagnostic Substances)",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ILMN": {
+  "found": true,
+  "cik": 1110803,
+  "sec_name": "ILLUMINA, INC.",
+  "sic": "3826",
+  "sic_desc": "Laboratory Analytical Instruments",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "CRWD": {
+  "found": true,
+  "cik": 1535527,
+  "sec_name": "CrowdStrike Holdings, Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "FTNT": {
+  "found": true,
+  "cik": 1262039,
+  "sec_name": "Fortinet, Inc.",
+  "sic": "3577",
+  "sic_desc": "Computer Peripheral Equipment, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "OKTA": {
+  "found": true,
+  "cik": 1660134,
+  "sec_name": "Okta, Inc.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "CYBR": {
+  "found": true,
+  "cik": 1598110,
+  "sec_name": "CyberArk Software Ltd.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "other",
+  "exchanges": []
+ },
+ "TER": {
+  "found": true,
+  "cik": 97210,
+  "sec_name": "TERADYNE, INC",
+  "sic": "3825",
+  "sic_desc": "Instruments For Meas & Testing of  Electricity & Elec Signals",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ISRG": {
+  "found": true,
+  "cik": 1035267,
+  "sec_name": "INTUITIVE SURGICAL INC",
+  "sic": "3842",
+  "sic_desc": "Orthopedic, Prosthetic & Surgical Appliances & Supplies",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SYM": {
+  "found": true,
+  "cik": 1837240,
+  "sec_name": "Symbotic Inc.",
+  "sic": "3569",
+  "sic_desc": "General Industrial Machinery & Equipment, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ROK": {
+  "found": true,
+  "cik": 1024478,
+  "sec_name": "ROCKWELL AUTOMATION, INC",
+  "sic": "3829",
+  "sic_desc": "Measuring & Controlling Devices, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "IR": {
+  "found": true,
+  "cik": 1699150,
+  "sec_name": "Ingersoll Rand Inc.",
+  "sic": "3560",
+  "sic_desc": "General Industrial Machinery & Equipment",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "FTV": {
+  "found": true,
+  "cik": 1659166,
+  "sec_name": "Fortive Corp",
+  "sic": "3823",
+  "sic_desc": "Industrial Instruments For Measurement, Display, and Control",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "HON": {
+  "found": true,
+  "cik": 773840,
+  "sec_name": "HONEYWELL INTERNATIONAL INC",
+  "sic": "3724",
+  "sic_desc": "Aircraft Engines & Engine Parts",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "PYPL": {
+  "found": true,
+  "cik": 1633917,
+  "sec_name": "PayPal Holdings, Inc.",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "MA": {
+  "found": true,
+  "cik": 1141391,
+  "sec_name": "Mastercard Inc",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "AXP": {
+  "found": true,
+  "cik": 4962,
+  "sec_name": "AMERICAN EXPRESS CO",
+  "sic": "6199",
+  "sic_desc": "Finance Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "COIN": {
+  "found": true,
+  "cik": 1679788,
+  "sec_name": "Coinbase Global, Inc.",
+  "sic": "6199",
+  "sic_desc": "Finance Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "FIS": {
+  "found": true,
+  "cik": 1136893,
+  "sec_name": "Fidelity National Information Services, Inc.",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "FISV": {
+  "found": true,
+  "cik": 798354,
+  "sec_name": "FISERV INC",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "AFRM": {
+  "found": true,
+  "cik": 1820953,
+  "sec_name": "Affirm Holdings, Inc.",
+  "sic": "6141",
+  "sic_desc": "Personal Credit Institutions",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "UPST": {
+  "found": true,
+  "cik": 1647639,
+  "sec_name": "Upstart Holdings, Inc.",
+  "sic": "6199",
+  "sic_desc": "Finance Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "META": {
+  "found": true,
+  "cik": 1326801,
+  "sec_name": "Meta Platforms, Inc.",
+  "sic": "7370",
+  "sic_desc": "Services-Computer Programming, Data Processing, Etc.",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "BABA": {
+  "found": false
+ },
+ "JD": {
+  "found": false
+ },
+ "EBAY": {
+  "found": true,
+  "cik": 1065088,
+  "sec_name": "EBAY INC",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "ETSY": {
+  "found": true,
+  "cik": 1370637,
+  "sec_name": "ETSY INC",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "BKNG": {
+  "found": true,
+  "cik": 1075531,
+  "sec_name": "Booking Holdings Inc.",
+  "sic": "4700",
+  "sic_desc": "Transportation Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "DASH": {
+  "found": true,
+  "cik": 1792789,
+  "sec_name": "DoorDash, Inc.",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SPOT": {
+  "found": false
+ },
+ "NFLX": {
+  "found": true,
+  "cik": 1065280,
+  "sec_name": "NETFLIX INC",
+  "sic": "7841",
+  "sic_desc": "Services-Video Tape Rental",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "DIS": {
+  "found": true,
+  "cik": 1744489,
+  "sec_name": "Walt Disney Co",
+  "sic": "7990",
+  "sic_desc": "Services-Miscellaneous Amusement & Recreation",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "WBD": {
+  "found": true,
+  "cik": 1437107,
+  "sec_name": "Warner Bros. Discovery, Inc.",
+  "sic": "4841",
+  "sic_desc": "Cable & Other Pay Television Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "TME": {
+  "found": false
+ },
+ "EQIX": {
+  "found": true,
+  "cik": 1101239,
+  "sec_name": "EQUINIX INC",
+  "sic": "6798",
+  "sic_desc": "Real Estate Investment Trusts",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "DLR": {
+  "found": true,
+  "cik": 1297996,
+  "sec_name": "DIGITAL REALTY TRUST, INC.",
+  "sic": "6798",
+  "sic_desc": "Real Estate Investment Trusts",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "VRT": {
+  "found": true,
+  "cik": 1674101,
+  "sec_name": "Vertiv Holdings Co",
+  "sic": "3679",
+  "sic_desc": "Electronic Components, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "NXT": {
+  "found": false
+ },
+ "IONQ": {
+  "found": false
+ },
+ "RGTI": {
+  "found": false
+ },
+ "ASTS": {
+  "found": true,
+  "cik": 1780312,
+  "sec_name": "AST SpaceMobile, Inc.",
+  "sic": "4899",
+  "sic_desc": "Communications Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "RKLB": {
+  "found": true,
+  "cik": 1819994,
+  "sec_name": "Rocket Lab Corp",
+  "sic": "3760",
+  "sic_desc": "Guided Missiles & Space Vehicles & Parts",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SOFI": {
+  "found": true,
+  "cik": 1818874,
+  "sec_name": "SoFi Technologies, Inc.",
+  "sic": "6199",
+  "sic_desc": "Finance Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "HOOD": {
+  "found": true,
+  "cik": 1783879,
+  "sec_name": "Robinhood Markets, Inc.",
+  "sic": "6211",
+  "sic_desc": "Security Brokers, Dealers & Flotation Companies",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "TWLO": {
+  "found": true,
+  "cik": 1447669,
+  "sec_name": "TWILIO INC",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "DOCU": {
+  "found": true,
+  "cik": 1261333,
+  "sec_name": "DOCUSIGN, INC.",
+  "sic": "7372",
+  "sic_desc": "Services-Prepackaged Software",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "SPY": {
+  "found": false
+ },
+ "QQQ": {
+  "found": false
+ },
+ "DIA": {
+  "found": false
+ },
+ "IWM": {
+  "found": false
+ },
+ "MDY": {
+  "found": false
+ },
+ "VTI": {
+  "found": false
+ },
+ "CWB": {
+  "found": false
+ },
+ "JPM": {
+  "found": true,
+  "cik": 19617,
+  "sec_name": "JPMORGAN CHASE & CO",
+  "sic": "6021",
+  "sic_desc": "National Commercial Banks",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "GE": {
+  "found": true,
+  "cik": 40545,
+  "sec_name": "GENERAL ELECTRIC CO",
+  "sic": "3600",
+  "sic_desc": "Electronic & Other Electrical Equipment (No Computer Equip)",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "WFC": {
+  "found": true,
+  "cik": 72971,
+  "sec_name": "WELLS FARGO & COMPANY/MN",
+  "sic": "6021",
+  "sic_desc": "National Commercial Banks",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "OTC",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "BAC": {
+  "found": true,
+  "cik": 70858,
+  "sec_name": "BANK OF AMERICA CORP /DE/",
+  "sic": "6021",
+  "sic_desc": "National Commercial Banks",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "NYSE",
+   "OTC",
+   "NYSE",
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "CSCO": {
+  "found": true,
+  "cik": 858877,
+  "sec_name": "CISCO SYSTEMS, INC.",
+  "sic": "3576",
+  "sic_desc": "Computer Communications Equipment",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq"
+  ]
+ },
+ "HD": {
+  "found": true,
+  "cik": 354950,
+  "sec_name": "HOME DEPOT, INC.",
+  "sic": "5211",
+  "sic_desc": "Retail-Lumber & Other Building Materials Dealers",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "CMCSA": {
+  "found": true,
+  "cik": 1166691,
+  "sec_name": "COMCAST CORP",
+  "sic": "4841",
+  "sic_desc": "Cable & Other Pay Television Services",
+  "entity_type": "operating",
+  "exchanges": [
+   "Nasdaq",
+   "NYSE"
+  ]
+ },
+ "BA": {
+  "found": true,
+  "cik": 12927,
+  "sec_name": "BOEING CO",
+  "sic": "3721",
+  "sic_desc": "Aircraft",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE",
+   "NYSE"
+  ]
+ },
+ "IBM": {
+  "found": true,
+  "cik": 51143,
+  "sec_name": "INTERNATIONAL BUSINESS MACHINES CORP",
+  "sic": "3570",
+  "sic_desc": "Computer & office Equipment",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "MO": {
+  "found": true,
+  "cik": 764180,
+  "sec_name": "ALTRIA GROUP, INC.",
+  "sic": "2111",
+  "sic_desc": "Cigarettes",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "ABT": {
+  "found": true,
+  "cik": 1800,
+  "sec_name": "ABBOTT LABORATORIES",
+  "sic": "2834",
+  "sic_desc": "Pharmaceutical Preparations",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "UNH": {
+  "found": true,
+  "cik": 731766,
+  "sec_name": "UNITEDHEALTH GROUP INC",
+  "sic": "6324",
+  "sic_desc": "Hospital & Medical Service Plans",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "LMT": {
+  "found": true,
+  "cik": 936468,
+  "sec_name": "LOCKHEED MARTIN CORP",
+  "sic": "3760",
+  "sic_desc": "Guided Missiles & Space Vehicles & Parts",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "UPS": {
+  "found": true,
+  "cik": 1090727,
+  "sec_name": "UNITED PARCEL SERVICE INC",
+  "sic": "4210",
+  "sic_desc": "Trucking & Courier Services (No Air)",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "ACN": {
+  "found": true,
+  "cik": 1467373,
+  "sec_name": "Accenture plc",
+  "sic": "7389",
+  "sic_desc": "Services-Business Services, NEC",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ },
+ "NKE": {
+  "found": true,
+  "cik": 320187,
+  "sec_name": "NIKE, Inc.",
+  "sic": "3021",
+  "sic_desc": "Rubber & Plastics Footwear",
+  "entity_type": "operating",
+  "exchanges": [
+   "NYSE"
+  ]
+ }
+}

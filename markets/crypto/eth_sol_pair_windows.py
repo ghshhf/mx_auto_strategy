@@ -22,6 +22,12 @@ _spec = importlib.util.spec_from_file_location("bap", os.path.join(HERE, "crypto
 bap = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(bap)
 
+# 🔒 调仓数学收敛到跨市场唯一引擎 markets/core/rebalance.py (2026-09-15)
+_spec_rb = importlib.util.spec_from_file_location(
+    "rb_kernel", os.path.join(os.path.dirname(HERE), "core", "rebalance.py"))
+_rb = importlib.util.module_from_spec(_spec_rb)
+_spec_rb.loader.exec_module(_rb)
+
 PANEL = os.path.join(HERE, "data", "weekly_adjclose_crypto50_10y.csv")
 OUTDIR = os.path.join(HERE, "out")
 COINS = ["ETH", "SOL"]
@@ -44,26 +50,14 @@ def sim_phase(sub: pd.DataFrame, freq: int, phase: int, cost_bp: float = 10.0):
     则该比较无意义 —— 必须用相位中位或蒙特卡洛。
     """
     pr = sub.values.astype(float)
-    T, n = pr.shape
-    w = np.ones(n) / n
-    c = cost_bp / 1e4
-    units = w / pr[0]
-    U0 = units.copy()
-    NAV = np.ones(T)
-    seg, turn = 0, 0.0
-    for k in list(range(phase, T, freq)) + [T]:
-        for t in range(seg, min(k, T)):
-            NAV[t] = float((units * pr[t]).sum())
-        if k < T:
-            val = units * pr[k]
-            tot = val.sum()
-            tgt = tot * w / pr[k]
-            traded = float(np.abs(tgt - units).dot(pr[k]))
-            units = tgt * ((tot - traded * c) / tot if tot > 0 else 1.0)
-            turn += traded / tot
-            seg = k
+    # 🔒 核心循环 → 唯一引擎 (phase 参数即原版「调仓日 = phase, phase+freq, ...」)
+    kr = _rb.rebalance_kernel(pr, rebal_weeks=freq, cost_bp=cost_bp,
+                              capital=1.0, phase=phase)
+    units, U0 = kr["units"], kr["U0"]
     yrs = (sub.index[-1] - sub.index[0]).days / 365.25
-    return NAV[-1], {co: float(units[i] / U0[i]) for i, co in enumerate(sub.columns)}, turn / yrs * 100
+    return (float(kr["NAV"][-1]),
+            {co: float(units[i] / U0[i]) for i, co in enumerate(sub.columns)},
+            sum(kr["turns"]) / yrs * 100)
 
 
 def main():
