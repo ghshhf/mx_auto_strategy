@@ -123,15 +123,27 @@ def fetch_cmc_weekly(cmc_id, start_date):
 
 
 def fetch_coin_from(start_date, binance_sym, okx_sym, cmc_id=None):
-    """三级降级取数: Binance -> OKX -> CMC. 返回 {friday_date: close}."""
+    """三级降级取数: Binance -> OKX -> CMC. 返回 {friday_date: close}.
+
+    2026-09-18: 取数层翻页中断会抛 RuntimeError(不再静默返回残缺数据),
+    此处捕获后继续降级链, 宁可本源留空也不写半截历史.
+    """
     # Level 1: Binance
-    rows = chd.fetch_binance_full(binance_sym, start_date)
+    try:
+        rows = chd.fetch_binance_full(binance_sym, start_date)
+    except RuntimeError as e:
+        print(f"    [Binance] {e} -> 降级 OKX", file=sys.stderr)
+        rows = []
     if len(rows) >= 2:
         return chd.rows_to_weekly_close(rows)
 
     # Level 2: OKX
     print(f"    Binance 不足 ({len(rows)}), 试 OKX ...", file=sys.stderr)
-    rows = chd.fetch_okx_weekly(okx_sym, start_date)
+    try:
+        rows = chd.fetch_okx_weekly(okx_sym, start_date)
+    except RuntimeError as e:
+        print(f"    [OKX] {e} -> 降级 CMC", file=sys.stderr)
+        rows = []
     if len(rows) >= 2:
         return chd.rows_to_weekly_close(rows)
 

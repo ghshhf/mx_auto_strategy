@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-14",
+  "updated": "2026-09-21",
   "metrics": {
     "us.no_options.mult": 21.953,
     "us.no_options.mdd": -49.6,
@@ -7,9 +7,9 @@
     "us.options_sim.mult": 106.194,
     "us.options_sim.mdd": -48.3,
     "us.options_sim.cagr": 47.2,
-    "crypto.nav.mult": 5727.581,
+    "crypto.nav.mult": 5848.333,
     "crypto.nav.mdd": -70.4,
-    "crypto.nav.cagr": 135.6,
+    "crypto.nav.cagr": 135.3,
     "crypto.nav.sharpe": 1.6,
     "crypto.12y.FULL_default.mult": 19082.897,
     "crypto.12y.FULL_default.mdd": -70.54,

@@ -63,7 +63,7 @@ def _http_get_json(url, headers=None, timeout=30):
 
 def align_friday(ts_ms):
     """毫秒时间戳 -> 当周周五日期字符串 'YYYY-MM-DD' (加密 7x24, 周K 以周五收盘对齐)."""
-    dt = datetime.datetime.utcfromtimestamp(ts_ms / 1000.0)
+    dt = datetime.datetime.fromtimestamp(ts_ms / 1000.0, datetime.timezone.utc)  # utcfromtimestamp 3.12 deprecated
     friday = dt - datetime.timedelta(days=(dt.weekday() - 4) % 7)
     return friday.strftime('%Y-%m-%d')
 

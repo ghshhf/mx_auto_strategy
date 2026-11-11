@@ -38,7 +38,7 @@ import urllib.request
 from urllib.parse import urlparse
 
 # 实测可用的默认代理 (本机长期监听; 见模块文档)
-DEFAULT_PROXY = "http://127.0.0.1:3067"
+DEFAULT_PROXY = "http://127.0.0.1:7890"
 
 # 已确认废弃/不可用的历史写法, 仅作文档留档, 解析时会跳过
 DEPRECATED_PROXIES = ("socks5h://127.0.0.1:1080",)

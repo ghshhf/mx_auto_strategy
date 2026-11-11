@@ -29,12 +29,18 @@ SEED_RECORDS_RAW: list[dict] = [
      "pub_date": "2026-05-01", "rating": "bullish",
      "source_url": "https://www.galaxydigital.com/research/crypto-asset-outlook-mid-2026/",
      "excerpt": "Galaxy Digital 2026年中报告：BTC 年底目标价 14 万美元，基于机构采纳加速与减半后供需收紧"},
-    # ARK Invest 2030 大牛市情境
+    # ARK Invest 2030（Big Ideas 2025：bear 30 万 / base 71 万 / bull ~150 万）
     {"institution": "ARK Invest", "coin": "BTC",
-     "target_price": 1000000.0, "target_date": "2030-12-31", "horizon_months": 78,
-     "pub_date": "2024-08-14", "rating": "bullish",
-     "source_url": "https://ark-invest.com/articles/analyst-research/big-ideas-2024/",
-     "excerpt": "ARK Invest 发布 Big Ideas 2024，比特币 2030 年乐观情境目标价 100 万美元"},
+     "target_price": 1500000.0, "target_date": "2030-12-31", "horizon_months": 51,
+     "pub_date": "2025-02-04", "rating": "bullish",
+     "source_url": "https://www.ark-invest.com/articles/valuation-models/arks-bitcoin-price-target-2030",
+     "excerpt": "ARK Big Ideas 2025：BTC 2030 三情境 bear 30 万 / base 71 万 / bull 约 150 万美元（TAM 模型：机构配置 + 数字黄金 + 新兴市场储蓄）"},
+    # ARK Invest 2025-11 下修 bull：150 万 -> 120 万（稳定币分流叙事）
+    {"institution": "ARK Invest", "coin": "BTC",
+     "target_price": 1200000.0, "target_date": "2030-12-31", "horizon_months": 51,
+     "pub_date": "2025-11-20", "rating": "bullish",
+     "source_url": "https://www.ark-invest.com/articles/valuation-models/arks-bitcoin-price-target-2030",
+     "excerpt": "Cathie Wood 2025 年 11 月将 2030 牛市目标自 150 万下调至 120 万美元，主因稳定币崛起分流储值与支付叙事"},
     # JPMorgan 中性 8 万
     {"institution": "JPMorgan", "coin": "BTC",
      "target_price": 80000.0, "target_date": "2025-12-31", "horizon_months": 21,
@@ -47,12 +53,12 @@ SEED_RECORDS_RAW: list[dict] = [
      "pub_date": "2024-11-20", "rating": "bullish",
      "source_url": "https://www.vaneck.com/us/en/insights/crypto/bitcoin-model-update-nov-2024/",
      "excerpt": "VanEck 模型更新：BTC 2027 年底目标价 25 万美元，假设 ETF 持续净流入叠加下一轮减半效应"},
-    # VanEck 2030 极端牛市 100 万
+    # VanEck Power Law 2030（bull 150 万 / base 50 万）
     {"institution": "VanEck", "coin": "BTC",
-     "target_price": 1000000.0, "target_date": "2030-12-31", "horizon_months": 77,
+     "target_price": 1500000.0, "target_date": "2030-12-31", "horizon_months": 51,
      "pub_date": "2024-09-05", "rating": "bullish",
-     "source_url": "https://www.vaneck.com/us/en/insights/crypto/bitcoin-2030-bull-case/",
-     "excerpt": "VanEck BTC 2030 极端牛市情境目标价 100 万美元，与 ARK 独立预测相近"},
+     "source_url": "https://ambcrypto.com/?p=560192",
+     "excerpt": "VanEck Power Law 模型：BTC 2030 bull 150 万 / base 50 万美元；2050 base 290 万美元（Sigel 口径：五年内 100 万属 base case，非极端）"},
     # Fidelity 2025-10 12 万（落在近半年 2026-04 发布，最新口径之一）
     {"institution": "Fidelity", "coin": "BTC",
      "target_price": 120000.0, "target_date": "2025-10-30", "horizon_months": 6,

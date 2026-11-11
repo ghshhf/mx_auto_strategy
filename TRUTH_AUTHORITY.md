@@ -23,11 +23,11 @@
 
 | 口径 | 倍率 | MDD | Sharpe | CAGR |
 |---|---|---|---|---|
-| **发布 NAV**（cycle_overlay, tilt=0.3, 10y） | **5,727.58x** | −70.4% | 1.60 | 135.6% |
+| **发布 NAV**（cycle_overlay, tilt=0.3, 10y） | **5,848.33x** | −70.4% | 1.60 | 135.3% |
 | reconcile 10y FULL（inv_vol+1.2+周期） | 6,180x | −70.5% | 1.60 | 137.4% |
 | reconcile 12y FULL | 19,083x | −70.5% | 1.56 | 127.4% |
 
-> 发布 NAV（`docs/data/nav_crypto.json`，供 `docs/index.html` 展示）与 reconcile 10y FULL 倍率接近（5,728x vs 6,180x），差异来自分配机制（cycle_overlay tilt=0.3 vs inv_vol+1.2），MDD 一致 −70.4~70.5%。**两者都是现真值，引用时务必标清口径。**
+> 发布 NAV（`docs/data/nav_crypto.json`，供 `docs/index.html` 展示）与 reconcile 10y FULL 倍率接近（5,848x vs 6,180x），差异来自分配机制（cycle_overlay tilt=0.3 vs inv_vol+1.2），MDD 一致 −70.4~70.5%。**两者都是现真值，引用时务必标清口径。**
 
 ## 1. 权威真值表（当前引擎 · **27 币面板**，期权已关闭）
 
@@ -87,7 +87,7 @@
 | 差异来源 | 例子 | 量级 |
 |---|---|---|
 | **窗口长度** | 同一引擎 12y(19,083x) vs 10y(6,180x) | 3.1× |
-| **配置叠加** | cycle_overlay(5,728x) vs inv_vol+1.2(6,180x) | ~1.08× |
+| **配置叠加** | cycle_overlay(5,848x) vs inv_vol+1.2(6,180x) | ~1.08× |
 | **期权时代废弃数字** | 59.36Mx（期权开）/ 28,092x（43币+期权）/ 24,493x（旧 DEFAULT） | 不可比，已废弃 |
 
 **核心：项目曾未固定「唯一窗口 + 唯一引擎版本 + 唯一期权状态」，所以同一引擎被报成 24,493x / 28,092x / 59.36Mx / 448.6x 等。这些都不是当前真值，只是实验口径。**
@@ -107,7 +107,7 @@
 ## 5. 待办（防止再次碎片化）
 
 - [x] `reconcile_truth.py` 重写：固定面板（**2026-09-10 起为 27 币**）+ 10y/12y 双窗口 + 期权关闭验证。
-- [x] `export_nav_crypto.py` 产出发布 NAV（**5,727.58x**，27 币池），供站点展示。
+- [x] `export_nav_crypto.py` 产出发布 NAV（**5,848.33x**，27 币池），供站点展示。
       ⚠️ 该脚本曾把 `source` 里的币数**硬编码为 "34币"**，面板早已变 27 币而发布页长期挂着错误口径；
       已改为从 `px.shape[1]` 动态推导，并加 `n_coins` 字段 + `tests/test_crypto_truth_consistency.py` 断言。
 - [x] README / PITFALLS / docs 统一引用本真值表，标注「窗口 + 配置 + 期权状态」。

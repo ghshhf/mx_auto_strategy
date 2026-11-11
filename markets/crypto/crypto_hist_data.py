@@ -39,7 +39,7 @@ import json
 import csv
 import time
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'data')
@@ -122,45 +122,75 @@ def fetch_binance_full(symbol, start_date):
     while True:
         url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1w&limit=1000"
         url += f"&startTime={end_ms}" if end_ms else f"&startTime={start_ms}"
-        try:
-            raw = _get(url)
-            arr = json.loads(raw)
-            if not arr:
+        # 2026-09-18 加固: 逐页重试; 中途翻页失败不再静默 break 返回残缺数据
+        # (旧行为: break 后 len>=2 即认成功, 全量重建时会悄悄截断历史).
+        arr = None
+        for attempt in range(5):
+            try:
+                raw = _get(url)
+                arr = json.loads(raw)
                 break
-            for x in arr:
-                all_rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
-            end_ms = int(arr[-1][6]) + 1
-            if end_ms > int(time.time() * 1000):
-                break
-            time.sleep(0.2)
-        except Exception as e:
-            print(f"  [Binance] 翻页失败: {e}", file=sys.stderr)
+            except Exception as e:
+                last_err = e
+                print(f"  [Binance] {symbol} 第{attempt+1}次重试: {e}", file=sys.stderr)
+                time.sleep(1 + attempt)
+        if arr is None:
+            if not all_rows:
+                # 首页即失败 -> 返回空, 让上层降级到 OKX/CMC
+                print(f"  [Binance] {symbol} 拉取失败: {last_err}", file=sys.stderr)
+                return []
+            raise RuntimeError(
+                f"[Binance] {symbol} 翻页中断(已取 {len(all_rows)} 条, 历史不完整): {last_err}")
+        if not arr:
             break
+        for x in arr:
+            all_rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
+        end_ms = int(arr[-1][6]) + 1
+        if end_ms > int(time.time() * 1000):
+            break
+        time.sleep(0.2)
     return all_rows
 
 
 # ========== OKX 周K线 (备源) ==========
 def fetch_okx_weekly(instId, start_date):
-    """OKX candles: after/before 为毫秒时间戳(非ISO); 返回 newest-first, 需翻页."""
+    """OKX candles: after/before 为毫秒时间戳(非ISO); 返回 newest-first, 需翻页.
+
+    2026-09-18 加固: 同 fetch_binance_full —— 逐页重试, 中途翻页失败抛
+    RuntimeError(而非静默返回残缺数据); 首页失败返回空交上层降级.
+    ⚠️ OKX 周K按 UTC+8 切日, close 时点比 Binance 早 8 小时 (见 PITFALLS).
+    """
     start_ms = int(datetime.strptime(start_date, '%Y-%m-%d').timestamp() * 1000)
     rows = []
     after = int(time.time() * 1000)   # 从当前向历史翻页
-    try:
-        while True:
-            url = f"https://www.okx.com/api/v5/market/candles?instId={instId}&bar=1W&after={after}&limit=100"
-            data = json.loads(_get(url)).get("data", [])
-            if not data:
+    last_err = None
+    while True:
+        url = f"https://www.okx.com/api/v5/market/candles?instId={instId}&bar=1W&after={after}&limit=100"
+        data = None
+        for attempt in range(5):
+            try:
+                data = json.loads(_get(url)).get("data", [])
                 break
-            for x in data:
-                rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
-            oldest = min(int(x[0]) for x in data)
-            if oldest <= start_ms:
-                break
-            after = oldest - 1
-            time.sleep(0.2)
-        rows.sort(key=lambda r: r['timestamp'])
-    except Exception as e:
-        print(f"  [OKX] {instId} 拉取失败: {e}", file=sys.stderr)
+            except Exception as e:
+                last_err = e
+                print(f"  [OKX] {instId} 第{attempt+1}次重试: {e}", file=sys.stderr)
+                time.sleep(1 + attempt)
+        if data is None:
+            if not rows:
+                print(f"  [OKX] {instId} 拉取失败: {last_err}", file=sys.stderr)
+                return []
+            raise RuntimeError(
+                f"[OKX] {instId} 翻页中断(已取 {len(rows)} 条, 历史不完整): {last_err}")
+        if not data:
+            break
+        for x in data:
+            rows.append({'timestamp': int(x[0]), 'close': float(x[4])})
+        oldest = min(int(x[0]) for x in data)
+        if oldest <= start_ms:
+            break
+        after = oldest - 1
+        time.sleep(0.2)
+    rows.sort(key=lambda r: r['timestamp'])
     return rows
 
 
@@ -170,7 +200,7 @@ def rows_to_weekly_close(rows):
     weekly = {}
     for r in rows:
         ts = r['timestamp'] / 1000
-        dt = datetime.utcfromtimestamp(ts)
+        dt = datetime.fromtimestamp(ts, timezone.utc)   # utcfromtimestamp 于 3.12 deprecated
         friday = dt - timedelta(days=(dt.weekday() - 4) % 7)
         weekly[friday.strftime('%Y-%m-%d')] = r['close']
     return weekly
@@ -179,10 +209,18 @@ def rows_to_weekly_close(rows):
 def download_coin(sym, cfg):
     """下载单币周K线. Binance主, OKX备. 返回 {date: close}."""
     print(f"  下载 {sym} (start {cfg['start']}) ...")
-    rows = fetch_binance_full(cfg['binance'], cfg['start'])
+    try:
+        rows = fetch_binance_full(cfg['binance'], cfg['start'])
+    except RuntimeError as e:
+        print(f"    [警告] {e} -> 降级 OKX")
+        rows = []
     if len(rows) < 10:
         print(f"    Binance 不足 ({len(rows)}), 试 OKX ...")
-        rows = fetch_okx_weekly(cfg['okx'], cfg['start'])
+        try:
+            rows = fetch_okx_weekly(cfg['okx'], cfg['start'])
+        except RuntimeError as e:
+            print(f"    [警告] {e} -> 该币周留空")
+            rows = []
     if len(rows) < 10:
         print(f"    [警告] {sym} 数据源均不足, 跳过 (该币周留空)")
         return {}
